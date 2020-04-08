@@ -1,0 +1,8 @@
+{
+  "name": "interview",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/fang-bin/interview.git",
+  "author": "fang-bin <873739458@qq.com>",
+  "license": "MIT"
+}

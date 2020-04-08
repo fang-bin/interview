@@ -1,2 +1,21 @@
-# interview
-interview data
+# 面试准备
+
+又快要换工作了，发现自己的脑子不够用，记录一下面试题，备用
+
+### 基础性问题
+[问题链接](./md/basics.md)
+
+### 手写代码类问题
+[问题链接](./md/writeCode.md)
+
+### 进阶型问题
+[问题链接](./md/advance.md)
+
+### 奇葩类问题
+[问题链接](./md/miracle.md)
+
+### 杂碎问题
+[问题链接](./md/smash.md)
+
+### 专题类
+[问题链接](./md/special.md)
