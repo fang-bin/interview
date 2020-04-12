@@ -53,7 +53,7 @@ ES5 只有全局作用域和函数作用域，没有块级作用域，let实际�
 **Function.prototype.call**
 
     Function.prototype.myCall = function (thisArg, ...args) {
-      if (typeof this !== 'undefined') {
+      if (typeof this !== 'function') {
         throw new TypeError('Call must be called on a function');
       }
       const fn = Symbol('fn');
@@ -67,7 +67,7 @@ ES5 只有全局作用域和函数作用域，没有块级作用域，let实际�
 **Function.prototype.apply**
 
     Function.prototype.myApply = function (thisArg, args) {
-      if (typeof this !== 'undefined') {
+      if (typeof this !== 'function') {
         throw new TypeError('Apply must be called on a function');
       }
       const fn = Symbol('fn');
@@ -154,6 +154,7 @@ ES5 只有全局作用域和函数作用域，没有块级作用域，let实际�
       while (arr.some(Array.isArray)) {
         arr = [].concat(...arr);
       }
+      return arr;
     }
 
 ### 手写一个Promise
@@ -165,5 +166,52 @@ ES5 只有全局作用域和函数作用域，没有块级作用域，let实际�
 
 [至此可以引申出Promise/Generator/Async实现原理](./writeCode.md)
 
+### 手写Generator实现
+
+执行 Generator 函数会返回一个遍历器对象，也就是说，Generator 函数除了状态机，还是一个遍历器对象生成函数。
+
+调用 Generator 函数后，该函数并不执行，返回的也不是函数运行结果，而是一个指向内部状态的指针对象，也就是遍历器对象。
+
+yield表达式后面的表达式，只有当调用next方法、内部指针指向该语句时才会执行，因此等于为 JavaScript 提供了手动的“惰性求值”（Lazy Evaluation）的语法功能。
+
+由于next方法的参数表示上一个yield表达式的返回值，所以在第一次使用next方法时，传递参数是无效的。从语义上讲，第一个next方法用来启动遍历器对象，所以不用带有参数
+
+    function* foo(x) {
+      var y = 2 * (yield (x + 1));
+      var z = yield (y / 3);
+      return (x + y + z);
+    }
+
+    var a = foo(5);
+    a.next() // Object{value:6, done:false}
+    a.next() // Object{value:NaN, done:false}
+    a.next() // Object{value:NaN, done:true}
+
+    var b = foo(5);
+    b.next() // { value:6, done:false }
+    b.next(12) // { value:8, done:false }
+    b.next(13) // { value:42, done:true }
+
+[至此可以引申出Promise/Generator/Async实现原理](./writeCode.md)
+
+##### Thunk函数
+Thunk 函数是自动执行 Generator 函数的一种方法。
+
+起源: 函数的参数到底应该何时求值，一种是"传值调用"，一种是“传名调用”。
+
+传值调用比较简单，但是对参数求值的时候，实际上还没用到这个参数，有可能造成性能损失。
+
+编译器的“传名调用”实现，往往是将参数放到一个临时函数之中，再将这个临时函数传入函数体。这个临时函数就叫做 Thunk 函数。
+
+JavaScript 语言是传值调用，它的 Thunk 函数含义有所不同。在 JavaScript 语言中，Thunk 函数替换的不是表达式，而是多参数函数，将其替换成一个只接受回调函数作为参数的单参数函数。
+
+##### co模块
+使用 co 的前提条件是，Generator 函数的yield命令后面，只能是 Thunk 函数或 Promise 对象。
+
+例如`yield 1`这种情况就不行
+
+下面还有简单的通过generator函数实现async函数就是通过让generator函数自执行来做的
+
+[co模块](https://github.com/tj/co/blob/master/index.js)
 
 

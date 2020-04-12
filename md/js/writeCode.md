@@ -1,5 +1,6 @@
 ## Promise/Generator/Async实现原理解析
 
+### Promise
 Promise调用流程
 
 1. Promise的构造方法接收一个executor()，在new Promise()时就立刻执行这个executor回调
@@ -171,3 +172,90 @@ Promise调用流程
         );
       }
     }
+
+### Generator
+
+Generator实现的核心在于上下文的保存，函数并没有真的被挂起，每一次yield，其实都执行了一遍传入的生成器函数，只是在这个过程中间用了一个context对象储存上下文，使得每次执行生成器函数的时候，都可以从上一个执行结果开始执行，看起来就像函数被挂起了一样
+
+    function gen$ (_context) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return '1';
+        case 2:
+          _context.next = 4;
+          return '2';
+        case 4:
+          _context.next = 6;
+          return '3';
+        case 6:
+          return _context.stop();
+      }
+    }
+    let context = {
+      next: 0,
+      prev: 0,
+      done: false,
+      stop() {
+        this.done = true;
+      }
+    }
+    let gen = () => {
+      return {
+        next() {
+          const value = context.done ? undefined : gen$(context);
+          const done = context.done;
+          return {
+            value,
+            done,
+          };
+        }
+      }
+    }
+    const g = gen();
+    console.log(g.next())
+
+
+**利用Generator函数实现斐波那契数列**
+
+    function* fibonacci() {
+      let [prev, curr] = [0, 1];
+      for (;;) {
+        yield curr;
+        [prev, curr] = [curr, prev + curr];
+      }
+    }
+
+    for (let n of fibonacci()) {
+      if (n > 1000) break;
+      console.log(n);
+    }
+
+**利用Generator函数遍历完全二叉树**
+
+    function Tree(left, label, right) {
+      this.left = left;
+      this.label = label;
+      this.right = right;
+    }
+    function make(array) {
+      // 判断是否为叶节点
+      if (array.length == 1) return new Tree(null, array[0], null);
+      return new Tree(make(array[0]), array[1], make(array[2]));
+    }
+    let tree = make([[['a'], 'b', ['c']], 'd', [['e'], 'f', ['g']]]);
+
+**遍历二叉树**
+
+    function* inorder(t) {
+      if (t) {
+        yield* inorder(t.left);
+        yield t.label;
+        yield* inorder(t.right);
+      }
+    }
+    for (let node of inorder(tree)) {
+      console.log(node); //'a', 'b', 'c', 'd', 'e', 'f', 'g'
+    }
+
+
