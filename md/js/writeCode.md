@@ -258,4 +258,32 @@ Generator实现的核心在于上下文的保存，函数并没有真的被挂�
       console.log(node); //'a', 'b', 'c', 'd', 'e', 'f', 'g'
     }
 
+### Async
+
+    function run (gen){
+      return new Promise((resolve, reject) => {
+        const g = gen();
+        const _next = (val) => {
+          let res = undefined;
+          try {
+            res = g.next(val);
+          } catch (error) {
+            return reject(error);
+          }
+          if(res.done) {
+            return resolve(res.value);
+          }
+          Promise.resolve(res.value).then(v => {
+            _next(v);
+          }, err => {
+            g.throw(err);
+          });
+        }
+        _next();
+      });
+    }
+
+
+
+
 

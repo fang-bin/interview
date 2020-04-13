@@ -1,3 +1,5 @@
+# 基础1
+
 ### 1. 如何在ES5环境下实现let
 
 这个问题首先要看let的特性
@@ -213,5 +215,13 @@ JavaScript 语言是传值调用，它的 Thunk 函数含义有所不同。在 J
 下面还有简单的通过generator函数实现async函数就是通过让generator函数自执行来做的
 
 [co模块](https://github.com/tj/co/blob/master/index.js)
+
+### 手写Async实现
+
+Async函数就是Generator函数的语法糖，Async函数可以理解成可以自执行的generator函数，同时它返回的是Promise对象，而Generator 函数返回的是Iterator对象。
+
+[类似co模块通过不断调用自身，让Generator自执行实现Async函数效果](./writeCode.md)
+
+
 
 
