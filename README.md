@@ -2,8 +2,8 @@
 
 又快要换工作了，发现自己的脑子不够用，记录一下面试题，备用
 
-### JS
-[基础](./md/js/basics.md)
+## JS
+[基础](./md/js/basics1.md)
 
 [手写代码实现](./md/js/writeCode.md)
 
@@ -15,30 +15,28 @@
 
 [设计模式](./md/js/design-mode.md)
 
-### 网络
+## 网络
 [基础](./md/network/basics.md)
 
 [网络安全](./md/network/attack.md)
 
-### HTML
+## HTML
 [基础](./md/html/basics.md)
 
-### CSS
+## CSS
 [基础](./md/css/basics.md)
 
-### 浏览器
+## 浏览器
 [基础](./md/browser/basics.md)
 
-[缓存](./md/browser/cache.md)
-
-### REACT
+## REACT
 [基础](./md/react/basics.md)
 
-### VUE
+## VUE
 [基础](./md/vue/basics.md)
 
-### NODE
+## NODE
 [基础](./md/node/basics.md)
 
-### WEBPACK
+## WEBPACK
 [基础](./md/webpack/basics.md)

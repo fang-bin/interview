@@ -13,35 +13,41 @@ ES5 只有全局作用域和函数作用域，没有块级作用域，let实际�
 
 主要实现的方式就是通过接近闭包的方式来实现
 
-    {
-      let a = 1;
-      console.log(a);
-    }
-    console.log(a);
+```javascript
+{
+  let a = 1;
+  console.log(a);
+}
+console.log(a);
+```
 
 可以通过以下方式实现
 
-    (function(){
-      var a = 1;
-      console.log(a);
-    })();
-    console.log(a);
+```javascript
+(function(){
+  var a = 1;
+  console.log(a);
+})();
+console.log(a);
+```
 
 当然这种方式有一些let特性并不能完全实现，比如说不存在变量提升等
 
 **延伸一下**在es5环境下实现const的难点在于一旦声明，常亮的值就不能更改，可以通过Object.defineProperty来实现，不过这种方式实现的话，只能将声明的变量挂在对象下面，要么是全局对象挂在window下面，要么是自定义一个object来当容器
 
-    function _const(key, value) {    
-        const desc = {        
-            value,        
-            writable: false    
-        }    
-        Object.defineProperty(window, key, desc)
-    }
-        
-    _const('obj', {a: 1})   //定义obj
-    obj.b = 2               //可以正常给obj的属性赋值
-    obj = {}                //抛出错误，提示对象read-only
+```javascript
+function _const(key, value) {    
+    const desc = {        
+        value,        
+        writable: false    
+    }    
+    Object.defineProperty(window, key, desc)
+}
+    
+_const('obj', {a: 1})   //定义obj
+obj.b = 2               //可以正常给obj的属性赋值
+obj = {}                //抛出错误，提示对象read-only
+```
 
 ### 2. call,apply,bind实现
 
@@ -54,39 +60,45 @@ ES5 只有全局作用域和函数作用域，没有块级作用域，let实际�
 
 **Function.prototype.call**
 
-    Function.prototype.myCall = function (thisArg, ...args) {
-      if (typeof this !== 'function') {
-        throw new TypeError('Call must be called on a function');
-      }
-      const fn = Symbol('fn');
-      thisArg = thisArg || window;
-      thisArg[fn] = this;
-      const result = thisArg[fn](...args);
-      delete thisArg[fn];
-      return result;
-    }
+```javascript
+Function.prototype.myCall = function (thisArg, ...args) {
+  if (typeof this !== 'function') {
+    throw new TypeError('Call must be called on a function');
+  }
+  const fn = Symbol('fn');
+  thisArg = thisArg || window;
+  thisArg[fn] = this;
+  const result = thisArg[fn](...args);
+  delete thisArg[fn];
+  return result;
+}
+```
 
 **Function.prototype.apply**
 
-    Function.prototype.myApply = function (thisArg, args) {
-      if (typeof this !== 'function') {
-        throw new TypeError('Apply must be called on a function');
-      }
-      const fn = Symbol('fn');
-      thisArg = thisArg || window;
-      thisArg[fn] = this;
-      const result = thisArg[fn](...args);
-      delete thisArg[fn];
-      return result;
-    }
+```javascript
+Function.prototype.myApply = function (thisArg, args) {
+  if (typeof this !== 'function') {
+    throw new TypeError('Apply must be called on a function');
+  }
+  const fn = Symbol('fn');
+  thisArg = thisArg || window;
+  thisArg[fn] = this;
+  const result = thisArg[fn](...args);
+  delete thisArg[fn];
+  return result;
+}
+```
 
 **Function.prototype.bind**
 
-    Function.prototype.myBind = function(thisArg, ...args) {
-      return () => {
-        this.apply(thisArg, args)
-      }
-    }
+```javascript
+Function.prototype.myBind = function(thisArg, ...args) {
+  return () => {
+    this.apply(thisArg, args)
+  }
+}
+```
 
 以上方法有如下问题：
 
@@ -96,32 +108,36 @@ ES5 只有全局作用域和函数作用域，没有块级作用域，let实际�
 
 -正确方法
 
-    Function.prototype.myBind = function (thisArg, ...args) {
-      if (typeof this !== "function") {
-        throw TypeError("Bind must be called on a function")
-      }
-      var self = this
-      // new优先级
-      var funcBind = function () {
-        self.apply(this instanceof self ? this : thisArg, args.concat(Array.prototype.slice.call(arguments)))
-      }
-      // 继承原型上的属性和方法
-      funcBind.prototype = Object.create(self.prototype);
-      return funcBind;
-    }
+```javascript
+Function.prototype.myBind = function (thisArg, ...args) {
+  if (typeof this !== "function") {
+    throw TypeError("Bind must be called on a function")
+  }
+  var self = this
+  // new优先级
+  var funcBind = function () {
+    self.apply(this instanceof self ? this : thisArg, args.concat(Array.prototype.slice.call(arguments)))
+  }
+  // 继承原型上的属性和方法
+  funcBind.prototype = Object.create(self.prototype);
+  return funcBind;
+}
+```
 
 ### 3. new实现
 
-    function mockNew() {
-        let Constructor = Array.prototype.shift.call(arguments); // 取出构造函数  这个地方之后，arguments就已经去除了obj
-        
-        let obj = {}   // new 执行会创建一个新对象
-        
-        obj.__proto__ = Constructor.prototype 
-        
-        Constructor.apply(obj, arguments)
-        return obj
-    }
+```javascript
+function mockNew() {
+  let Constructor = Array.prototype.shift.call(arguments); // 取出构造函数  这个地方之后，arguments就已经去除了obj
+  
+  let obj = {}   // new 执行会创建一个新对象
+  
+  obj.__proto__ = Constructor.prototype 
+  
+  Constructor.apply(obj, arguments)
+  return obj
+}
+```
 
 ### 4. 防抖与节流
 
@@ -134,30 +150,36 @@ ES5 只有全局作用域和函数作用域，没有块级作用域，let实际�
 
 ###### 递归
 
-    function flat(arr) {
-        let result = [];
-        for (const item of arr) {
-            Object.prototype.toString.call(item).slice(8, -1) === 'Array' ? result = result.concat(flat(item)) : result.push(item);
-        }
-        return result;
-    }
+```javascript
+function flat(arr) {
+  let result = [];
+  for (const item of arr) {
+    Object.prototype.toString.call(item).slice(8, -1) === 'Array' ? result = result.concat(flat(item)) : result.push(item);
+  }
+  return result;
+}
+```
 
 ###### reduce递归
 
-    function flat(arr) {
-      return arr.reduce((prev, cur) => {
-        return prev.concat(Object.prototype.toString.call(cur).slice(8, -1) === 'Array' ? flat(cur) : cur)
-      }, [])
-    }
+```javascript
+function flat(arr) {
+  return arr.reduce((prev, cur) => {
+    return prev.concat(Object.prototype.toString.call(cur).slice(8, -1) === 'Array' ? flat(cur) : cur)
+  }, [])
+}
+```
 
 ###### 迭代加展开运算符
 
-    function flat(arr) {
-      while (arr.some(Array.isArray)) {
-        arr = [].concat(...arr);
-      }
-      return arr;
-    }
+```javascript
+function flat(arr) {
+  while (arr.some(Array.isArray)) {
+    arr = [].concat(...arr);
+  }
+  return arr;
+}
+```
 
 ### 手写一个Promise
 
@@ -178,21 +200,23 @@ yield表达式后面的表达式，只有当调用next方法、内部指针指�
 
 由于next方法的参数表示上一个yield表达式的返回值，所以在第一次使用next方法时，传递参数是无效的。从语义上讲，第一个next方法用来启动遍历器对象，所以不用带有参数
 
-    function* foo(x) {
-      var y = 2 * (yield (x + 1));
-      var z = yield (y / 3);
-      return (x + y + z);
-    }
+```javascript
+function* foo(x) {
+  var y = 2 * (yield (x + 1));
+  var z = yield (y / 3);
+  return (x + y + z);
+}
 
-    var a = foo(5);
-    a.next() // Object{value:6, done:false}
-    a.next() // Object{value:NaN, done:false}
-    a.next() // Object{value:NaN, done:true}
+var a = foo(5);
+a.next() // Object{value:6, done:false}
+a.next() // Object{value:NaN, done:false}
+a.next() // Object{value:NaN, done:true}
 
-    var b = foo(5);
-    b.next() // { value:6, done:false }
-    b.next(12) // { value:8, done:false }
-    b.next(13) // { value:42, done:true }
+var b = foo(5);
+b.next() // { value:6, done:false }
+b.next(12) // { value:8, done:false }
+b.next(13) // { value:42, done:true }
+```
 
 [至此可以引申出Promise/Generator/Async实现原理](./writeCode.md)
 

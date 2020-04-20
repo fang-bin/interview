@@ -63,7 +63,9 @@ Cookie 是服务器写入浏览器的一小段信息，只有同源的网页才�
 
 另外，服务器也可以在设置Cookie的时候，指定Cookie的所属域名为一级域名，比如.example.com。 
 
-    Set-Cookie: key=value; domain=.example.com; path=/
+```html
+Set-Cookie: key=value; domain=.example.com; path=/
+```
 
 这样的话，二级域名和三级域名不用做任何设置，都可以读取这个Cookie。
 
@@ -81,20 +83,22 @@ Cookie 是服务器写入浏览器的一小段信息，只有同源的网页才�
 
 父窗口可以把信息，写入子窗口的片段标识符。
 
-    var src = originURL + '#' + data;
-    document.getElementById('myIFrame').src = src;
-
-子窗口通过监听hashchange事件得到通知。
-
-    window.onhashchange = checkMessage;
-    function checkMessage() {
-      var message = window.location.hash;
-      // ...
-    }
+```javascript
+var src = originURL + '#' + data;
+document.getElementById('myIFrame').src = src;
+//子窗口通过监听hashchange事件得到通知。
+window.onhashchange = checkMessage;
+function checkMessage() {
+  var message = window.location.hash;
+  // ...
+}
+```
 
 同样的，子窗口也可以改变父窗口的片段标识符。
 
-    parent.location.href= target + "#" + hash;
+```javascript
+parent.location.href= target + "#" + hash;
+```
 
 ##### window.name实现跨域窗口通信
 浏览器窗口有window.name属性。这个属性的最大特点是，无论是否同源，只要在同一个窗口里，前一个网页设置了这个属性，后一个网页可以读取它。
@@ -106,20 +110,26 @@ HTML5引入了window.postMessage，允许跨窗口通信，不论这两个窗口
 
 父窗口http://aaa.com向子窗口http://bbb.com发消息，调用postMessage方法
 
-    var popup = window.open('http://bbb.com', 'title');
-    popup.postMessage('Hello World!', 'http://bbb.com');
+```javascript
+var popup = window.open('http://bbb.com', 'title');
+popup.postMessage('Hello World!', 'http://bbb.com');
+```
 
 postMessage方法的第一个参数是具体的信息内容，第二个参数是接收消息的窗口的源（origin），即"协议 + 域名 + 端口"。也可以设为*，表示不限制域名，向所有窗口发送。
 
 子窗口向父窗口发送消息的写法类似
 
-    window.opener.postMessage('Nice to see you', 'http://aaa.com');
+```javascript
+window.opener.postMessage('Nice to see you', 'http://aaa.com');
+```
 
 父窗口和子窗口都可以通过message事件，监听对方的消息。
 
-    window.addEventListener('message', function(e) {
-      console.log(e.data);
-    },false);
+```javascript
+window.addEventListener('message', function(e) {
+  console.log(e.data);
+},false);
+```
 
 message事件的事件对象event，提供以下三个属性。
 
@@ -144,25 +154,27 @@ script标签jsonp跨域，原因script标签，img标签等不受同源策略限
 
 手写JSONP
 
-    (function (window,document){
-      'use strict'
-      const jsonp = function(url,data,callback){
-        let dataString = url.indexOf('?') ? '&' : '?';
-        for (let key in data) {
-          dataString += `${key}=${data[key]}&`;
-        }
-        const jsonp_cb = Math.random.toString.replace('.', '');
-        dataString += `callback=${jsonp_cb}`;
-        const scriptDom = document.createElement('script');
-        scriptDom.src = `${url + dataString}`;
-        window[jsonp_cb] = function (data){
-          callback(data);
-          document.body.removeChild(scriptDom);
-        }
-        document.body.appendChild(scriptDom);
-      }
-      window.$jsonp = jsonp;
-    })(window, document);
+```javascript
+(function (window,document){
+  'use strict'
+  const jsonp = function(url,data,callback){
+    let dataString = url.indexOf('?') ? '&' : '?';
+    for (let key in data) {
+      dataString += `${key}=${data[key]}&`;
+    }
+    const jsonp_cb = Math.random.toString.replace('.', '');
+    dataString += `callback=${jsonp_cb}`;
+    const scriptDom = document.createElement('script');
+    scriptDom.src = `${url + dataString}`;
+    window[jsonp_cb] = function (data){
+      callback(data);
+      document.body.removeChild(scriptDom);
+    }
+    document.body.appendChild(scriptDom);
+  }
+  window.$jsonp = jsonp;
+})(window, document);
+```
 
 ###### WebSocket
 WebSocket是一种通信协议，使用ws://（非加密）和wss://（加密）作为协议前缀。该协议不实行同源政策，只要服务器支持，就可以通过它进行跨源通信。
