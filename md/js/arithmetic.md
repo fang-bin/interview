@@ -84,7 +84,7 @@
       return [...quickSort(smallArr), pivot, ...quickSort(bigArr)];
     }
 
-上面算法的问题主要是
+上面算法的问题主要是没有采用原地交换，导致空间复杂度暴涨到O(n㏒n)
 
     function quickSort (arr){
       const start = 0;
@@ -116,11 +116,12 @@
         if (s >= e){
           return;
         }
-        const pivot = partition(arr, s, e);
-        quick_sort(arr, s, pivot);
-        quick_sort(arr, pivot + 1, e);
+        const pivotIndex = partition(arr, s, e);
+        quick_sort(arr, s, pivotIndex);
+        quick_sort(arr, pivotIndex + 1, e);
+        return arr;
       }
-      quick_sort(arr, start, end);
+      return quick_sort(arr, start, end);
     }
 
 **需要注意:** 在v8中splice是时间复杂度为O(n)，这就意味着每次递归取中间值的时候都需要一个O(n)的运算，这就像极了我们见过的循环套循环的情况，时间复杂度会变成O(n²);
@@ -186,4 +187,15 @@
       }
       return arr;
     }
+
+
+## 计算数组交集
+
+    function getIntersect (...arrs){
+      const baseArr = [...new Set(arrs.splice(0, 1)[0])];
+      return arrs.reduce((total, arr) => {
+        return total.filter(e => arr.includes(e));
+      }, baseArr);
+    }
+
 
