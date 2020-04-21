@@ -141,8 +141,37 @@ function mockNew() {
 
 ### 4. 防抖与节流
 
-* 防抖：短时间内大量触发，只执行最后一次（延迟执行）
-* 节流：短时间内只执行一次（间隔执行）
+* **防抖**：短时间内大量触发，只执行最后一次（延迟执行），多用于用户注册时候手机号和邮箱验证
+* **节流**：短时间内只执行一次（间隔执行），多用于监听元素滚动时间
+
+```javascript
+// 防抖
+function debounce (fn, time){
+  let _timer = null;
+  return function (...args) {
+    const context = this;
+    if (_timer){
+      clearTimeout(_timer);
+      _timer = null;
+    }
+    _timer = setTimeout(() => {
+      fn.apply(context, args);
+    }, time);
+  }
+}
+
+// 节流
+function throttle (fn, time){
+  let _last_time = null;
+  return function (...args){
+    const _now_time = new Date();
+    if (!_last_time || _now_time - _last_time > time){
+      fn(...args);
+      _last_time = _now_time;
+    }
+  }
+}
+```
 
 ### 5. 数组扁平化
 

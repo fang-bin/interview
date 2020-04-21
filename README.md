@@ -15,6 +15,10 @@
 
 [设计模式](./md/js/design-mode.md)
 
+[函数式编程](./md/js/functional-programming.md)
+
+[AJAX](./md/js/ajax.md)
+
 ## 网络
 [基础](./md/network/basics.md)
 
@@ -40,3 +44,6 @@
 
 ## WEBPACK
 [基础](./md/webpack/basics.md)
+
+## 其他
+[路由](./md/other/route.md)
