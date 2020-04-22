@@ -100,6 +100,24 @@ export default {
 }
 ```
 
+## Vue2.0怎样实现双向绑定
+
+## Vue3.0怎样实现双向绑定
+
+#### 简述Vu2.0和Vue3.0实现双向绑定的区别
+
+#### 使用过哪些vue全家桶，解决了什么问题
+
+## Vue 的diff算法
+
+## Vue-router
+
+#### vue-router中hash路由和history路由、区别
+
+#### Vue 计算属性和 watch 在什么场景下使用
+
+## Vue 的 nexttick 实现的原理
+
 
 
 

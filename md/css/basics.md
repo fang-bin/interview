@@ -88,3 +88,117 @@ BFC的使用场景：
 
 原理是BFC不会与float元素发生重叠。
 
+**清除浮动的方法**
+清除浮动是为了解决子元素浮动而导致父元素高度塌陷的问题（BFC）
+
+1. 最下方添加空元素 `clear: both;`
+2. 使用伪元素
+    ```javascript
+    /* 对父元素添加伪元素 */
+    .parent::after{
+      content: "";
+      display: block;
+      height: 0;
+      clear:both;
+    }
+    ```
+3. 触发父元素BFC
+    ```javascript
+    /* 触发父元素BFC */
+    .parent {
+      overflow: hidden;
+      /* float: left; */
+      /* position: absolute; */
+      /* display: inline-block */
+      /* 以上属性均可触发BFC */
+    }
+    ```
+
+### Flex布局
+flex布局很容易理解，我着重记录一下自己经常容易忘记和混淆的
+
+项目属性（使用在容器内子元素上的属性）：
+
+* **flex-grow**
+  定义项目的放大比例，默认为0，即使有剩余空间也不放大。如果所有子元素flex-grow为1，那么将等分剩余空间，如果某个子元素flex-grow为2，那么这个子元素将占据2倍的剩余空间
+* **flex-shrink**
+  定义项目的缩小比例，默认为1，即如果空间不足，子元素将缩小。如果所有子元素flex-shrink都为1，某个子元素flex-shrink为0，那么该子元素将不缩小
+
+### 盒模型
+css盒模型主要由外边距（margin）、边框（border）、内边距（padding）、内容（content）组成。
+
+盒模型分为标准盒模型（w3c标准）和怪异盒模型(ie)
+
+* 标准盒模型 width = content
+  盒子的实际宽度等于 width + padding + border + margin
+  `box-sizing: content-box;`
+* 怪异盒模型 width = content + padding + border
+  盒子的实际宽度等于 width + margin
+  `box-sizing: border-box;`
+
+#### 垂直居中
+略
+
+### 常见布局
+
+###### 两边定宽，中间自适应
+
+```html
+<style>
+  .wrap{
+    width: 100%;
+    height: 200px;
+  }
+  .left{
+    width: 100px;
+    height: 200px;
+    background-color: #ccc;
+    float: left;
+  }
+  .right{
+    width: 100px;
+    height: 200px;
+    background-color: #999;
+    float: right;
+  }
+  .mid{
+    background-color: #f00;
+    width: 100%;
+    height: 200px;
+  }
+  *{
+    padding: 0;
+    margin: 0;
+  }
+</style>
+<div class="wrap">
+  <div class="left">xxx</div>
+  <div class="right">ddd</div>
+  <div class="mid">yyy</div>
+</div>
+```
+
+这个就是利用的浮动盒不会叠加到BFC上的特性
+
+等等其他方法（注意这些方法有一些极端情况，比如说中间元素小于两边元素宽度，或者屏幕宽度过小等等，要尽量设置窗口的最小宽度）:
+* 同行排列之后，左右固定宽度，中间100%宽度，然后设置中间盒模型为标准盒模型，设置padding值分别为左右的宽度
+* 三者皆浮动的情况下，将中间元素放在第一个，然后第二三个元素分别设置`margin-left: -100%`、`margin-left: -(自身宽度)`，这个则是利用**margin/padding取百分比的值时，无论是 left/right 还是 top/bottom，都是基于父元素的宽度的。**
+
+等其他方法（例如table、grid或者flex）
+
+###### 垂直布局，父元素高度固定，一个子元素高度固定，另一个子元素高度自适应
+
+1. 高度自适应元素可以通过同时设置top,bottom（因为一个元素高度固定，所以top，bottom中一个必定固定的，另一个设置为0）可以强制定义盒模型的区域
+2. 定位之后，一个元素固定高度，另一个高度100%后，设置padding
+3. 其他方法如flex, grid等
+
+
+#### 为背景图实现的展位图设置占位高度
+
+可以根据**margin/padding取百分比的值时，无论是 left/right 还是 top/bottom，都是基于父元素的宽度的。**特性，来设置背景图padding值等于（图片高度/图片宽度）基于宽度的百分比来实现。
+
+
+
+
+
+

@@ -227,7 +227,180 @@ Session是无状态的HTTP协议下，服务端记录用户状态时用于标识
 
 ## 浏览器从发送请求到展示页面的过程
 
-##
+1. 解析域名
 
+    浏览器先查询hosts文件是否有与这个域名对应的ip地址，如果有则直接向这个ip地址发起http请求。如果没有，浏览器向本地DNS服务器发出解析域名的DNS解析报文，本地DNS服务器收到请求后，先查询缓存，判断是否有对应的记录，如果有就返回这条记录，如果没有，本地DNS服务器于是就向DNS根服务器发起查询请求。
 
+    现在的互联网是采用了树型的分层的分布式域名解析服务器集群来完成的。如果这一级的DNS服务器上找不到，则会进一步向上一级的DNS发去查询请求。直到根域名服务器为止。如果中间找到了对应的公网Ip，则再一级一级返回，如果找不到则返回错误信息。域名解析失败。
 
+2. 通过ip查找服务器，找到服务器，建立TCP连接
+
+    分为三步，也叫TCP三次握手：
+
+    * TCP连接请求方，也就是客户端会发送一个请求建立连接的syn包（syn=x）给服务器；
+    * 服务器接受到建立连接的请求syn包后，会回复一个确认包。其中有参数ACK=x+1。同时它自己还会再发一个SYN包，这里的SYN=y，并为这次连接分配资源；
+    * 客户端接收到服务器端发送来的确认建立连接请求的包后，再次回复一个确认包。这里的ACK=y+1，并分配资源。到了这里，客户端和服务端之间的链接就已经建立起来了。
+    在此之后，浏览器开始向服务器发送http请求，请求数据包。请求信息包含一个头部和一个请求体。
+
+    服务器做出响应，返回浏览器需要的相应格式的数据。（即html）
+
+    在响应结果中都有一个HTTP状态码：
+    | 类别 | 原因 |
+    | --- | --- |
+    | 1**	| 信息性状态码 |
+    | 2** |	成功状态码 |
+    | 3**	| 重定向状态码 |
+    | 4** | 客户端错误状态码 |
+    | 5**	| 服务器错误状态码 |
+
+3. 关闭TCP连接
+为了避免服务器与客户端双方的资源占用和损耗，当双方没有请求或响应传递时，任意一方都可以发起关闭请求。与创建TCP连接的3次握手类似，关闭TCP连接，需要4次握手。
+
+4. 浏览器渲染
+    准确地说，浏览器需要加载解析的不仅仅是HTML，还包括CSS、JS。以及还要加载图片、视频等其他媒体资源。
+
+    其中，img的加载不会阻塞html的解析，但img加载后并不渲染，它需要等待Render Tree生成完后才和Render Tree一起渲染出来。未下载完的图片需等下载完后才渲染。
+
+    (1) 浏览器会将HTML解析成一个DOM树，DOM 树的构建过程是一个深度遍历过程：当前节点的所有子节点都构建好后才会去构建当前节点的下一个兄弟节点。 构建DOM树
+
+    (2) 将CSS解析成 CSS Rule Tree。 构建CSS规则树
+
+    (3) 根据DOM树和CSSOM来构造 Rendering Tree。注意：Rendering Tree 渲染树并不等同于 DOM 树，因为一些像Header或display:none的东西就没必要放在渲染树中了。 构建渲染树
+
+    (4) 有了Render Tree，浏览器已经能知道网页中有哪些节点、各个节点的CSS定义以及他们的从属关系。下一步操作称之为layout，顾名思义就是计算出每个节点在屏幕中的位置。 渲染树计算
+
+    (5) 再下一步就是绘制，即遍历render树，并使用UI后端层绘制每个节点。 渲染树绘制
+
+    注意：上述这个过程是逐步完成的，为了更好的用户体验，渲染引擎将会尽可能早的将内容呈现到屏幕上，并不会等到所有的html都解析完成之后再去构建和布局render树。它是解析完一部分内容就显示一部分内容，同时，可能还在通过网络下载其余内容。
+    ![avatar](https://user-gold-cdn.xitu.io/2020/2/5/17013323c225bd62?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+    **简单来说**：浏览器通过解析HTML，生成DOM树，解析CSS，生成CSS规则树，然后通过DOM树和CSS规则树生成渲染树。渲染树与DOM树不同，渲染树中并没有head、display为none等不必显示的节点。根据渲染树计算每个节点在屏幕中的位置。最后进行绘制
+
+    要注意的是，浏览器的解析过程并非是串连进行的，比如在解析CSS的同时，可以继续加载解析HTML，但在解析执行JS脚本时，会停止解析后续HTML，这就会出现阻塞问题
+
+    **渲染阻塞**
+
+    当浏览器遇到一个 script 标记时，DOM 构建将暂停，直至脚本完成执行，然后继续构建DOM。每次去执行JavaScript脚本都会严重地阻塞DOM树的构建，如果JavaScript脚本还操作了CSSOM，而正好这个CSSOM还没有下载和构建，浏览器甚至会延迟脚本执行和构建DOM，直至完成其CSSOM的下载和构建。
+
+### script和css阻塞和解决方案
+
+#### script加载解析
+直接使用script脚本的话，html会按照顺序来加载并执行脚本，在脚本加载&执行的过程中，会阻塞后续的DOM渲染。defer 和 async 都只适用于外部脚本文件，对与内联的 script 标签是不起作用。
+
+* `<script src="script.js"></script>`
+  没有 defer 或 async，浏览器会立即加载并执行指定的脚本，“立即”指的是在渲染该 script 标签之下的文档元素之前，也就是说不等待后续载入的文档元素，读到就加载并执行。
+
+* `<script async src="script.js"></script>`
+  有 async，加载和渲染后续文档元素的过程将和 script.js 的加载与执行并行进行（异步）。
+
+* `<script defer src="script.js"></script>`
+  有 defer，加载后续文档元素的过程将和 script.js 的加载并行进行（异步），但是 script.js 的执行要在所有元素解析完成之后，DOMContentLoaded 事件触发之前完成。
+
+* `<script type="module" src="script.js"></script>`
+  type 为 module 的 script 标签将被当作一个 JavaScript 模块对待，被称为 module script，且不受 charset 和 defer 属性影响。
+
+  支持 module script 的浏览器，不会执行拥有 nomodule 属性的 script。
+
+  不支持 module script 的浏览器，会忽略未知的 type="module" 的 script，同时也会忽略传统 script 中不认识的 nomodule 属性，进而执行传统的 bundle.js 代码。
+
+  module script 以及其依赖所有文件（源文件中通过 import 声明导入的文件）都会被下载，一旦整个依赖的模块树都被导入，页面文档也完成解析，app.js 将会被执行。
+
+  但是如果 module script 里有 async 属性，比如 <script type="module" src="util.js" async></script> ，module script 及其所有依赖都会异步下载，待整个依赖的模块树都被导入时会立即执行，而此时页面有可能还没有完成解析渲染。
+
+![avatar](https://www.html.cn/newimg88/2018/12/WeChate1c06d570a838a251001a74f182e7e78.png)
+
+蓝色线代表网络读取，红色线代表执行时间，这俩都是针对脚本的；绿色线代表 HTML 解析。
+
+此图告诉我们以下几个要点：
+
+* defer 和 async 在网络读取（下载）这块儿是一样的，都是异步的（相较于 HTML 解析）
+* 它俩的差别在于脚本下载完之后何时执行，显然 defer 是最接近我们对于应用脚本加载和执行的要求的
+* 关于 defer，此图未尽之处在于它是按照加载顺序执行脚本的，这一点要善加利用
+* async 则是一个乱序执行的主，反正对它来说脚本的加载和执行是紧紧挨着的，所以不管你声明的顺序如何，只要它加载完了就会立刻执行
+* 仔细想想，async 对于应用脚本的用处不大，因为它完全不考虑依赖（哪怕是最低级的顺序执行），不过它对于那些可以不依赖任何脚本或不被任何脚本依赖的脚本来说却是非常合适的，最典型的例子：Google Analytics
+
+#### script 标签的 integrity 属性
+
+integrity 属性是资源完整性规范的一部分，它允许你为 script 提供一个 hash，用来进行验签，检验加载的JavaScript 文件是否完整。
+
+```html
+<script crossorigin="anonymous" integrity="sha256-PJJrxrJLzT6CCz1jDfQXTRWOO9zmemDQbmLtSlFQluc=" src="https://assets-cdn.github.com/assets/frameworks-3c926bc6b24bcd3e820b3d630df4174d158e3bdce67a60d06e62ed4a515096e7.js"></script>
+```
+
+上面的代码来自github源码，integrity="sha256-PJJrxrJLzT6CCz1jDfQXTRWOO9zmemDQbmLtSlFQluc=" 告诉浏览器，使用sha256签名算法对下载的js文件进行计算，并与intergrity提供的摘要签名对比，如果二者不一致，就不会执行这个资源。
+
+intergrity 的作用有：
+* 减少由【托管在CDN的资源被篡改】而引入的XSS 风险
+* 减少通信过程资源被篡改而引入的XSS风险（同时使用https会更保险）
+* 可以通过一些技术手段，不执行有脏数据的CDN资源，同时去源站下载对应资源
+
+#### script 标签的 crossorigin 属性
+crossorigin 的属性值可以是 anonymous、use-credentials，如果没有属性值或者非法属性值，会被浏览器默认做anonymous。
+
+crossorigin的作用有三个：
+
+* crossorigin 会让浏览器启用CORS访问检查，检查http相应头的 Access-Control-Allow-Origin
+* 对于传统 script 需要跨域获取的js资源，控制暴露出其报错的详细信息
+* 对于 module script ，控制用于跨域请求的凭据模式
+
+通过使用 crossorigin 属性可以使跨域js暴露出跟同域js同样的报错信息。但是，资源服务器必须返回一个 Access-Control-Allow-Origin 的header，否则资源无法访问。
+
+#### js动态添加 script 标签
+
+可以用js将script动态的append到文档当中，其会异步执行（可以理解为默认拥有async属性），如果需要加载的js按顺序执行，需要设置async为false。
+
+注意：通过 innerHTML 动态添加到页面上的 script 标签则不会被执行。
+
+#### css加载解析
+* css加载不会阻塞Dom树的解析
+* css加载会阻塞DOM树的渲染（因为，如果没有CSSOM,先对DOM树进行渲染，DOM树后面可能需要重新绘制或回流，造成一些没必要的损耗）
+* css加载会阻塞后面js语句的执行（如果样式下载受阻，那么也将阻塞后面js的下载和执行，因为script脚本在执行过程中可能会引用到相关样式）
+
+#### css和javascript加载总结
+
+CSS 优先：引入顺序上，CSS 资源先于 JavaScript 资源。JS置后：我们通常把JS代码放到页面底部，且JavaScript 应尽量少影响 DOM 的构建。
+
+当解析html的时候，会把新来的元素插入dom树里面，同时去查找css，然后把对应的样式规则应用到元素上，查找样式表是按照从右到左的顺序去匹配的。
+
+例如： div p {font-size: 16px}，会先寻找所有p标签并判断它的父标签是否为div之后才会决定要不要采用这个样式进行渲染）。所以，我们平时写CSS时，尽量用id和class，千万不要过渡层叠。
+
+根据渲染树布局，计算CSS样式，即每个节点在页面中的大小和位置等几何信息。HTML默认是流式布局的，CSS和js会打破这种布局，改变DOM的外观样式以及大小和位置。这时就要提到两个重要概念：replaint和reflow。
+
+**replaint（重绘）**：屏幕的一部分重画，不影响整体布局，比如某个CSS的背景色变了，但元素的几何尺寸和位置不变。
+
+**reflow（回流/重排）**：意味着元件的几何尺寸变了，我们需要重新验证并计算渲染树。是渲染树的一部分或全部发生了变化。这就是Reflow，或是Layout。
+
+reflow 会从 这个 root frame 开始递归往下，依次计算所有的结点几何尺寸和位置。reflow 几乎是无法避免的。现在界面上流行的一些效果，比如树状目录的折叠、展开（实质上是元素的显 示与隐藏）等，都将引起浏览器的 reflow。鼠标滑过、点击……只要这些行为引起了页面上某些元素的占位面积、定位方式、边距等属性的变化，都会引起它内部、周围甚至整个页面的重新渲 染。通常我们都无法预估浏览器到底会 reflow 哪一部分的代码，它们都彼此相互影响着。
+
+注意：
+
+* display:none 的节点不会被加入Render Tree，而visibility: hidden 则会，所以，如果某个节点最开始是不显示的，设为display:none是更优的。
+* display:none 会触发 reflow，而 visibility:hidden 只会触发 repaint，因为没有发现位置变化。
+* 某些情况下，比如修改了元素的样式，浏览器并不会立刻reflow 或 repaint 一次，而是会把这样的操作积攒一批，然后做一次 reflow，这又叫异步 reflow 或增量异步 reflow。但是在有些情况下，比如resize 窗口，改变了页面默认的字体等。对于这些操作，浏览器会马上进行 reflow。
+
+**重排必定会引发重绘，但重绘不一定会引发重排。**
+
+触发重排的条件：任何页面布局和几何属性的改变都会触发重排，比如：
+
+* 页面渲染初始化；(无法避免)
+* 添加或删除可见的DOM元素；
+* 元素位置的改变，或者使用动画；
+* 元素尺寸的改变——大小，外边距，边框；
+* 浏览器窗口尺寸的变化（resize事件发生时）；
+* 填充内容的改变，比如文本的改变或图片大小改变而引起的计算值宽度和高度的改变；
+* 读取某些元素属性：（offsetLeft/Top/Height/Width,　clientTop/Left/Width/Height,　scrollTop/Left/Width/Height,　width/height,　getComputedStyle(),　currentStyle(IE)　)
+
+**重绘重排的代价：耗时，导致浏览器卡慢。**
+
+**优化**
+
+浏览器有自己的优化，浏览器会维护1个队列，把所有会引起回流、重绘的操作放入这个队列，等队列中的操作到了一定的数量或者到了一定的时间间隔，浏览器就会flush队列，进行一个批处理。这样就会让多次的回流、重绘变成一次回流重绘。
+
+我们要减少重绘和重排就是要减少对渲染树的操作，则我们可以合并多次的DOM和样式的修改。并减少对style样式的请求。
+
+* 直接改变元素的className
+* display：none；先设置元素为display：none；然后进行页面布局等操作；设置完成后将元素设置为display：block；这样的话就只引发两次重绘和重排；
+* 不要经常访问浏览器的flush队列属性；如果一定要访问，可以利用缓存。将访问的值存储起来，接下来使用就不会再引发回流；
+* 使用cloneNode(true or false) 和 replaceChild 技术，引发一次回流和重绘；
+* 将需要多次重排的元素，position属性设为absolute或fixed，元素脱离了文档流，它的变化不会影响到其他元素；
+* 如果需要创建多个DOM节点，可以使用DocumentFragment创建完后一次性的加入document；
+* 尽量不要使用table布局。

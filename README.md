@@ -59,3 +59,13 @@
 [JQ](./md/other/jq.md)
 
 [CANVAS](./md/other/canvas.md)
+
+[移动端布局](./md/other/mobile-layout.md)
+
+[正则](./md/other/regexp.md)
+
+[GIT](./md/other/git.md)
+
+
+部分资料参考
+[写代码像蔡徐坤](https://juejin.im/post/5e8b261ae51d4546c0382ab4)
