@@ -19,7 +19,7 @@
 
 [函数式编程](./md/js/functional-programming.md)
 
-[AJAX](./md/js/ajax.md)
+[request](./md/js/request.md)
 
 ## 网络
 [基础](./md/network/basics.md)

@@ -89,7 +89,7 @@ meta标签用于描述网页的元信息，如网站作者、描述、关键词�
 * viewport: 视口，用于控制页面宽高及缩放比例 `<meta name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1">`
 * author: 作者
 * description: 描述
-* keyword: 关键字
+* keywords: 关键字
 * format-detection 格式化
   在浏览器中页面中出现的手机号码将不以拨号的超链接的形式出现: `<meta name="format-detection"content="telephone=no"/>`当你写了一串数字怎么就变成超链接了，点击还能拨打电话呢。因为iPhone会自动把你这个文字加链接样式，通过使用这个标签可以取消这一功能。默认是开启状态。
 
