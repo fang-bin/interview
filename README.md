@@ -5,6 +5,8 @@
 ## JS
 [基础](./md/js/basics1.md)
 
+[原理](./md/js/theory.md)
+
 [手写代码实现](./md/js/writeCode.md)
 
 [面向对象](./md/js/oop.md)
@@ -32,6 +34,7 @@
 
 ## 浏览器
 [基础](./md/browser/basics.md)
+[ie](./md/browser/ie.md)
 
 ## REACT
 [基础](./md/react/basics.md)
@@ -47,3 +50,7 @@
 
 ## 其他
 [路由](./md/other/route.md)
+[前端性能优化](./md/other/performance-optimization.md)
+[SEO](./md/other/seo.md)
+[JQ](./md/other/jq.md)
+[CANVAS](./md/other/canvas.md)

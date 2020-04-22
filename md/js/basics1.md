@@ -275,6 +275,110 @@ Async函数就是Generator函数的语法糖，Async函数可以理解成可以�
 
 [类似co模块通过不断调用自身，让Generator自执行实现Async函数效果](./writeCode.md)
 
+### javascript绑定事件的方法都有哪些
+1. on{事件名} 只能绑定一个事件，后面绑定的事件会覆盖前面绑定的事件
+2. addEventListener 可以绑定多个事件，事件执行的顺序是先绑定先执行，可以设置第三个参数来确定事件流，false-->冒泡阶段（默认） true-->捕获阶段
+3. attachEvent 是ie才有的方法，事件执行的顺序是后绑定先执行，默认是采用的冒泡的事件流，其监听的事件，之前必须加上on,例如 obj.attachEvent('onclick',fn);
+
+
+
+### document.body 和 document.documentElement的区别
+
+document.body：返回html dom中的body节点 即
+document.documentElement： 返回html dom中的root 节点 即
+
+两者主要的区别表现在获取 scrollTop 方面的差异
+
+* 在chrome(版本 52.0.2743.116 m)下获取scrollTop只能通过document.body.scrollTop,而且DTD是否存在,不会影响 document.body.scrollTop的获取。
+
+* 在firefox(47.0)及 IE(11.3)下获取scrollTop，DTD是否存,会影响document.body.scrollTop 与 document.documentElement.scrollTop的取值
+
+  在firefox(47.0)
+
+  * 页面存在DTD，使用document.documentElement.scrollTop获取滚动条距离
+  * 页面不存在，使用document.body.scrollTop 获取滚动条距离
+
+  在IE(11.3)
+
+  * 页面存在DTD，使用document.documentEelement.scrollTop获取滚动条距离
+  * 页面不存在DTD,使用document.documentElement.scrollTop 或 document.body.scrollTop都可以获取到滚动条距离
+
+注：DTD即xhtml标准网页或者更简单的说是带标签的页面
+
+兼容解决方案：
+
+```javascript
+var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+```
+
+#### 判断一个变量是对象还是数组
+```javascript
+Object.prototype.toString.call(obj) === '[object Array]'  //true 数组
+Object.prototype.toString.call(obj) === '[object Object]'  // true 对象
+
+console.log(Object.prototype.toString.call("jerry"));//[object String]
+console.log(Object.prototype.toString.call(12));//[object Number]
+console.log(Object.prototype.toString.call(true));//[object Boolean]
+console.log(Object.prototype.toString.call(undefined));//[object Undefined]
+console.log(Object.prototype.toString.call(null));//[object Null]
+console.log(Object.prototype.toString.call({name: "jerry"}));//[object Object]
+console.log(Object.prototype.toString.call(function(){}));//[object Function]
+console.log(Object.prototype.toString.call([]));//[object Array]
+console.log(Object.prototype.toString.call(new Date));//[object Date]
+console.log(Object.prototype.toString.call(/\d/));//[object RegExp]
+function Person(){};
+console.log(Object.prototype.toString.call(new Person));//[object Object]
+```
+
+**为什么不直接使用obj.toString()呢？**
+同样是检测对象obj调用toString方法，obj.toString()的结果和Object.prototype.toString.call(obj)的结果不一样，这是为什么？
+
+这是因为toString为Object的原型方法，而Array ，Function等类型作为Object的实例，都重写了toString方法。不同的对象类型调用toString方法时，根据原型链的知识，调用的是对应的重写之后的toString方法（function类型返回内容为函数体的字符串，Array类型返回元素组成的字符串.....），而不会去调用Object上原型toString方法（返回对象的具体类型），所以采用obj.toString()不能得到其对象类型，只能将obj转换为字符串类型；因此，在想要得到对象的具体类型时，应该调用Object上原型toString方法。
+
+假如将数组的toString方法删除：
+
+```javascript
+var arr=[1,2,3];
+console.log(Array.prototype.hasOwnProperty("toString"));//true
+console.log(arr.toString());//1,2,3
+delete Array.prototype.toString;//delete操作符可以删除实例属性
+console.log(Array.prototype.hasOwnProperty("toString"));//false
+console.log(arr.toString());//"[object Array]"
+```
+
+删除了Array的toString方法后，同样再采用arr.toString()方法调用时，不再有屏蔽Object原型方法的实例方法，因此沿着原型链，arr最后调用了Object的toString方法，返回了和Object.prototype.toString.call(arr)相同的结果。
+
+#### 封装SDK(Software Development Kit 软件开发工具包)
+
+#### 计算字符串中出现相同字母的最大数量和最大的字母
+
+```javascript
+function maxNum (str){
+  if (str.length <= 1){
+    return str;
+  }
+  let newArr = {};
+  for (let i = 0; i < str.length; i++){
+    if(newArr[str.charAt(i)]){
+      newArr[str[i]] += 1;
+    }else{
+      newArr[str[i]] = 1;
+    }
+  }
+  let maxNum = 0,
+    maxCode = '';
+  for (let key in newArr) {
+    if (newArr[key] > maxNum){
+      maxNum = newArr[key];
+      maxCode = key;
+    }else if (newArr[key] == maxNum){
+      maxCode = [...maxCode, key];
+    }
+  }
+  return maxCode;
+}
+```
+
 
 
 

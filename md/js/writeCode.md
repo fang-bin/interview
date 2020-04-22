@@ -236,6 +236,18 @@ for (let n of fibonacci()) {
 }
 ```
 
+同时利用递归也可以实现斐波那契数列
+
+```javascript
+function fb1(n){
+  if(n <= 2){
+    return 1;    
+  }else{
+    return fb1(n-1) + fb1(n-2);
+  }
+}
+```
+
 **利用Generator函数遍历完全二叉树**
 
 ```javascript

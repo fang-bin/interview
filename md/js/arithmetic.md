@@ -219,4 +219,7 @@ function getIntersect (...arrs){
 }
 ```
 
+## 二分法
+
+
 
