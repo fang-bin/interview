@@ -94,8 +94,7 @@ function quickSort (arr){
   return [...quickSort(smallArr), pivot, ...quickSort(bigArr)];
 }
 ```
-
-上面算法的问题主要是没有采用原地交换，导致空间复杂度暴涨到O(n㏒n)
+看了不少博客，发现ruan大佬的这版本快排有些问题，主要是没有采用原地交换，导致空间复杂度暴涨到O(n㏒n)，下面是改进版：
 
 ```javascript
 function quickSort (arr){

@@ -197,7 +197,7 @@ fetch(url).then(response => {
 
 ## Axios
 
-[axios文档](https://www.kancloud.cn/yunye/axios/234845)
+[axios文档，推荐直接看此文档](https://www.kancloud.cn/yunye/axios/234845)
 
 Axios 是一个基于 promise 的 HTTP 库，可以用在浏览器和 node.js 中，它也是对原生XMLHttpRequest对象的封装。
 
@@ -373,3 +373,145 @@ Axios 是一个基于 promise 的 HTTP 库，可以用在浏览器和 node.js �
 * axios.patch(url[, data[, config]])
 
 在使用别名方法时， url、method、data 这些属性都不必在配置中指定。
+
+#### 配置设置
+**全局的 axios 默认值**
+
+```javascript
+axios.defaults.baseURL = 'https://api.example.com';
+axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+```
+
+**自定义实例默认值**
+
+```javascript
+// 创建实例时设置配置的默认值
+var instance = axios.create({
+  baseURL: 'https://api.example.com'
+});
+
+// 在实例已创建后修改默认值
+instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+```
+
+**配置的优先顺序**
+配置会以一个优先顺序进行合并。这个顺序是：在 lib/defaults.js 找到的库的默认值，然后是实例的 defaults 属性，最后是请求的 config 参数。后者将优先于前者。这里是一个例子：
+
+```javascript
+// 使用由库提供的配置的默认值来创建实例
+// 此时超时配置的默认值是 `0`
+var instance = axios.create();
+
+// 覆写库的超时默认值
+// 现在，在超时前，所有请求都会等待 2.5 秒
+instance.defaults.timeout = 2500;
+
+// 为已知需要花费很长时间的请求覆写超时设置
+instance.get('/longRequest', {
+  timeout: 5000
+});
+```
+
+#### 拦截器
+在请求或响应被 then 或 catch 处理前拦截它们。
+
+```javascript
+// 添加请求拦截器
+axios.interceptors.request.use(function (config) {
+    // 在发送请求之前做些什么
+    return config;
+  }, function (error) {
+    // 对请求错误做些什么
+    return Promise.reject(error);
+  });
+
+// 添加响应拦截器
+axios.interceptors.response.use(function (response) {
+    // 对响应数据做点什么
+    return response;
+  }, function (error) {
+    // 对响应错误做点什么
+    return Promise.reject(error);
+  });
+```
+如果你想在稍后移除拦截器，可以这样：
+
+```javascript
+var myInterceptor = axios.interceptors.request.use(function () {/*...*/});
+axios.interceptors.request.eject(myInterceptor);
+```
+
+可以为自定义 axios 实例添加拦截器
+
+```javascript
+var instance = axios.create();
+instance.interceptors.request.use(function () {/*...*/});
+```
+
+#### 错误处理
+```javascript
+axios.get('/user/12345')
+  .catch(function (error) {
+    if (error.response) {
+      // 请求已发出，但服务器响应的状态码不在 2xx 范围内
+      console.log(error.response.data);
+      console.log(error.response.status);
+      console.log(error.response.headers);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.log('Error', error.message);
+    }
+    console.log(error.config);
+  });
+```
+
+可以使用 validateStatus 配置选项定义一个自定义 HTTP 状态码的错误范围。
+
+```javascript
+axios.get('/user/12345', {
+  validateStatus: function (status) {
+    return status < 500; // 状态码在大于或等于500时才会 reject
+  }
+})
+```
+
+#### 取消
+使用 cancel token 取消请求， 可以使用 CancelToken.source 工厂方法创建 cancel token，像这样：
+
+```javascript
+var CancelToken = axios.CancelToken;
+var source = CancelToken.source();
+
+axios.get('/user/12345', {
+  cancelToken: source.token
+}).catch(function(thrown) {
+  if (axios.isCancel(thrown)) {
+    console.log('Request canceled', thrown.message);
+  } else {
+    // 处理错误
+  }
+});
+
+// 取消请求（message 参数是可选的）
+source.cancel('Operation canceled by the user.');
+```
+
+还可以通过传递一个 executor 函数到 CancelToken 的构造函数来创建 cancel token：
+
+```javascript
+var CancelToken = axios.CancelToken;
+var cancel;
+
+axios.get('/user/12345', {
+  cancelToken: new CancelToken(function executor(c) {
+    // executor 函数接收一个 cancel 函数作为参数
+    cancel = c;
+  })
+});
+
+// 取消请求
+cancel();
+```
+
+注意：可以使用同一个 cancel token 取消多个请求。
