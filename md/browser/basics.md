@@ -272,7 +272,7 @@ Session是无状态的HTTP协议下，服务端记录用户状态时用于标识
     (5) 再下一步就是绘制，即遍历render树，并使用UI后端层绘制每个节点。 渲染树绘制
 
     注意：上述这个过程是逐步完成的，为了更好的用户体验，渲染引擎将会尽可能早的将内容呈现到屏幕上，并不会等到所有的html都解析完成之后再去构建和布局render树。它是解析完一部分内容就显示一部分内容，同时，可能还在通过网络下载其余内容。
-    ![avatar](https://user-gold-cdn.xitu.io/2020/2/5/17013323c225bd62?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+    ![渲染树](https://github.com/fang-bin/interview/blob/master/image/render.jpeg)
     **简单来说**：浏览器通过解析HTML，生成DOM树，解析CSS，生成CSS规则树，然后通过DOM树和CSS规则树生成渲染树。渲染树与DOM树不同，渲染树中并没有head、display为none等不必显示的节点。根据渲染树计算每个节点在屏幕中的位置。最后进行绘制
 
     要注意的是，浏览器的解析过程并非是串连进行的，比如在解析CSS的同时，可以继续加载解析HTML，但在解析执行JS脚本时，会停止解析后续HTML，这就会出现阻塞问题
@@ -306,7 +306,7 @@ Session是无状态的HTTP协议下，服务端记录用户状态时用于标识
 
   但是如果 module script 里有 async 属性，比如 <script type="module" src="util.js" async></script> ，module script 及其所有依赖都会异步下载，待整个依赖的模块树都被导入时会立即执行，而此时页面有可能还没有完成解析渲染。
 
-![avatar](https://www.html.cn/newimg88/2018/12/WeChate1c06d570a838a251001a74f182e7e78.png)
+![script加载](https://github.com/fang-bin/interview/blob/master/image/script-load.jpeg)
 
 蓝色线代表网络读取，红色线代表执行时间，这俩都是针对脚本的；绿色线代表 HTML 解析。
 

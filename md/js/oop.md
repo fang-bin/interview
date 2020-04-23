@@ -81,7 +81,7 @@ Child.prototype.constructor = Child;
 
 寄生组合式继承，是目前最成熟的继承方式，babel对ES6继承的转化也是使用了寄生组合式继承。
 
-![avatar](https://user-gold-cdn.xitu.io/2020/4/6/1714fd86c8983189?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![面向对象](https://github.com/fang-bin/interview/blob/master/image/oop.jpeg)
 
 #### ES5的继承和ES6中的继承有什么区别
 ES5的继承时通过prototype或构造函数机制来实现。即（将将子类的prototype等于父类的实例，再在上面挂在方法）**ES5的继承实质上是先创建子类的实例对象，然后再将父类的方法添加到this上**
