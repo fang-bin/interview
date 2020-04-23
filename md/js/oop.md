@@ -6,7 +6,7 @@
 * 构造函数的prototype属性也指向实例的原型对象
 * 原型对象的constructor属性指向构造函数
 
-![avatar](https://user-gold-cdn.xitu.io/2020/4/4/17144d68b7d0eea1?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![原型链](https://github.com/fang-bin/interview/raw/master/image/prototype.jpg)
 
 ES5实现继承的方法:
 
