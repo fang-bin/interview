@@ -18,10 +18,12 @@ HTTP默认端口号为80，但是你也可以改为8080或者其他端口。
 
 **请求消息**
 客户端发送一个HTTP请求到服务器的请求消息包括以下格式：请求行（request line）、请求头部（header）、空行和请求数据四个部分组成，下图给出了请求报文的一般格式。
+
 ![response](https://github.com/fang-bin/interview/blob/master/image/request.png)
 
 **响应消息**
 HTTP响应也由四个部分组成，分别是：状态行、消息报头、空行和响应正文。
+
 ![request](https://github.com/fang-bin/interview/blob/master/image/response.jpg)
 
 #### HTTP请求的方法
