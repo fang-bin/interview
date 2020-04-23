@@ -18,7 +18,7 @@
 <meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1; minimum-scale=1; user-scalable=no;">
 ```
 
-![avatar](https://user-gold-cdn.xitu.io/2020/3/17/170e782c3e72b843?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![viewport](https://github.com/fang-bin/interview/blob/master/image/viewport.jpeg)
 
 #### rem适配
 rem是CSS3新增的一个相对单位，这个单位引起了广泛关注。这个单位与em有什么区别呢？区别在于使用rem为元素设定字体大小时，仍然是相对大小，但相对的只是HTML根元素。这个单位可谓集相对大小和绝对大小的优点于一身，通过它既可以做到只修改根元素就成比例地调整所有字体大小，又可以避免字体大小逐层复合的连锁反应。目前，除了IE8及更早版本外，所有浏览器均已支持rem。对于不支持它的浏览器，应对方法也很简单，就是多写一个绝对单位的声明。这些浏览器会忽略用rem设定的字体大小
@@ -40,7 +40,7 @@ setRemUnit();
 
 vh、vw方案即将视觉视口宽度 window.innerWidth和视觉视口高度 window.innerHeight 等分为 100 份。
 
-![avatar](https://user-gold-cdn.xitu.io/2020/3/17/170e82463b522ff6?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![device](https://github.com/fang-bin/interview/blob/master/image/device.jpeg)
 
 vh和vw方案和rem类似也是相当麻烦需要做单位转化，而且px转换成vw不一定能完全整除，因此有一定的像素差。
 
@@ -82,7 +82,7 @@ vh和vw方案和rem类似也是相当麻烦需要做单位转化，而且px转�
 在web中，浏览器为我们提供了window.devicePixelRatio来帮助我们获取dpr。在css中，可以使用媒体查询min-device-pixel-ratio，区分dpr：
 我们根据这个像素比，来算出他对应应该有的大小,但是暴露个非常大的兼容问题
 
-![avatar](https://user-gold-cdn.xitu.io/2020/3/17/170e773ea67b01b4?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![1px问题](https://github.com/fang-bin/interview/blob/master/image/1px-question.png)
 
 其中Chrome把0.5px四舍五入变成了1px，而firefox/safari能够画出半个像素的边，并且Chrome会把小于0.5px的当成0，而Firefox会把不小于0.55px当成1px，Safari是把不小于0.75px当成1px，进一步在手机上观察iOS的Chrome会画出0.5px的边，而安卓(5.0)原生浏览器是不行的。所以直接设置0.5px不同浏览器的差异比较大，并且我们看到不同系统的不同浏览器对小数点的px有不同的处理。所以如果我们把单位设置成小数的px包括宽高等，其实不太可靠，因为不同浏览器表现不一样。
 
