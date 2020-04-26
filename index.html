@@ -45,4 +45,14 @@
     <div class="right">ddd</div> -->
   </div>
 </body>
+<script>
+  var a = 10;
+  var fn = function (bar, num) {
+    return bar() + num;
+  }
+
+  fn(function () {
+    return a;
+  }, 20);
+</script>
 </html>

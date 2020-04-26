@@ -379,6 +379,124 @@ function maxNum (str){
 }
 ```
 
+#### JavaScript中 null 和 undefined的区别
 
+在JavaScript中，undefined或null几乎没区别。
+
+在最初JavaScript设计中，null是一个表示"无"的对象，转为数值时为0；undefined是一个表示"无"的原始值，转为数值时为NaN，但是，这种区分，在实践中很快就被证明不可行。
+
+区别：
+
+* null表示"没有对象"，即该处不应该有值。
+  * null作为函数的参数，表示该函数的参数不是对象。
+  * null作为对象原型链的终点。
+* undefined表示"缺少值"，就是此处应该有一个值，但是还没有定义。
+  * 变量被声明了，但没有赋值时，就等于undefined。
+  * 调用函数时，应该提供的参数没有提供，该参数等于undefined。
+  * 对象没有赋值的属性，该属性的值为undefined。
+  * 函数没有返回值时，默认返回undefined。
+* null转化为数值时为0，undefined转化为数值时为NaN
+
+#### 很多地方用 `void 0` 代表 undefined 为什么
+
+undefined 不是保留字（Reserved Word），它只是全局对象的一个属性，在低版本的IE浏览器(<=ie8)中会被重写，在局部作用域(包括chrome，不论使用var, const, let)中 undefined 也可以被重写。
+void 运算符可以对给定的表达式求值，并且无论后面跟的是什么，都是返回 undefined，所以说不论是void 0 还是void 1都是可以的，更重要的是void不能被重写。
+
+注意：undefined在现在主流的绝大部分浏览器的全局作用域上面都是不能更改了,但是在函数作用域或者块级作用域下面还是能被重写的,当然绝大部分人应该都不会去干这种傻事,但是还是用viod 0吧,这样可以以防万一,同时也更像一个老司机的代码啊。
+
+#### 讲讲Map和Set
+
+Map和Set是ES6提供的新的数据结构。
+
+**Set**
+
+* Set类似于数组，但是成员的值都是唯一的，没有重复的值。
+* Set函数可以接受一个数组（或者具有 iterable 接口的其他数据结构）作为参数，用来初始化。Set本身是一个构造函数，用来生成 Set 数据结构。
+* 向 Set 加入值的时候，不会发生类型转换，所以5和"5"是两个不同的值。Set 内部判断两个值是否不同，使用的算法叫做“Same-value-zero equality”，它类似于精确相等运算符（===），主要的区别是向 Set 加入值时认为NaN等于自身，而精确相等运算符认为NaN不等于自身。
+* Set.prototype.size：返回Set实例的成员总数。
+* Set.prototype.add(value)：添加某个值，返回 Set 结构本身。
+* Set.prototype.delete(value)：删除某个值，返回一个布尔值，表示删除是否成功。
+* Set.prototype.has(value)：返回一个布尔值，表示该值是否为Set的成员。
+* Set.prototype.clear()：清除所有成员，没有返回值。
+* Array.from方法可以将 Set 结构转为数组。
+* Set.prototype.keys()：返回键名的遍历器
+* Set.prototype.values()：返回键值的遍历器
+* Set.prototype.entries()：返回键值对的遍历器
+* Set.prototype.forEach()：使用回调函数遍历每个成员
+* Set的遍历顺序就是插入顺序。
+
+**Map**
+
+* 类似于对象，也是键值对的集合，但是“键”的范围不限于字符串，各种类型的值（包括对象）都可以当作键。也就是说，Object 结构提供了“字符串—值”的对应，Map 结构提供了“值—值”的对应，是一种更完善的 Hash 结构实现。
+* Map可以接受一个数组(任何具有 Iterator 接口、且每个成员都是一个双元素的数组的数据结构)作为参数。该数组的成员是一个个表示键值对的数组。
+* Map.prototype.size： 返回 Map 结构的成员总数
+* Map.prototype.set(key, value)： set方法设置键名key对应的键值为value，然后返回整个 Map 结构。如果key已经有值，则键值会被更新，否则就新生成该键。
+* Map.prototype.get(key)： get方法读取key对应的键值，如果找不到key，返回undefined。
+* Map.prototype.has(key)： has方法返回一个布尔值，表示某个键是否在当前 Map 对象之中。
+* Map.prototype.delete(key)： delete方法删除某个键，返回true。如果删除失败，返回false。
+* Map.prototype.clear()： clear方法清除所有成员，没有返回值。
+* 只有对同一个对象的引用，Map 结构才将其视为同一个键,Map 的键实际上是跟内存地址绑定的，只要内存地址不一样，就视为两个键。
+  ```javascript
+  const map = new Map();
+  map.set(['a'], 555);
+  map.get(['a']) // undefined
+  ```
+* Map.prototype.keys()：返回键名的遍历器。
+* Map.prototype.values()：返回键值的遍历器。
+* Map.prototype.entries()：返回所有成员的遍历器。
+* Map.prototype.forEach()：遍历 Map 的所有成员。
+* Map 的遍历顺序就是插入顺序。
+
+1. Map 转为数组最方便的方法，就是使用扩展运算符
+    ```javascript
+    const myMap = new Map()
+      .set(true, 7)
+      .set({foo: 3}, ['abc']);
+    [...myMap] // [ [ true, 7 ], [ { foo: 3 }, [ 'abc' ] ] ]
+    ```
+2. 数组传入 Map 构造函数，就可以转为 Map。(`[[1,2], [3, 4]]`)
+3. Map 转为对象
+    ```javascript
+    function strMapToObj(strMap) {
+      let obj = Object.create(null);
+      for (let [k,v] of strMap) {
+        obj[k] = v;
+      }
+      return obj;
+    }
+    ```
+    如果所有 Map 的键都是字符串，它可以无损地转为对象。
+4. 对象转为 Map
+    ```javascript
+    let obj = {"a":1, "b":2};
+    let map = new Map(Object.entries(obj));
+    ```
+5. Map 转为 JSON
+    * Map 的键名都是字符串，这时可以选择转为对象 JSON。
+    * Map 的键名有非字符串，这时可以选择转为数组 JSON。
+
+6. JSON 转为 Map
+    * JSON所有键名都是字符串，先转化为对象，然后对象转Map
+    * 整个 JSON 就是一个数组，且每个数组成员本身，又是一个有两个成员的数组。先转化为数组，然后直接转Map
+
+#### WeakSet和Set
+WeakSet 结构与 Set 类似，也是不重复的值的集合。但是，它与 Set 有两个区别。
+* WeakSet 的成员只能是对象，而不能是其他类型的值。
+* WeakSet 中的对象的键名都是弱引用（其值仍是强引用），即垃圾回收机制不考虑 WeakSet 对该对象的引用，也就是说，如果其他对象都不再引用该对象，那么垃圾回收机制会自动回收该对象所占用的内存，不考虑该对象还存在于 WeakSet 之中。
+* WeakSet 的成员是不适合引用的，因为它会随时消失。另外，由于 WeakSet 内部有多少个成员，取决于垃圾回收机制有没有运行，运行前后很可能成员个数是不一样的，而垃圾回收机制何时运行是不可预测的，因此 ES6 规定 WeakSet 不可遍历，不支持size, forEach等遍历方法。
+
+#### WeakMap和Map的区别，相比Object有什么优点
+
+* WeakMap只接受对象作为键名（null除外），不接受其他类型的值作为键名。
+* 
+
+#### 弱引用
+弱引用是指垃圾回收的过程中不会将键名对该对象的引用考虑进去。
+
+#### this指向
+[这里就要详细了解js底层原理](./md/js/theory.md)
+
+#### 深拷贝和浅拷贝
+[这里也需要了解js底层原理](./md/js/theory.md)
 
 
