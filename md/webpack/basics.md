@@ -38,3 +38,9 @@ Plugin 是用来扩展 Webpack 功能的，通过在构建流程里注入钩子�
 #### webpack 打包出来的文件体积过大怎么办
 
 #### webpack 打包速度过慢怎么办？
+
+#### package.json 中的 peerDependencies？
+
+#### webpack中loaders作用？plugins和loaders区别？是否写过webpack插件？
+
+![plugin和loader的区别](https://github.com/fang-bin/interview/blob/master/image/webpack-plugin-loader.jpg)

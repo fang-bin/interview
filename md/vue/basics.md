@@ -4,7 +4,9 @@
 
 ## vue、react、angular优缺点
 
-## vue中的Virtual DOM(虚拟DOM)
+## vue中的Virtual DOM(虚拟DOM),虚拟DOM的好处
+
+减少了同一时间内的页面多处内容修改所触发的浏览器reflow和repaint的次数，可能把多个不同的DOM操作集中减少到了几次甚至一次，优化了触发浏览器reflow和repaint的次数。
 
 ## vue声明周期
 

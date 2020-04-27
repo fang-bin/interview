@@ -15,3 +15,7 @@ function curry (func, args = []){
   }
 }
 ```
+
+### compose 
+
+##### compose实现

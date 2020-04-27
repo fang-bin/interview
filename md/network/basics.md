@@ -126,3 +126,8 @@ HTTP/1.1新增了六种请求方法：OPTIONS、PUT、PATCH、DELETE、TRACE 和
 
 #### 简述三次握手四次挥手
 
+#### HTTPS是对称加密还是非对称加密？
+HTTPS 在内容传输的加密上使用的是对称加密，非对称加密只作用在证书验证阶段。
+
+[详解](https://zhuanlan.zhihu.com/p/96494976)
+

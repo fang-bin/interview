@@ -633,3 +633,33 @@ function newFunc(father, ...rest) {
 * 在构造方法中绑定this
 * 使用箭头函数 (箭头函数内部的this总是指向定义时所在的对象或者更准确的说是继承其定义位置的外部作用域)
 * 使用Proxy，获取方法的时候，自动绑定this
+
+在react中使用箭头函数坏处:
+
+箭头函数在每次 render 时都会重新分配（和使用 bind 的方式相同），创建一个新的函数对象，是一个比较昂贵的操作。
+
+避免在 render 中使用箭头函数和绑定。否则会打破 shouldComponentUpdate 和 PureComponent 的性能优化
+
+
+#### requestAnimationFrame的理解
+
+出现的原因: css仍存在无法实现的动画效果，js通过定时器实现动画的方法并不可靠，因为事件循环机制，延迟/间隔函数执行的时间并不精确，可能因为宏任务队列中的任务执行时间过长，而远远超过自身的延迟/间隔时间，而想要实现流畅的动画效果，刷新最好能达到60帧，也就是间隔时间为1000/60也就是16ms，很显然js定时器无法保证。
+
+requestAnimationFrame应运而生，其作用就是让浏览器流畅的执行动画效果。可以将其理解为专门用来实现动画效果的api，通过这个api,可以告诉浏览器某个JavaScript代码要执行动画，浏览器收到通知后，则会运行这些代码的时候进行优化，实现流畅的效果，而不再需要开发人员烦心刷新频率的问题了。
+
+```javascript
+function animationWidth() {
+  var div = document.getElementById('box');
+  div.style.width = parseInt(div.style.width) + 1 + 'px';
+
+  if(parseInt(div.style.width) < 200) {
+    requestAnimationFrame(animationWidth)
+  }
+}
+requestAnimationFrame(animationWidth);
+```
+requestAnimationFrame接受一个动画执行函数作为参数，这个函数的作用是仅执行一帧动画的渲染，并根据条件判断是否结束，如果动画没有结束，则继续调用requestAnimationFrame并将自身作为参数传入。这样就巧妙地避开了每一帧动画渲染的时间间隔问题。
+
+动画在浏览器下次重绘之前调用指定的回调函数更新动画。（由于多数屏幕都是60Hz刷新率，浏览器也采用了16ms进行绘制节流，16ms毫秒内多次commit的DOM改动会合并为一次渲染）
+
+requestAnimationFrame的兼容性问题主要是\<ie9，其他大多数都没有问题。

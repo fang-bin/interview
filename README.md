@@ -70,6 +70,8 @@
 
 [前端模块化](./md/other/module.md)
 
+[单元测试](./md/other/test.md)
+
 
 部分资料参考
 [写代码像蔡徐坤](https://juejin.im/post/5e8b261ae51d4546c0382ab4)
