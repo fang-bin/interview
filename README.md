@@ -68,6 +68,8 @@
 
 [前端中台](./md/other/middleground.md)
 
+[前端模块化](./md/other/module.md)
+
 
 部分资料参考
 [写代码像蔡徐坤](https://juejin.im/post/5e8b261ae51d4546c0382ab4)

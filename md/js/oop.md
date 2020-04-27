@@ -182,3 +182,36 @@ Doctor.career = '医生';
 * isPrototypeOf() 用来判断某个proptotype对象和某个实例之间的关系(通过ES6方法实现的继承没办法检验)
 * hasOwnProperty() 用来判断该实例对象中的某个属性是本地属性还是继承自prototype对象的属性(ES6中通过super继承的属性，也属于本地属性)
 * in 某个实例是否含有某个属性，不管是不是本地属性
+
+
+#### new实现
+
+```javascript
+function New(func) {
+
+    // 声明一个中间对象，该对象为最终返回的实例
+    var res = {};
+    if (func.prototype !== null) {
+
+        // 将实例的原型指向构造函数的原型
+        res.__proto__ = func.prototype;
+    }
+
+    // ret为构造函数执行的结果，这里通过apply，将构造函数内部的this指向修改为指向res，即为实例对象
+    var ret = func.apply(res, Array.prototype.slice.call(arguments, 1));
+
+    // 当我们在构造函数中明确指定了返回对象时，那么new的执行结果就是该返回对象
+    if ((typeof ret === "object" || typeof ret === "function") && ret !== null) {
+        return ret;
+    }
+
+    // 如果没有明确指定返回对象，则默认返回res，这个res就是实例对象
+    return res;
+}
+```
+流程:
+1. 声明一个中间对象；
+2. 将该中间对象的原型指向构造函数的原型；
+3. 将构造函数的this，指向该中间对象；
+4. 返回该中间对象，即返回实例对象。
+

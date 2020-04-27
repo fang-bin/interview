@@ -481,14 +481,80 @@ Map和Set是ES6提供的新的数据结构。
 
 #### WeakSet和Set
 WeakSet 结构与 Set 类似，也是不重复的值的集合。但是，它与 Set 有两个区别。
-* WeakSet 的成员只能是对象，而不能是其他类型的值。
+* WeakSet 的成员只能是对象（null除外），而不能是其他类型的值。
 * WeakSet 中的对象的键名都是弱引用（其值仍是强引用），即垃圾回收机制不考虑 WeakSet 对该对象的引用，也就是说，如果其他对象都不再引用该对象，那么垃圾回收机制会自动回收该对象所占用的内存，不考虑该对象还存在于 WeakSet 之中。
 * WeakSet 的成员是不适合引用的，因为它会随时消失。另外，由于 WeakSet 内部有多少个成员，取决于垃圾回收机制有没有运行，运行前后很可能成员个数是不一样的，而垃圾回收机制何时运行是不可预测的，因此 ES6 规定 WeakSet 不可遍历，不支持size, forEach等遍历方法。
+
+**WeakSet用处**
+
+1. 储存 DOM 节点，而不用担心这些节点从文档移除时，会引发内存泄漏。（存储的对象不会造成内存泄漏）
 
 #### WeakMap和Map的区别，相比Object有什么优点
 
 * WeakMap只接受对象作为键名（null除外），不接受其他类型的值作为键名。
-* 
+* WeakMap键名所引用的对象都是弱引用，即垃圾回收机制不将该引用考虑在内。因此，只要所引用的对象的其他引用都被清除，垃圾回收机制就会释放该对象所占用的内存。也就是说，一旦不再需要，WeakMap 里面的键名对象和所对应的键值对会自动消失，不用手动删除引用。
+* WeakMap既没有遍历操作（即没有keys()、values()和entries()方法），没有size属性，也无法清空，即不支持clear方法。WeakMap只有四个方法可用：get()、set()、has()、delete()。
+
+WeakMap结构有助于防止内存泄漏。
+
+**WeakMap应用**
+1. WeakMap 应用的典型场合就是 DOM 节点作为键名。
+
+    ```javascript
+    let myWeakmap = new WeakMap();
+    myWeakmap.set(
+      document.getElementById('logo'),
+      {timesClicked: 0})
+    ;
+    document.getElementById('logo').addEventListener('click', function() {
+      let logoData = myWeakmap.get(document.getElementById('logo'));
+      logoData.timesClicked++;
+    }, false);
+    ```
+    上面代码中，document.getElementById('logo')是一个 DOM 节点，每当发生click事件，就更新一下状态。我们将这个状态作为键值放在 WeakMap 里，对应的键名就是这个节点对象。一旦这个 DOM 节点删除，该状态就会自动消失，不存在内存泄漏风险。
+
+2. WeakMap 的另一个用处是部署私有属性
+    ```javascript
+    const _counter = new WeakMap();
+    const _action = new WeakMap();
+    class Countdown {
+      constructor(counter, action) {
+        _counter.set(this, counter);
+        _action.set(this, action);
+      }
+      dec() {
+        let counter = _counter.get(this);
+        if (counter < 1) return;
+        counter--;
+        _counter.set(this, counter);
+        if (counter === 0) {
+          _action.get(this)();
+        }
+      }
+    }
+    const c = new Countdown(2, () => console.log('DONE'));
+    c.dec();
+    c.dec();
+    ```
+    上面代码中，Countdown类的两个内部属性_counter和_action，是实例的弱引用，所以如果删除实例，它们也就随之消失，不会造成内存泄漏。
+
+**注**:
+```javascript
+const _map = new Map();
+const _set = new Set();
+const _weak_map = new WeakMap();
+const _weak_set = new WeakSet();
+
+typeof _map;  //object
+typeof _set;  //object
+typeof _weak_map;  //object
+typeof _weak_set;  //object
+
+Object.prototype.toString.call(_map);  //[object Map]
+Object.prototype.toString.call(_set);  //[object Set]
+Object.prototype.toString.call(_weak_map);  //[object WeakMap]
+Object.prototype.toString.call(_weak_set);  //[object WeakSet]
+```
 
 #### 弱引用
 弱引用是指垃圾回收的过程中不会将键名对该对象的引用考虑进去。
@@ -499,4 +565,71 @@ WeakSet 结构与 Set 类似，也是不重复的值的集合。但是，它与 
 #### 深拷贝和浅拷贝
 [这里也需要了解js底层原理](./md/js/theory.md)
 
+#### javascript是按值传递还是按引用传递
 
+javascript是值传递
+
+ES中所有函数（方法）的参数都是按值传递的，即调用一个方法时，是将调用该方法时传入该方法的参数的值复制给函数内部的参数（将实参的值复制给形参）
+
+**向参数传递基本类型的值**被传递的值会被复制给一个局部变量（这个局部变量就是形参，在ES中就是arguments对象的一个元素）
+
+**向参数传递引用类型的值**JS会把被传递的值的地址复制给一个局部变量，因为复制的是地址，所以在函数执行时，函数形参在函数内部改变时会影响到函数外部的该引用变量的值，因为两个地址指向同一片内存区域，但在函数执行结束，函数内部的局部变量被销毁，影响即会消失。
+
+#### 事件冒泡和事件捕获
+
+![brower_event](https://github.com/fang-bin/interview/blob/master/image/brower_event.png)
+
+```javascript
+element.addEventListener(event, function, useCapture);
+
+element.attachEvent('on' + event, function); //attachEvent只支持事件冒泡 
+```
+useCapture:
+* true 事件在捕获阶段执行
+* false 事件在冒泡阶段执行
+
+**事件代理**
+利用事件冒泡机制，可以给父元素中的多个子元素统一绑定事件。
+
+使用事件代理的好处不仅在于将多个事件处理函数减为一个，而且对于不同的元素可以有不同的处理方法。假如上述列表元素当中添加了其他的元素节点（如：a、span等），我们不必再一次循环给每一个元素绑定事件，直接修改事件代理的事件处理函数即可。
+
+`event.stopPropagation()` 阻止事件冒泡（它不是阻止事件本身）
+`event.preventDefault()` 阻止默认事件
+
+同时`return false`也可以阻止事件冒泡（不过它是直接阻止事件本身）。
+
+#### 箭头函数和普通函数有什么区别，能不能作为构造函数？
+
+* 函数体内的 this 对象，就是定义时所在的作用域中的 this 值，因为 JS 的静态作用域的机制，this 相当于一个普通变量会向作用域链中查询结果，同时定义时所在对象也并不等于所在对象中的 this 值。（可以理解成箭头函数中的this的值继承自外部作用域）
+* 不可以使用 arguments 对象，该对象在函数体内不存在。如果要用，可以用 rest 参数代替。
+* 不可以使用 yield 命令，因此箭头函数不能用作 Generator 函数。
+* 箭头函数不能用作构造函数，和new一起使用会抛出错误（因为箭头函数没有自己的 this，无法调用 call，apply。同时没有 prototype 属性 ，而 new 命令在执行时需要将构造函数的 prototype 赋值给新的对象的 __proto__）
+
+new的大致过程:
+
+```javascript
+function newFunc(father, ...rest) {
+  var result = {};
+  result.__proto__ = father.prototype;
+  var result2 = father.apply(result, rest);
+  if (
+    (typeof result2 === 'object' || typeof result2 === 'function') &&
+    result2 !== null
+  ) {
+    return result2;
+  }
+  return result;
+}
+```
+
+**箭头函数的优点**
+* 极简的写法
+* 不需要绑定的this
+
+**react中使用的箭头函数**
+类的方法内部如果含有this，它默认指向类的实例。但是，一旦单独使用该方法，this会指向该方法运行时所在的环境（由于 class 内部是严格模式，所以 this 实际指向的是undefined），从而导致找不到该方法而报错。
+
+解决的办法有三个:
+* 在构造方法中绑定this
+* 使用箭头函数 (箭头函数内部的this总是指向定义时所在的对象或者更准确的说是继承其定义位置的外部作用域)
+* 使用Proxy，获取方法的时候，自动绑定this
