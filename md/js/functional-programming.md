@@ -19,3 +19,7 @@ function curry (func, args = []){
 ### compose 
 
 ##### compose实现
+
+
+###### 参考
+[函数式编程之Compose](https://juejin.im/post/59bb6faf6fb9a00a59594395)

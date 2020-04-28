@@ -1,4 +1,4 @@
-[有现成的总结非常好的文章，非常值得一看](https://www.jianshu.com/p/cd3fee40ef59)
+[有现成的总结非常好的文章，非常值得一看，下面的问题都可以在这里得到充分解答](https://www.jianshu.com/p/cd3fee40ef59)
 
 **注意**： 上面文章中[前端基础进阶（十二）：深入核心，详解事件循环机制](https://www.jianshu.com/p/12b9f73c5a4f)对事件循环的解释中，对一次事件循环结束的节点不太正确，应该区分浏览器环境(chrome的webkit内核)和node环境
 1. 在node环境中，只有一类宏任务执行完之后，才会去执行所有微任务（setTimeout和setInterval是同源的）。

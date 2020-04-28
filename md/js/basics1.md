@@ -663,3 +663,58 @@ requestAnimationFrame接受一个动画执行函数作为参数，这个函数�
 动画在浏览器下次重绘之前调用指定的回调函数更新动画。（由于多数屏幕都是60Hz刷新率，浏览器也采用了16ms进行绘制节流，16ms毫秒内多次commit的DOM改动会合并为一次渲染）
 
 requestAnimationFrame的兼容性问题主要是\<ie9，其他大多数都没有问题。
+
+
+#### forEach for...in for...of的终止和跳过
+
+* **`forEach`** 遍历数组的每一项，并对每一项执行一个 callback 函数。没有返回值(不论什么情况返回值都可以视为undefined)。`forEach` 方法没办法使用 `break` 语句跳出循环，或者使用 `continue` 跳过这次循环进入下次循环，但是可以通过 `return` 来实现跳过这次循环进入下次循环。
+* **`for...of`** ES6提出的语句，在可迭代对象（`Array，Map，Set，String，TypedArray，arguments`）上创建一个迭代循环。（所有遍历器对象都可以遍历，即 `[Symbol.iterator]=collection` 都可以），不同于 `forEach` 可以使用 `break`, `continue`，但是不可以使用return;
+* **`for...in`** `for...in` 语句以任意顺序遍历一个对象的可枚举属性的属性名。但是 `for...in` 会遍历对象本身的所有可枚举属性和从它原型继承而来的可枚举属性，因此如果想要仅迭代对象本身的属性，要结合`hasOwnProperty()` 来使用。 `for...in`遍历数组的情况下，可能会随机顺序遍历。(不可使用 `continue break return`)
+
+**forEach如何实现break(跳出循环)**
+
+1. 抛出错误
+
+    抛出一个错误，但是需要注意的是要抛出一个可以与别的错误区别开的错误，这样不会干扰别的代码抛出的错误。这样做代码极为丑陋，也增加了维护的难度。
+    ```javascript
+    var BreakException = {};
+    try {
+      [1, 2, 3].forEach(function(v) {
+        console.log(v); //只输出1,2
+        if (v === 2) throw BreakException;
+      });
+    } catch (e) {
+      if (e !== BreakException) throw e;
+    }
+    ```
+2. 空跑循环（虽然后面的代码不再执行，但是循环并没有跳出）
+
+    ```javascript
+    [1, 2, 3].forEach(function(v) {
+      if (this.breakFlag === true) {
+        return false;
+      }
+      if (v === 2) {
+        this.breakFlag = true
+      }
+      console.log(v) //只输出1,2
+    }, {});
+    ```
+    这种方法不可避免的导致了不必要的运行
+
+3. 太牛逼的一个方法，牛逼
+
+    ```javascript
+    var array = [1, 2, 3, 4, 5];
+    array.forEach(function(item, index) {
+        if (item === 2) {
+            array = array.concat(array.splice(index, array.length - index));
+        }
+        console.log(item); //只输出1,2
+    });
+    ```
+
+    引用数据类型存放在堆内存中，变量放在栈内存中的值只是一个指针，指向堆内存的数据。
+    在终止循环条件中，先是原来的堆内存中的数据切掉后面的数据，然后通过concat浅复制之后重新赋值给原有的数据，这样循环条件中从堆内存读取到的原数据已经改变，而反应在变量之上的指针已经变了，但是数据由于是浅复制的，所有数组的数据并没有变。
+    我自己解释一下，理解个大概意思。真牛逼。
+

@@ -404,3 +404,8 @@ reflow 会从 这个 root frame 开始递归往下，依次计算所有的结点
 * 将需要多次重排的元素，position属性设为absolute或fixed，元素脱离了文档流，它的变化不会影响到其他元素；
 * 如果需要创建多个DOM节点，可以使用DocumentFragment创建完后一次性的加入document；
 * 尽量不要使用table布局。
+
+
+###### 参考
+[「一道面试题」输入URL到渲染全面梳理上-网络通信篇](https://juejin.im/post/5e9c48b2f265da47c558566b)
+[「一道面试题」输入URL到渲染全面梳理中-页面渲染篇](https://juejin.im/post/5e9f1db86fb9a03c85463560)
