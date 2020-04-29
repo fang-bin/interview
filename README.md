@@ -75,3 +75,5 @@
 
 部分资料参考
 [写代码像蔡徐坤](https://juejin.im/post/5e8b261ae51d4546c0382ab4)
+[前端基础漫游指南](https://cheogo.github.io/learn-javascript/)
+[函数式编程指北](https://llh911001.gitbooks.io/mostly-adequate-guide-chinese/content/ch1.html#%E4%BB%8B%E7%BB%8D)
