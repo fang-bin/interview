@@ -72,6 +72,8 @@ JavaScript 和 CSS 有机会被浏览器缓存起来。对于内联的情况，�
 
 所以，折衷的做法是：建议在一个网站里面使用至少2个域，但不多于4个域来提供资源。我认为这条建议是很合理的，也值得我们在项目实践中去应用。(根据自己网站的实际情况来确定)
 
+使用不同的域名可以最大化下载线程，但注意保持在 2~4 个域名内，以避免 DNS 查询损耗。
+
 **压缩js/css**
 Gulp、Webpack 等流行构建工具有UglifyJS等工具来进行压缩
 
@@ -150,39 +152,183 @@ preload 支持基于异步加载的标记，使用 <link rel=”preload”> 的�
 ```
 
 **减少DOM元素数量**
+复杂的页面不仅下载的字节更多，JavaScript DOM 操作也更慢。
+
+```javascript
+document.getElementsByTagName('*').length;  //计算出页面中有多少 DOM 元素
+```
 
 **避免使用iframe**
 
+ifame的优点：
+1. 可以用来加载速度较慢的第三方资源，如广告、徽章
+2. 可用作安全沙箱
+3. 可以并行下载脚本
+
+iframe的缺点:
+1. 加载代价昂贵，即使是空的页面
+2. 阻塞页面 load 事件触发
+3. iframe 完全加载以后，父页面才会触发 load 事件。 Safari、Chrome 中通过 JavaScript 动态设置 iframe src 可以避免这个问题。
+4. 缺乏语义
+
 **杜绝404**
+
+HTTP 请求是昂贵的，所以发出 HTTP 请求但获得没用的响应（如 404）是完全不必要的，并且会降低用户体验。
+
+一些网站会有特别的 404 页面提高用户体验，但这仍然会浪费服务器资源。更糟糕的是当链接指向外部 js 但却得到 404 结果。这样首先会降低（占用）并行下载数，其次浏览器可能会把 404 响应体当作 js 来解析，试图从里面找出可用的东西。
 
 **减少Cookie**
 
+Cookie 被用于身份认证、个性化设置等诸多用途。Cookie 通过 HTTP 头在服务器和浏览器间来回传送，减少 Cookie 大小可以降低其对响应速度的影响。
+
+* 去除不必要的 Cookie；
+* 尽量压缩 Cookie 大小；
+* 注意设置 Cookie 的 domain 级别，如无必要，不要影响到 sub-domain；
+* 设置合适的过期时间。
+
 **使用不带Cookie的域名**
+当浏览器请求静态图片并把 Cookie 一起发送到服务器时，Cookie 此时对服务器没什么用处。这些 Cookie 只是增加了网络流量。所以你应该保证静态文件的请求是没有 Cookie 的。可以创建一个子域名来托管所有静态组件。
+
 
 **减少DOM操作**
 
+JavaScript 操作 DOM 很慢，尤其是当 DOM 节点很多时。
+
+使用时应该注意：
+* 缓存已经访问过的元素；
+* 使用 DocumentFragment 暂存 DOM，整理好以后再插入 DOM 树；
+* 使用 className 来操纵元素的样式；
+* 避免使用 JavaScript 修复布局。
+
 **使用高效事件处理**
+
+有时候感觉页面反映不够灵敏，是因为有太多频繁执行的事件处理器被添加到了 DOM 树的不同元素上，这就是推荐使用事件委托的原因
+
+另外，不必等到 onload 事件来开始处理 DOM 树，DOMContentLoaded 更快。大多时候需要的只是想访问的元素已在 DOM 树中，所以不必等到所有图片被下载。
 
 **优化图片**
 
+压缩图片
+
 **不要在 HTML 中缩放图片（主要针对pc）**
+
+不要使用 \<img> 的 width、height 缩放图片，如果用到小图片，就使用相应大小的图片。如果需要
+```javascript
+\<img width="100" height="100" src="mycat.jpg" alt="My Cat" />
+```
+
+那么图片本身（mycat.jpg）应该是 100x100px 的，而不是去缩小 500x500px 的图片。
+
+设置图片的宽和高，以免浏览器按照「猜」的宽高给图片保留的区域和实际宽高差异，产生重绘。
 
 **使用体积小、可缓存的 favicon.ico**
 
-**文件尽量不要大于 25K**
+Favicon.ico 一般存放在网站根目录下，无论是否在页面中设置，浏览器都会尝试请求这个文件。
+
+所以确保这个图标：
+
+* 存在（避免 404）；
+* 尽量小，最好小于 1K；
+* 设置较长的过期时间。
+
+对于较新的浏览器，可以使用 PNG 格式的 favicon。
 
 **其他**
 
 * 避免使用css表达式  
   css表达式在页面呈现和调整大小时进行重新计算，而且在页面滚动时甚至在用户将鼠标移动到页面上时进行计算。
 
+* 文件尽量不要大于 25K
+  这个限制是因为 iPhone 不能缓存大于 25K 的组件，注意这里指的是未压缩的大小。这就是为什么缩减内容本身也很重要，因为单纯的 gzip 可能不够。
 
 
-#### 页面加载白屏的原因有哪些，以及如何监控白屏时间，如何优化
+
+#### 页面加载白屏的原因有哪些，以及如何监控白屏时间，如何优化？首屏时间？
+白屏时间是指浏览器从响应用户输入网址地址，到浏览器开始显示内容的时间。
+首屏时间是指浏览器从响应用户输入网络地址，到首屏内容渲染完成的时间。
+
+白屏时间 = 地址栏输入网址后回车 - 浏览器出现第一个元素
+首屏时间 = 地址栏输入网址后回车 - 浏览器第一屏渲染完成
+
+影响白屏时间的因素：网络，服务端性能，前端页面结构设计。
+影响首屏时间的因素：白屏时间，资源下载执行时间。
+
+**白屏时间监控**
+
+通常认为浏览器开始渲染 \<body> 或者解析完 \<head> 的时间是白屏结束的时间点。
+
+**首屏时间监控**
+
+首屏时间为首屏结束渲染，首屏（首屏可见内容）中的图片加载完成，即是首屏完成，不在首屏中的图片可以不考虑。
+
+监听方法:
+1. 首屏模块标签标记法 
+  由于浏览器解析 HTML 是按照顺序解析的，当解析到某个元素的时候，你觉得首屏完成了，就在此元素后面加入 script 计算首屏完成时间。
+2. 统计首屏内加载最慢的图片/iframe
+  通常首屏内容中加载最慢的就是图片或者 iframe 资源，因此可以理解为当图片或者 iframe 都加载出来了，首屏肯定已经完成了。
+    ```javascript
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>首屏</title>
+        <script>
+            // 不兼容 performance.timing 的浏览器
+            window.pageStartTime = Date.now()
+        </script>
+    </head>
+    <body>
+        <img src="https://lz5z.com/assets/img/google_atf.png" alt="img" onload="load()">
+        <img src="https://lz5z.com/assets/img/css3_gpu_speedup.png" alt="img" onload="load()">
+        <script>
+            function load () {
+                window.firstScreen = Date.now()
+            }
+            window.onload = function () {
+                // 首屏时间
+                console.log(window.firstScreen - performance.timing.navigationStart)
+            }
+        </script>
+    </body>
+    </html>
+    ```
+3. 自定义模块内容计算法
+  忽略图片等资源加载情况，只考虑页面主要 DOM，只考虑首屏的主要模块，而不是严格意义首屏线以上的所有内容
+
+**白屏时间优化**
+1. DNS解析优化
+    * DNS缓存优化
+    * DNS预加载策略
+    * 稳定可靠的DNS服务器
+2. 服务端优化
+3. 浏览器下载、解析、渲染页面优化
+    * 尽可能的精简HTML的代码和结构,同时压缩HTML
+    * 尽可能的优化CSS文件和结构
+    * 一定要合理的放置JS代码，尽量不要使用内联的JS代码
+
+**首屏时间优化**
+之前说的很多前端性能优化就可以用于首屏时间优化
 
 #### script 标签的属性有哪些
 
+**type 与 language**
+type 和 language 属性都可用来指定 \<script> 标签中的脚本的类型。
+
+language 属性在 HTML 和 XHTML 标准中受到了非议，这两个标准提倡使用 type 属性。遗憾的是，这两个属性的值是不一样的。
+
+如果您在使用 JavaScript，可以使用下面两种属性： `language = "JavaScript"` 或 `type = "text/javascript"`
+
+**src 和 charset**
+
+src 的值是包含这个 JavaScript 程序的文件的 URL。保存的文件的 MIME 类型应是 application/x-javascript，但如果文件名的后缀为 .js，也能够被正确配置了的服务器进行恰当的处理。
+
+charset 属性与 src 属性一起使用，告诉浏览器用来编码这个 javascript 程序的字符集。它的值是任何一个 ISO 标准字符集编码的名称。
+
+**defer 与 async**
+下面有讲到
+
 #### script 标签的 defer 和 async 标签的作用与区别
+[参考浏览器渲染流程中的讲解](../browser/basics.md)
 
 #### load 与 DOMContentLoaded
 
