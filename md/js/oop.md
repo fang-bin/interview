@@ -215,3 +215,7 @@ function New(func) {
 3. 将构造函数的this，指向该中间对象；
 4. 返回该中间对象，即返回实例对象。
 
+
+###### 更改原型链的一些骚操作
+
+`Object.setPrototypeOf(obj, obj.\__proto__)`
