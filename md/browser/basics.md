@@ -286,25 +286,29 @@ Session是无状态的HTTP协议下，服务端记录用户状态时用于标识
 #### script加载解析
 直接使用script脚本的话，html会按照顺序来加载并执行脚本，在脚本加载&执行的过程中，会阻塞后续的DOM渲染。defer 和 async 都只适用于外部脚本文件，对与内联的 script 标签是不起作用。
 
-* `<script src="script.js"></script>`
-  没有 defer 或 async，浏览器会立即加载并执行指定的脚本，“立即”指的是在渲染该 script 标签之下的文档元素之前，也就是说不等待后续载入的文档元素，读到就加载并执行。
+**`<script src="script.js"></script>`**
 
-* `<script async src="script.js"></script>`
-  有 async，加载和渲染后续文档元素的过程将和 script.js 的加载与执行并行进行（异步）。
+没有 defer 或 async，浏览器会立即加载并执行指定的脚本，“立即”指的是在渲染该 script 标签之下的文档元素之前，也就是说不等待后续载入的文档元素，读到就加载并执行。
 
-* `<script defer src="script.js"></script>`
-  有 defer，加载后续文档元素的过程将和 script.js 的加载并行进行（异步），但是 script.js 的执行要在所有元素解析完成之后，DOMContentLoaded 事件触发之前完成。
+**`<script async src="script.js"></script>`**
 
-* `<script type="module" src="script.js"></script>`
-  type 为 module 的 script 标签将被当作一个 JavaScript 模块对待，被称为 module script，且不受 charset 和 defer 属性影响。
+有 async，加载和渲染后续文档元素的过程将和 script.js 的加载与执行并行进行（异步）。
 
-  支持 module script 的浏览器，不会执行拥有 nomodule 属性的 script。
+**`<script defer src="script.js"></script>`**
 
-  不支持 module script 的浏览器，会忽略未知的 type="module" 的 script，同时也会忽略传统 script 中不认识的 nomodule 属性，进而执行传统的 bundle.js 代码。
+有 defer，加载后续文档元素的过程将和 script.js 的加载并行进行（异步），但是 script.js 的执行要在所有元素解析完成之后，DOMContentLoaded 事件触发之前完成。
 
-  module script 以及其依赖所有文件（源文件中通过 import 声明导入的文件）都会被下载，一旦整个依赖的模块树都被导入，页面文档也完成解析，app.js 将会被执行。
+**`<script type="module" src="script.js"></script>`**
 
-  但是如果 module script 里有 async 属性，比如 <script type="module" src="util.js" async></script> ，module script 及其所有依赖都会异步下载，待整个依赖的模块树都被导入时会立即执行，而此时页面有可能还没有完成解析渲染。
+type 为 module 的 script 标签将被当作一个 JavaScript 模块对待，被称为 module script，且不受 charset 和 defer 属性影响，**都是异步加载，不会造成堵塞浏览器，即等到整个页面渲染完，再执行模块脚本，等同于打开了script标签的defer属性。模块中自动采用严格模式，不管用没有声明`use strict`，而且同一个模块加载多次，都只执行一次。**
+
+支持 module script 的浏览器，不会执行拥有 nomodule 属性的 script。
+
+不支持 module script 的浏览器，会忽略未知的 type="module" 的 script，同时也会忽略传统 script 中不认识的 nomodule 属性，进而执行传统的 bundle.js 代码。
+
+module script 以及其依赖所有文件（源文件中通过 import 声明导入的文件）都会被下载，一旦整个依赖的模块树都被导入，页面文档也完成解析，app.js 将会被执行。
+
+但是如果 module script 里有 async 属性，比如 `<script type="module" src="util.js" async></script>` ，module script 及其所有依赖都会异步下载，待整个依赖的模块树都被导入时会立即执行，而此时页面有可能还没有完成解析渲染。
 
 ![script加载](https://github.com/fang-bin/interview/blob/master/image/script-load.jpeg)
 
