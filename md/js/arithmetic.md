@@ -409,7 +409,44 @@ function bucketSort (arr){
 
 #### 基数排序
 
+```javascript
+function radixSort (arr){
+  if (!Array.isArray(arr)) return;
+  const len = arr.length;
+  if (len < 2) return arr;
+  let mod = 10,
+    dev = 1;
+  let counter = [],
+    index = 0;
+  let pos = 0,
+    value = 0;
+  const maxNumberLength = arr.reduce((total, cur) => (total - cur > 0 ? total : cur), -Infinity).toString().length;
+  for (let i = 0; i < maxNumberLength; i++, dev *= 10, mod *= 10) {
+    for (let j = 0; j < len; j++) {
+      index = ~~((arr[j] % mod) / dev);
+      if (!counter[index]) {
+        counter[index] = [];
+      }
+      counter[index].push(arr[j]);
+    }
+    pos = 0;
+    for (let k = 0; k < counter.length; k++) {
+      if (counter[k]) {
+        while (value = counter[k].shift()) {
+          arr[pos++] = value;
+        }
+      }
+    }
+  }
+  return arr;
+}
+```
 
+**注意** 计数排序、桶排序、基数排序都用了桶的概念，但对桶的使用方法有明显差异
+
+* 基数排序根据键值的每位数字来分配桶
+* 计数排序的每个桶只存储单一键值
+* 桶排序的每个桶储存一定范围的数值
 
 **在大多数情况下，原生sort方法一直都是最优解**
 
@@ -452,6 +489,8 @@ function getIntersect (...arrs){
 ```
 
 ## 二分法
+
+## 贪心算法
 
 
 
