@@ -1,5 +1,7 @@
 ## 排序算法
 
+![排序算法总结](https://github.com/fang-bin/interview/blob/master/image/sort.jpg)
+
 #### 冒泡排序
 
 ```javascript
@@ -115,6 +117,7 @@ function insertSort (arr){
       arr[j] = arr[j - 1];
       j--;
     }
+    arr[left] = temp;
   }
   return arr;
 }
@@ -449,6 +452,8 @@ function radixSort (arr){
 * 桶排序的每个桶储存一定范围的数值
 
 **在大多数情况下，原生sort方法一直都是最优解**
+
+这个就要引入v8中Array.prototype.sort所使用的算法
 
 ## 随机算法（洗牌）
 
