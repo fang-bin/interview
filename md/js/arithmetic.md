@@ -34,7 +34,7 @@ function bubbleSort1 (arr) {
   let pos = 0;
   while (i > 0) {
     pos = 0;
-    for (let j = 0; j < i; j ++) {
+    for (let j = 0; j < i; j++) {
       if (arr[j + 1] - arr[j] < 0) {
         [arr[j + 1], arr[j]] = [arr[j], arr[j + 1]];
         pos = j;
@@ -453,7 +453,43 @@ function radixSort (arr){
 
 **在大多数情况下，原生sort方法一直都是最优解**
 
-这个就要引入v8中Array.prototype.sort所使用的算法
+这个就要引入v8中Array.prototype.sort所使用的算法。
+
+深扒 Array.prototype.sort 算法则发现在v8的 7 版本之前，其使用的是快排和插入排序结合的排序方法，在排序数组长度少于10的时候使用插入排序，其他情况则使用快速排序，
+
+## 字符串匹配算法
+
+```javascript
+// KMP算法
+var strStr = function(haystack, needle) {
+    const len1 = haystack.length;
+    const len2 = needle.length;
+    if (len2 === 0) return 0;
+    let i = 0,
+        j = 0,
+        curLen = 0;
+    while (i <= len1 - len2) {
+        while (i <= len1 - len2 && haystack.charAt(i) !== needle.charAt(0)) i++;
+        j = 0;
+        curLen = 0;
+        while(j < len2 && i < len1 && haystack.charAt(i) === needle.charAt(j)) {
+            i++;
+            j++;
+            curLen++;
+        }
+        if (curLen === len2) return i - curLen;
+        i = i - curLen + 1;
+    }
+    return - 1;
+};
+```
+
+参考: 
+[字符串匹配的KMP算法--阮一峰](http://www.ruanyifeng.com/blog/2013/05/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm.html)
+[javascript实现KMP算法--阳光](https://juejin.im/post/6844903910688161806)
+
+
+
 
 ## 随机算法（洗牌）
 
