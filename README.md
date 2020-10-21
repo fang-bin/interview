@@ -1,6 +1,4 @@
-# 面试准备
-
-又快要换工作了，发现自己的脑子不够用，记录一下面试题，备用
+# 记录
 
 ## JS
 [基础](./md/js/basics1.md)
@@ -71,6 +69,16 @@
 [前端模块化](./md/other/module.md)
 
 [单元测试](./md/other/test.md)
+
+## 其他日常记录
+
+[偏向html](./md/day/index-html.md)
+
+[偏向css](./md/day/index-css.md)
+
+[偏向计算机基础](./md/day/index-basic.md)
+
+以上都只是偏向，并不全都是
 
 
 部分资料参考
