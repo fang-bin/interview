@@ -292,7 +292,9 @@ WebP 的优势体现在它具有更优的图像数据压缩算法，能带来更
 
 jQuery的CSS()方法，其底层运作就应用了getComputedStyle以及getPropertyValue方法。
 
-用法: `window.getComputedStyle("元素", "伪类");`
+用法: `window.getComputedStyle("元素", "伪类");` 其中`window.getComputedStyle`等价于`document.defaultView.getComputedStyle`
+
+**getComputedStyle会引起回流，因为它需要获取祖先节点的一些信息进行计算（譬如宽高等），所以用的时候慎用，回流会引起性能问题。**
 
 ##### getComputedStyle 和 style 的区别
 
@@ -320,9 +322,173 @@ Critical CSS是一种提取首屏中 CSS 的技术，以便尽快将内容呈现
 2. 用行内css样式，加载这部分的css(critical CSS);
 3. 等到页面加载完之后，再加载整个css，会有一部分css与critical css重叠；
 
+## 27. 格式化上下文
+
+BFC的全称为Block Formatting Context，即块级格式化上下文。一个BFC有如下特性：
+* 处于同一个BFC中的元素相互影响，可能会发生margin collapse；（BFC垂直方向边距重叠）
+* BFC在页面上是一个独立的容器，容器里面的子元素不会影响到外面的元素，反之亦然；
+* 计算BFC的高度时，考虑BFC所包含的所有元素，包括浮动元素也参与计算；
+* 浮动盒的区域不会叠加到BFC上；
+
+创建BFC的方法如下
+* 根元素
+* 浮动（float的值不为none）；
+* 绝对定位元素（position的值为absolute或fixed）；
+* 行内块（display为inline-block）
+* 表格单元（display为table、table-cell、table-caption等HTML表格相关属性）；
+* 弹性盒（display为flex或inline-flex）；
+* overflow不为visible；
+* 网格元素（display为 grid 或 inline-grid 元素的直接子元素） 等等。
+
+BFC的使用场景
+
+* 防止垂直margin重叠，父子元素的边界重叠(当一个元素包含在另一个元素之中时，子元素与父元素之间也会产生重叠现象，重叠后的外边距，等于其中最大者)，在父元素上加上overflow:hidden;使其成为BFC。
+
+* 防止浮动导致父元素高度塌陷，清除内部浮动对元素高度的影响。父元素#float的高度为0，解决方案为为父元素#float创建BFC，这样浮动子元素的高度也会参与到父元素的高度计算。
+
+* 自适应两栏布局(原理是BFC不会与float元素发生重叠。)
+
 ## 外边距折叠(collapsing margins)
 
-## 格式化上下文
+## 28. 层叠上下文
 
-## 层叠上下文
+层叠上下文，英文称作”stacking context”. 是HTML中的一个三维的概念。如果一个元素含有层叠上下文，我们可以理解为这个元素在z轴上就“高人一等”。
 
+“层叠水平”英文称作”stacking level”，决定了同一个层叠上下文中元素在z轴上的显示顺序。
+
+普通元素的层叠水平优先由层叠上下文决定，因此，层叠水平的比较只有在当前层叠上下文元素中才有意义。
+
+（注: 不要把层叠水平和CSS的z-index属性混为一谈。没错，某些情况下z-index确实可以影响层叠水平，但是，只限于定位元素以及flex盒子的孩子元素；而层叠水平所有的元素都存在。）
+
+层叠顺序，表示元素发生层叠时候有着特定的垂直显示顺序，注意，这里跟上面两个不一样，上面的层叠上下文和层叠水平是概念，而这里的层叠顺序是规则。
+
+在CSS2.1的年代，在CSS3还没有出现的时候（注意这里的前提），层叠顺序规则遵循下面这张图：
+
+![CSS2.1层叠规则](https://image.zhangxinxu.com/image/blog/201601/2016-01-07_223349.png)
+
+诸如border/background一般为装饰属性，而浮动和块状元素一般用作布局，而内联元素都是内容。
+
+网页中最重要的内容的层叠顺序相当高，当发生层叠是很好，重要的文字啊图片内容可以优先暴露在屏幕上。
+
+这些层叠顺序规则还是老时代的，CSS3就不一样了。
+
+##### 务必牢记的层叠准则
+1. 谁大谁上：当具有明显的层叠水平标示的时候，如识别的z-indx值，在同一个层叠上下文领域，层叠水平值大的那一个覆盖小的那一个。
+2. 后来居上：当元素的层叠水平一致、层叠顺序相同的时候，在DOM流中处于后面的元素会覆盖前面的元素。
+
+#### 层叠上下文的特性
+
+* 层叠上下文的层叠水平要比普通元素高
+* 层叠上下文可以阻断元素的混合模式
+* 层叠上下文可以嵌套，内部层叠上下文及其所有子元素均受制于外部的层叠上下文。
+* 每个层叠上下文和兄弟元素独立，也就是当进行层叠变化或渲染的时候，只需要考虑后代元素。
+* 每个层叠上下文是自成体系的，当元素发生层叠的时候，整个元素被认为是在父层叠上下文的层叠顺序中。
+
+#### 层叠上下文的创建
+* 根层叠上下文
+  指的是页面根元素，也就是滚动条的默认的始作俑者\<html>元素。这就是为什么，绝对定位元素在left/top等值定位的时候，如果没有其他定位元素限制，会相对浏览器窗口定位的原因。
+* 定位元素与传统层叠上下文
+  对于包含有position:relative/position:absolute的定位元素，以及FireFox/IE浏览器（不包括Chrome等webkit内核浏览器，它们position:fixed元素天然层叠上下文元素，无需z-index为数值。）下含有position:fixed声明的定位元素，当其z-index值不是auto的时候，会创建层叠上下文。
+* CSS3与新时代的层叠上下文
+
+    * z-index值不为auto的flex项(父元素display:flex|inline-flex).
+    * 元素的opacity值不是1.
+    * 元素的transform值不是none.
+    * 元素mix-blend-mode值不是normal.
+    * 元素的filter值不是none.
+    * 元素的isolation值是isolate.
+    * will-change指定的属性值为上面任意一个。
+    * 元素的-webkit-overflow-scrolling设为touch.
+
+##### 详解CSS3与新时代的层叠上下文
+
+[深入理解层叠上下文-张鑫旭](https://www.zhangxinxu.com/wordpress/2016/01/understand-css-stacking-context-order-z-index/)
+
+![完善的7阶层叠顺序图](https://image.zhangxinxu.com/image/blog/201601/2016-01-09_211116.png)
+
+这个地方挺重要。
+
+
+##### 这里稍微补充一下transform的一些特性
+
+[transform对N多元素渲染影响](https://www.zhangxinxu.com/wordpress/2015/05/css3-transform-affect/)
+
+1. 提升元素的垂直地位(就是上面说的生成不依赖z-index的层叠上下文，地位与`postion: absoulte; z-index:auto;`)相当
+
+2. 在Chrome、Firefox中，祖先元素设置了transform会限制子孙元素position:fixed的效果，降级为postion:absolute的表现。
+
+3. transform改变overflow对absolute元素的限制
+  absolute绝对定位元素，如果含有overflow不为visible的父级元素，同时，该父级元素以及到该绝对定位元素之间任何嵌套元素都没有position为非static属性的声明，则overflow对该absolute元素不起作用。(这玩意我原先都不知道)
+  而不管overflow容器还是嵌套子元素，只要有transform属性，就会hidden溢出的absolute元素。
+
+## 29. mix-blend-mode / background-blend-mode (混合模式)
+
+现在Chrome 和 Firefox都支持良好
+
+#### mix-blend-mode 和 isolation: isolate;
+
+mix-blend-mode默认情况下是会混合所有比起层叠顺序低的元素的，混合模式只到某一个元素，或者只是某一组元素怎么办呢？isolation: isolate就是为了解决这个问题产生的。
+
+isolation:isolate之所以可以阻断混合模式的进行，本质上是因为isolation:isolate创建一个新的层叠上下文(stacking context)。
+
+其实任何可以创建层叠上下文的属性都可以阻断mix-blend-mode的生效。
+
+从这个角度来看，isolation:isolate除了创建层叠上下文，其他没有任何用。
+
+```css
+mix-blend-mode: normal;          //正常
+mix-blend-mode: multiply;        //正片叠底
+mix-blend-mode: screen;          //滤色
+mix-blend-mode: overlay;         //叠加
+mix-blend-mode: darken;          //变暗
+mix-blend-mode: lighten;         //变亮
+mix-blend-mode: color-dodge;     //颜色减淡
+mix-blend-mode: color-burn;      //颜色加深
+mix-blend-mode: hard-light;      //强光
+mix-blend-mode: soft-light;      //柔光
+mix-blend-mode: difference;      //差值
+mix-blend-mode: exclusion;       //排除
+mix-blend-mode: hue;             //色相
+mix-blend-mode: saturation;      //饱和度
+mix-blend-mode: color;           //颜色
+mix-blend-mode: luminosity;      //亮度
+
+mix-blend-mode: initial;         //初始
+mix-blend-mode: inherit;         //继承
+mix-blend-mode: unset;           //复原
+```
+
+#### background-blend-mode
+
+background-blend-mode这个要更好理解一点，背景的混合模式。可以是背景图片见的混合，也可以是背景图片和背景色的混合。
+
+## 30. will-change
+
+用来增强页面渲染性能
+
+3D transform会启用GPU加速①，例如translate3D, scaleZ之类，但是呢，这些属性业界往往称之为hack加速法。我们实际上不需要z轴的变化。
+
+（注： GPU即图形处理器，是与处理和绘制图形相关的硬件。GPU是专为执行复杂的数学和几何计算而设计的，可以让CPU从图形处理的任务中解放出来，从而执行其他更多的系统任务，例如，页面的计算与重绘。）
+
+当我们通过某些行为（点击、移动或滚动）触发页面进行大面积绘制的时候，浏览器往往是没有准备的，只能被动使用CPU去计算与重绘，由于没有事先准备，应付渲染够呛，于是掉帧，于是卡顿。而will-change则是真正的行为触发之前告诉浏览器，什么可能要触发大量绘制，浏览器会调用GPU，从容应对即将到来的变形。
+
+```css
+/* 关键字值 */
+will-change: auto;    /*默认，没luan用*/
+will-change: scroll-position;  /*告诉浏览器，我要开始翻滚了*/
+will-change: contents;        /*告诉浏览器，内容要动画或变化了。*/
+will-change: transform;        /* <custom-ident>示例 */
+will-change: opacity;          /* <custom-ident>示例 */
+will-change: left, top;        /* 两个<animateable-feature>示例 */
+
+/* 全局值 */
+will-change: inherit;
+will-change: initial;
+will-change: unset;
+```
+
+will-change虽然可以加速，但是，一定一定要适度使用。那种全局都开启will-change等待模式的做法，无疑是死路一条。
+
+平常的渲染处理，手机都是可以比较流畅的。完全没有必要以牺牲其他东西(手机电量等)来实现。
+
+如果使用JS添加will-change, 事件或动画完毕，一定要及时remove.（css也是如此，可以分开写，不用一直挂在常态样式上面）
