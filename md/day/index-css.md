@@ -324,6 +324,12 @@ Critical CSS是一种提取首屏中 CSS 的技术，以便尽快将内容呈现
 
 ## 27. 格式化上下文
 
+##### 外边距折叠(collapsing margins)
+
+在CSS中，两个或多个毗邻的普通流中的盒子（可能是父子元素，也可能是兄弟元素）在垂直方向上的外边距会发生叠加，这种形成的外边距称之为外边距叠加。
+
+### BFC
+
 BFC的全称为Block Formatting Context，即块级格式化上下文。一个BFC有如下特性：
 * 处于同一个BFC中的元素相互影响，可能会发生margin collapse；（BFC垂直方向边距重叠）
 * BFC在页面上是一个独立的容器，容器里面的子元素不会影响到外面的元素，反之亦然；
@@ -347,8 +353,6 @@ BFC的使用场景
 * 防止浮动导致父元素高度塌陷，清除内部浮动对元素高度的影响。父元素#float的高度为0，解决方案为为父元素#float创建BFC，这样浮动子元素的高度也会参与到父元素的高度计算。
 
 * 自适应两栏布局(原理是BFC不会与float元素发生重叠。)
-
-## 外边距折叠(collapsing margins)
 
 ## 28. 层叠上下文
 
@@ -492,3 +496,60 @@ will-change虽然可以加速，但是，一定一定要适度使用。那种全
 平常的渲染处理，手机都是可以比较流畅的。完全没有必要以牺牲其他东西(手机电量等)来实现。
 
 如果使用JS添加will-change, 事件或动画完毕，一定要及时remove.（css也是如此，可以分开写，不用一直挂在常态样式上面）
+
+## 31. 深入理解vertical-align 
+
+工作中，我经常遇到明明设置了line-height和行高一致，在安卓上就会偏上，如果设置了`overflow:hideen;`还会截断字体一部分。
+
+而且字体和一些行内元素/inline-block元素，设置了行高和`vertical-align:middle`也会有一些偏差。
+
+当然这些情况大多出现在安卓系统上。
+
+### CSS的排版布局
+
+**line-height行高的定义就是两基线的间距**
+
+**vertical-align的默认值就是基线；**
+
+#### 基线
+
+字母x的下边缘(线)就是基线。
+
+![基线](https://image.zhangxinxu.com/image/blog/201506/2015-06-28_105734.png)
+
+CSS中有一个概念叫做"x-height", 指的是字母'x'的高度。
+
+![x-height](https://image.zhangxinxu.com/image/blog/201506/410px-Typography_Line_Terms.svg.png)
+
+需要了解下"x-height"的含义，通俗讲，"x-height"就是指的小写字母'x'的高度；术语描述就是基线和等分线 mean line (也称作中线[midline])之间的距离。
+
+* ascender height: 上下线高度
+* cap height: 大写字母高度
+* median: 中线
+* descender height: 下行线高度
+
+##### vertical: middle;
+
+规范中对垂直对齐的middle，middle指的是基线往上1/2 "x-height"高度。我们可以近似脑补成字母x交叉点那个位置。
+
+有此可见，vertical-align: middle并不是绝对的垂直居中对齐，我们平常看到的middle效果只是一种近似的效果。原因很简单，因为不同的字体，其在行内盒子中的位置是不一样的，比方说’微软雅黑’就是一个字符下沉比较明显的字体，所有字符的位置相比其他字体要偏下一点。要是vertical-align: middle是相对容器中分线对齐，呵呵，你会发现图标和文字不在一条线上，而相对于字符x的中心位置对齐，我们肉眼看上去就好像和文字居中对齐了。
+
+在HTML5文档声明下，块状元素内部的内联元素的行为表现，就好像块状元素内部还有一个（更有可能两个-前后）看不见摸不着没有宽度没有实体的空白节点，这个假想又似乎存在的空白节点，张鑫旭称之为“幽灵空白节点”。
+
+**一个inline-block元素，如果里面没有inline内联元素，或者overflow不是visible，则该元素的基线就是其margin底边缘，否则，其基线就是元素里面最后一行内联元素的基线。**
+
+以上相关内容，重点可以参考:
+
+[字母’x’在CSS世界中的角色和故事](https://www.zhangxinxu.com/wordpress/2015/06/about-letter-x-of-css/)
+
+[CSS深入理解vertical-align和line-height的基友关系](https://www.zhangxinxu.com/wordpress/2015/08/css-deep-understand-vertical-align-and-line-height/)
+
+[彻底搞定vertical-align垂直居中不起作用疑难杂症](https://juejin.im/post/6844903561780789255)
+
+[关于display: inline-block产生的间隙](https://github.com/XXHolic/blog/issues/13)
+
+[Android浏览器下line-height垂直居中为什么会偏离？](https://www.zhihu.com/question/39516424)
+
+[解决 Android 浏览器下 line-height 垂直居中偏离问题](https://github.com/o2team/H5Skills/issues/4)
+
+[关于 Android 下 line-height 文字垂直居中偏移的思考](https://rprns.me/2018/07/27/%E5%85%B3%E4%BA%8E%20Android%20%E4%B8%8B%20line-height%20%E6%96%87%E5%AD%97%E5%9E%82%E7%9B%B4%E5%B1%85%E4%B8%AD%E5%81%8F%E7%A7%BB%E7%9A%84%E6%80%9D%E8%80%83/)
