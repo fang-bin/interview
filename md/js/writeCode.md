@@ -35,7 +35,7 @@ class MyPromise {
     const _reject = (val) => {
       const run = () => {
         if (this._status !== PENDING) return;
-        this._status = FULFILLED;
+        this._status = REJECTED;
         this._val = val; 
         while (this._rejectQueen.length) {
           const callback = this._rejectQueen.shift();
@@ -128,10 +128,10 @@ class MyPromise {
     });
   }
   then(resolveFn, rejectFn) {
-    typeof resolveFn !== 'function' ? resolveFn = val => val : null;
-    typeof rejectFn !== 'function' ? rejectFn = error => {
+    typeof resolveFn !== 'function' && (resolveFn = val => val);
+    typeof rejectFn !== 'function' && (rejectFn = error => {
       throw new Error(error instanceof Error ? error.message : error);
-    } : null;
+    });
     return new MyPromise((resolve, reject) => {
       const fulfilledFn = val => {
         try {
@@ -144,7 +144,7 @@ class MyPromise {
       const rejectedFn = err => {
         try {
           const result = rejectFn(err);
-          result instanceof MyPromise ? result.then(resolve, reject) : resolve(result);
+          result instanceof MyPromise ? result.then(resolve, reject) : reject(result);
         } catch (error) {
           reject(error);
         }

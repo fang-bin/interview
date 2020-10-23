@@ -212,7 +212,127 @@ function flat(arr) {
 
 ### 手写一个Promise
 
-我总是对Promise的一些特性有一些误解，以下为个人记录
+##### Promise解决了什么问题
+
+传统的异步编程中，如果异步之间存在依赖关系，就需要通过层层嵌套回调的方式满足这种依赖，如果嵌套层数过多，可读性和可以维护性都会变得很差，产生所谓的“回调地狱”，而 Promise 将嵌套调用改为链式调用，增加了可阅读性和可维护性。也就是说，Promise 解决的是异步编码风格的问题。
+
+##### 业界比较著名实现的Promise的库
+
+bluebird、Q、ES6-Promise
+
+Promise/A+ 规范，业界所有 Promise 的类库都遵循这个规范。
+
+Promise的实现就是一个发布订阅模式，这种收集依赖 -> 触发通知 -> 取出依赖执行的方式，被广泛运用于发布订阅模式的实现。
+
+#### Promise的一些特别的特性
+
+**then 的链式调用&值穿透特性**
+
+在我们使用 Promise 的时候，当 then 函数中 return 了一个值，不管是什么值，我们都能在下一个 then 中获取到，这就是所谓的then 的链式调用。而且，当我们不在 then 中放入参数，例：promise.then().then()，那么其后面的 then 依旧可以得到之前 then 返回的值，这就是所谓的值的穿透。（.then 或者 .catch 的参数期望是函数，传入非函数则会发生值穿透。）
+
+```javascript
+Promise.resolve('foo')
+  .then(Promise.resolve('bar'))
+  .then(function(result){
+    console.log(result)   //foo
+  });
+```
+Promise方法链通过return传值，没有return就只是相互独立的任务而已
+
+#### Promise的缺陷：Promies没有中断的方法
+
+因为Promise 是没有中断方法的，xhr.abort()、ajax 有自己的中断方法，axios 是基于 ajax 实现的；fetch 基于 promise，所以他的请求是无法中断的。
+
+不过可以使用race来封装Promise的中断方法
+
+```javascript
+function abortPromise (promise){
+  let _abort = undefined;
+  let _abort_promise = new Promise((resolve, reject) => {
+    _abort = reject;
+  });
+  let p = Promise.race([promise, _abort_promise]);
+  p.abort = _abort;
+  return p;
+}
+```
+
+#### promisify
+
+promisify是node的utils模块中的一个函数，它作用就是为了转换最后一个参数是回调函数的函数为promise函数，且回调函数中有两个参数：error 和 data
+
+使用:
+
+```javascript
+// 使用前
+fs.readFile('./index.js', (err, data) => {
+   if(!err) {
+       console.log(data.toString())
+   }
+   console.log(err)
+})
+// 使用promisify后
+const readFile = promisify(fs.readFile)
+readFile('./index.js')
+   .then(data => {
+       console.log(data.toString())
+   })
+   .catch(err => {
+       console.log('error:', err)
+   })
+```
+
+promisify 函数实现
+```javascript
+// const newFn = promisify(fn)
+// newFn(a) 会执行Promise参数方法
+function promisify(fn) {
+  return function(...args) {
+    // 返回promise的实例
+    return new Promise(function(reslove, reject) {
+      // newFn(a) 时会执行到这里向下执行
+      // 加入参数cb => newFn(a)
+      args.push(function(err, data) {
+        if (err) {
+          reject(err)
+        } else {
+          reslove(data)
+        }
+      })
+      // 这里才是函数真正执行的地方执行newFn(a, cb)
+      fn.apply(null, args)
+    })
+  }
+}
+```
+
+或者(其实下面和上面没啥两样，但是我认为这个更好理解)
+
+```javascript
+const promisify = (fn) => { // 典型的高阶函数 参数是函数 返回值是函数 
+  return (...args)=>{
+    return new Promise((resolve,reject)=>{
+      fn(...args,function (err,data) { // node中的回调函数的参数 第一个永远是error
+        if(err) return reject(err);
+        resolve(data);
+      })
+    });
+  }
+}
+
+//如果想要把 node 中所有的 api 都转换成 promise 的写法呢：
+const promisifyAll = (target) =>{
+  Reflect.ownKeys(target).forEach(key=>{
+    if(typeof target[key] === 'function'){
+      // 默认会将原有的方法 全部增加一个 Async 后缀 变成 promise 写法
+      target[key+'Async'] = promisify(target[key]);
+    }
+  });
+  return target;
+}
+```
+
+**记录**: 我总是对Promise的一些特性有一些误解，以下为个人记录
 
 1. Promise.reject一旦被catch捕获，就不会将接着传递，而catch后面的then则会一直传递
 2. 内部error一旦被catch捕获，就不会向外层传递
@@ -284,26 +404,16 @@ Async函数就是Generator函数的语法糖，Async函数可以理解成可以�
 
 ### document.body 和 document.documentElement的区别
 
-document.body：返回html dom中的body节点 即
-document.documentElement： 返回html dom中的root 节点 即
+document.body：返回html dom中的body节点 即body标签元素
 
-两者主要的区别表现在获取 scrollTop 方面的差异
+document.documentElement： 返回html dom中的root 节点 即html标签元素
 
-* 在chrome(版本 52.0.2743.116 m)下获取scrollTop只能通过document.body.scrollTop,而且DTD是否存在,不会影响 document.body.scrollTop的获取。
+两者主要的区别表现在获取 scrollTop 方面的差异(chrome亲测，其他没测试，可以通过`<!DOCTYPE >`与`<!DOCTYPE html>`来查看效果)：
 
-* 在firefox(47.0)及 IE(11.3)下获取scrollTop，DTD是否存,会影响document.body.scrollTop 与 document.documentElement.scrollTop的取值
+* 当文档使用了DTD时， `document.body.scrollTop`的值为0,此时需要使用 `document.documentElement.scrollTop`来获取滚动条滚过的长度。
+* 在未使用DTD定义文档时，使用`document.body.scrollTop`来获取值。
 
-  在firefox(47.0)
-
-  * 页面存在DTD，使用document.documentElement.scrollTop获取滚动条距离
-  * 页面不存在，使用document.body.scrollTop 获取滚动条距离
-
-  在IE(11.3)
-
-  * 页面存在DTD，使用document.documentEelement.scrollTop获取滚动条距离
-  * 页面不存在DTD,使用document.documentElement.scrollTop 或 document.body.scrollTop都可以获取到滚动条距离
-
-注：DTD即xhtml标准网页或者更简单的说是带标签的页面
+注：DTD(Document Type Definition，文档定义类型)的作用是定义XML文档的合法构建模块，可被成行的声明于XML文档中，也可作为一个外部引用。
 
 兼容解决方案：
 
@@ -501,8 +611,8 @@ Map和Set是ES6提供的新的数据结构。
 #### WeakSet和Set
 WeakSet 结构与 Set 类似，也是不重复的值的集合。但是，它与 Set 有两个区别。
 * WeakSet 的成员只能是对象（null除外），而不能是其他类型的值。
-* WeakSet 中的对象的键名都是弱引用（其值仍是强引用），即垃圾回收机制不考虑 WeakSet 对该对象的引用，也就是说，如果其他对象都不再引用该对象，那么垃圾回收机制会自动回收该对象所占用的内存，不考虑该对象还存在于 WeakSet 之中。
-* WeakSet 的成员是不适合引用的，因为它会随时消失。另外，由于 WeakSet 内部有多少个成员，取决于垃圾回收机制有没有运行，运行前后很可能成员个数是不一样的，而垃圾回收机制何时运行是不可预测的，因此 ES6 规定 WeakSet 不可遍历，不支持size, forEach等遍历方法。
+* WWeakSet 中的对象都是弱引用，即垃圾回收机制不考虑 WeakSet 对该对象的引用，也就是说，如果其他对象都不再引用该对象，那么垃圾回收机制会自动回收该对象所占用的内存，不考虑该对象还存在于 WeakSet 之中。
+* WeakSet 的成员是不适合引用的，因为它会随时消失。另外，由于 WeakSet 内部有多少个成员，取决于垃圾回收机制有没有运行，运行前后很可能成员个数是不一样的，而垃圾回收机制何时运行是不可预测的，因此 ES6 规定 WeakSet 不可遍历。
 
 **WeakSet用处**
 
@@ -728,6 +838,7 @@ requestAnimationFrame的兼容性问题主要是\<ie9，其他大多数都没有
     array.forEach(function(item, index) {
         if (item === 2) {
             array = array.concat(array.splice(index, array.length - index));
+            return;    //这里可以跳出当前的条件循环，要不然还会执行后面
         }
         console.log(item); //只输出1,2
     });
