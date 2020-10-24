@@ -688,11 +688,9 @@ Object.prototype.toString.call(_weak_set);  //[object WeakSet]
 #### 弱引用
 弱引用是指垃圾回收的过程中不会将键名对该对象的引用考虑进去。
 
+#### 深拷贝和浅拷贝
 #### this指向
 [这里就要详细了解js底层原理](./theory.md)
-
-#### 深拷贝和浅拷贝
-[这里也需要了解js底层原理](./theory.md)
 
 #### javascript是按值传递还是按引用传递
 

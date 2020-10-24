@@ -78,4 +78,6 @@ const clone = (obj)=>{
 
 #### this指向
 
+[再来40道this面试题酸爽继续(1.2w字用手整理](https://juejin.im/post/6844904083707396109)
+
 #### valueOf 和 toString
