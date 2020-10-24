@@ -57,6 +57,9 @@ obj = {}                //抛出错误，提示对象read-only
 * apply()调用一个指定this值的函数, 接收作为一个数组或者类数组对象提供的参数。语法: `func.apply(thisArg, [argsArray])`
 * bind()方法创建一个指定this值的新函数，并在调用新函数时，将给定参数列表作为原函数的参数序列的前若干项。语法: `func.bind(thisArg, [arg1[, arg2[, ...]]])`
 
+**call、apply、bind 接收到的第一个参数是空或者null、undefined的话，则会忽略这个参数。**
+
+**箭头函数的this无法通过`bind call apply`来直接修改，但是可以通过改变作用域中的`this`来间接修改**
 
 **Function.prototype.call**
 
@@ -799,6 +802,8 @@ requestAnimationFrame的兼容性问题主要是\<ie9，其他大多数都没有
 * **`for...in`** `for...in` 语句以任意顺序遍历一个对象的可枚举属性的属性名。但是 `for...in` 会遍历对象本身的所有可枚举属性和从它原型继承而来的可枚举属性，因此如果想要仅迭代对象本身的属性，要结合`hasOwnProperty()` 来使用。 `for...in`遍历数组的情况下，可能会随机顺序遍历。(不可使用 `continue break return`)
 
 **forEach如何实现break(跳出循环)**
+
+**`forEach map filter`这些js内置的函数，第二个参数都是可以绑定this的**
 
 1. 抛出错误
 

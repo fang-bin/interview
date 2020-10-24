@@ -78,6 +78,102 @@ const clone = (obj)=>{
 
 #### this指向
 
+一些特殊的题型（主要是有关箭头函数）:
+
+1. 构造函数对象中普通函数和箭头函数的区别：一层函数的题目
+    ```javascript
+    var name = 'window'
+    function Person (name) {
+      this.name = name
+      this.foo1 = function () {
+        console.log(this.name)
+      }
+      this.foo2 = () => {
+        console.log(this.name)
+      }
+    }
+    var person2 = {
+      name: 'person2',
+      foo2: () => {
+        console.log(this.name)
+      }
+    }
+    var person1 = new Person('person1')
+    person1.foo1()
+    person1.foo2()
+    person2.foo2()
+    ```
+
+    题解：
+    * person1.foo1()是个普通函数，this由最后调用它的对象决定，即person1。
+    * person1.foo2()为箭头函数，this由外层作用域决定，且指向函数定义时的this而非执行时，在这里它的外层作用域是函数Person，且这个是构造函数，并且使用了new来生成了对象person1，所以此时this的指向是为person1。
+    * person2.foo2()字面量创建的的对象person2中的foo2是个箭头函数，由于person2是直接在window下创建的，你可以理解为它所在的作用域就是在window下，因此person2.foo2()内的this应该是window。
+
+    答案:
+    ```html
+    'person1'
+    'person1'
+    'window'
+    ```
+
+箭头函数的this指向:
+
+* 它里面的this是由外层作用域来决定的，且指向函数定义时的this而非执行时
+* 字面量创建的对象，作用域是window，如果里面有箭头函数属性的话，this指向的是window
+* 构造函数创建的对象，作用域是可以理解为是这个构造函数，且这个构造函数的this是指向新建的对象的，因此this指向这个对象。
+* 箭头函数的this是无法通过bind、call、apply来直接修改，但是可以通过改变作用域中this的指向来间接修改。
+
+箭头函数的优点：
+
+* 箭头函数写代码拥有更加简洁的语法(当然也有人认为这是缺点)
+* this由外层作用域决定，所以在某些场合我们不需要写类似const that = this这样的代码
+
+**箭头函数还有一个特性，其没有arguments对象，同时箭头函数不能用来当构造函数**
+
+##### 避免使用箭头的场景
+
+1. 使用箭头函数定义对象的方法
+    ```javascript
+    let obj = {
+        value: 'LinDaiDai',
+        getValue: () => console.log(this.value)
+    }
+    obj.getValue() // undefined
+    ```
+2. 定义原型方法
+    ```javascript
+    function Foo (value) {
+        this.value = value
+    }
+    Foo.prototype.getValue = () => console.log(this.value)
+
+    const foo1 = new Foo(1)
+    foo1.getValue() // undefined
+    ```
+3. 不能作为构造函数，会直接报TypeError
+4. 作为某些事件的回调函数
+    ```javascript
+    const button = document.getElementById('myButton');
+    button.addEventListener('click', () => {
+        console.log(this === window); // => true
+        this.innerHTML = 'Clicked button';
+    });
+    ```
+
+补充一道:
+
+```javascript
+function foo() {
+  console.log( this.a );
+}
+var a = 2;
+(function(){
+  "use strict";
+  foo(); //最后打印出来2
+})();
+
+```
+
 [再来40道this面试题酸爽继续(1.2w字用手整理](https://juejin.im/post/6844904083707396109)
 
 #### valueOf 和 toString
