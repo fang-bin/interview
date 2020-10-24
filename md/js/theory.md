@@ -74,7 +74,82 @@ const clone = (obj)=>{
 
 #### 定时器的执行顺序或机制（牵扯到js的事件循环机制）
 
-#### 闭包（原理，使用，优劣）
+定时器其实是由浏览器当前页面标签进程中的定时器线程来管理的。
+
+#### 作用域链
+
+作用域链，是由当前环境和上层环境的一系列变量对象组成，它保证了当前执行环境对符合访问权限的变量和函数的有序访问。
+
+#### 闭包（原理，使用，缺点）
+
+闭包是一种特殊对象，它由两部分组成，执行上下文和在该执行上下文中创建的函数，如果函数执行时，访问了那个执行上下文中变量对象的值，就会产生闭包。（和网上其他一些言论不太一样，chrome上也是这么认定的），一些书籍中都以函数名指代这里生成的闭包，而在chrome中，则以那个执行上下文的函数名指代闭包。
+
+```javascript
+(function () {
+  var a = 10;
+  var b = 20;
+
+  var test = {
+    m: 20,
+    add: function (x) {
+      return a + x;
+    },
+    sum: function () {
+      return a + b + this.m;
+    },
+    mark: function (k, j) {
+      return k + j;
+    }
+  }
+
+  window.test = test;
+})();
+
+test.add(100);
+test.sum();
+test.mark();
+
+var _mark = test.mark;
+_mark();
+```
+
+![avator](https://upload-images.jianshu.io/upload_images/599584-77888095edb980a7.png)
+
+mark执行时，闭包为外层的自执行函数，this指向test
+
+![avator](https://upload-images.jianshu.io/upload_images/599584-fedeee99354936a9.png)
+
+_mark执行时，闭包为外层的自执行函数，this指向window
+
+**上面例子和下面例子的闭包可能出乎很多人的预料**
+
+```javascript
+function foo() {
+  var a = 10;
+  function fn1() {
+    return a;
+  }
+  function fn2() {
+    return 10;
+  }
+  fn2();
+}
+foo();
+```
+这个例子，和其他例子不太一样。虽然fn2并没有访问到foo的变量，但是foo执行时仍然变成了闭包。而当我将fn1的声明去掉时，闭包便不会出现了。
+
+那么结合这个特殊的例子，我们可以这样这样定义闭包。
+
+闭包是指这样的作用域(foo)，它包含有一个函数(fn1)，这个函数(fn1)可以调用被这个作用域所封闭的变量(a)、函数、或者闭包等内容。通常我们通过闭包所对应的函数来获得对闭包的访问。
+
+##### 使用: 通过闭包，我们可以在其他的执行上下文中，访问到函数的内部变量。
+
+1. 柯里化
+2. 模块化
+
+##### 缺点:
+
+javascript有自动的垃圾回收机制，当一个值在内存中失去引用，垃圾回收机制很快会根据特殊的算法找到它，并将其回收，释放内存。而函数的执行上下文，在执行完毕之后，生命周期结束，那么该函数的执行上下文就会失去引用，其占用的内存空间很快会被垃圾回收器释放，可是闭包的存在，会阻止这一过程。
 
 #### this指向
 
@@ -160,6 +235,15 @@ const clone = (obj)=>{
     });
     ```
 
+##### 构造函数与原型方法上的this
+
+通过new操作符调用构造函数，会经历以下4个阶段:
+
+* 创建一个新的对象；
+* 将构造函数的this指向这个新对象；
+* 指向构造函数的代码，为这个对象添加属性，方法等；
+* 返回新对象。
+
 补充一道:
 
 ```javascript
@@ -169,11 +253,12 @@ function foo() {
 var a = 2;
 (function(){
   "use strict";
-  foo(); //最后打印出来2
+  foo(); //最后打印出来2，这个是作用域链的问题
 })();
-
 ```
 
 [再来40道this面试题酸爽继续(1.2w字用手整理](https://juejin.im/post/6844904083707396109)
 
 #### valueOf 和 toString
+
+#### instanceof 和 typeof 和 Object.prototype.toString.call()

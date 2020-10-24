@@ -61,7 +61,7 @@ obj = {}                //抛出错误，提示对象read-only
 
 **箭头函数的this无法通过`bind call apply`来直接修改，但是可以通过改变作用域中的`this`来间接修改**
 
-**Function.prototype.call**
+#### **Function.prototype.call**
 
 ```javascript
 Function.prototype.myCall = function (thisArg, ...args) {
@@ -77,7 +77,7 @@ Function.prototype.myCall = function (thisArg, ...args) {
 }
 ```
 
-**Function.prototype.apply**
+#### **Function.prototype.apply**
 
 ```javascript
 Function.prototype.myApply = function (thisArg, args) {
@@ -93,7 +93,35 @@ Function.prototype.myApply = function (thisArg, args) {
 }
 ```
 
-**Function.prototype.bind**
+##### `call/apply`使用
+1. 将类数组对象转换为数组。
+  函数中`[].slice.call(arguments)`
+2. 根据自己的需要灵活修改this指向
+3. 实现继承
+    ```javascript
+    // 定义父级的构造函数
+    var Person = function (name, age) {
+      this.name = name;
+      this.age = age;
+      this.gender = ['man', 'woman'];
+    }
+
+    // 定义子类的构造函数
+    var Student = function (name, age, high) {
+
+      // use call
+      Person.call(this, name, age);
+      this.high = high;
+    }
+    Student.prototype.message = function () {
+      console.log('name:' + this.name + ', age:' + this.age + ', high:' + this.high + ', gender:' + this.gender[0] + ';');
+    }
+
+    new Student('xiaom', 12, '150cm').message();
+    ```
+    在Student的构造函数中，借助call方法，将父级的构造函数执行了一次，相当于将Person中的代码，在Sudent中复制了一份，其中的this指向为从Student中new出来的实例对象。call方法保证了this的指向正确，因此就相当于实现了继承。
+
+#### **Function.prototype.bind**
 
 ```javascript
 Function.prototype.myBind = function(thisArg, ...args) {
