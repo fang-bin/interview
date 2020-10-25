@@ -123,11 +123,11 @@ var welcomeUser = function(Email, user) {};
 function curry (func, args = []){
   const len = func.length;  //是函数的形参数量
   return (..._args) => {
-    _args.push(...args);
-    if (_args.length < len){
-      return curry.call(this, func, _args);
+    args.push(..._args);
+    if (args.length < len){
+      return curry.call(this, func, args);
     }
-    return func.apply(this, _args);
+    return func.apply(this, args);
   }
 }
 ```
