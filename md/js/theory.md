@@ -262,3 +262,5 @@ var a = 2;
 #### valueOf 和 toString
 
 #### instanceof 和 typeof 和 Object.prototype.toString.call()
+
+#### {}(字面量)、Object()、new Object() 创建对象有什么区别？ 还有Object.create()有什么区别

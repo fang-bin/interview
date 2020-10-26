@@ -8,6 +8,23 @@
 
 ![原型链](https://github.com/fang-bin/interview/blob/master/image/prototype.png)
 
+创建对象的方式中还包括工厂模式：
+```javascript
+var createPerson = function(name, age) {
+    // 声明一个中间对象，该对象就是工厂模式的模子
+    var o = new Object();
+
+    // 依次添加我们需要的属性与方法
+    o.name = name;
+    o.age = age;
+    o.getName = function() {
+        return this.name;
+    }
+    return o;
+}
+```
+缺点: 1. 没有办法识别对象实例的类型(使用instanceof无法识别该对象的类型)
+
 ES5实现继承的方法:
 
 #### 原型链继承
