@@ -233,6 +233,34 @@ function New(func) {
 4. 返回该中间对象，即返回实例对象。
 
 
+##### jQuery内部有关原型的实现
+
+```javascript
+(function(ROOT) {
+  var jQuery = function(selector) {
+    return new jQuery.fn.init(selector);
+  }
+  jQuery.fn = jQuery.prototype = {
+    constructor: jQuery,
+    version: '1.0.0',
+    init: function(selector) {
+      var ele = document.querySelector(selector);
+      this[0] = ele;
+      return this;
+    }
+  }
+  jQuery.fn.init.prototype = jQuery.fn;
+  jQuery.extend = jQuery.fn.extend = function (options) {
+    var target = this;
+    for (lef fn in options) {
+      target[fn] = options[fn];
+    }
+    return target;
+  }
+  ROOT.jQuery = ROOT.$ = jQuery;
+})(window);
+```
+
 ###### 更改原型链的一些骚操作
 
 `Object.setPrototypeOf(obj, obj.\__proto__)`

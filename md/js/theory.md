@@ -1,10 +1,107 @@
 [有现成的总结非常好的文章，非常值得一看，下面的问题都可以在这里得到充分解答](https://www.jianshu.com/p/cd3fee40ef59)
 
-**注意**： 上面文章中[前端基础进阶（十二）：深入核心，详解事件循环机制](https://www.jianshu.com/p/12b9f73c5a4f)对事件循环的解释中，对一次事件循环结束的节点不太正确，应该区分浏览器环境(chrome的webkit内核)和node环境
-1. 在node环境中，只有一类宏任务执行完之后，才会去执行所有微任务（setTimeout和setInterval是同源的）。
-2. 在浏览器环境中，一个宏任务（setTimeout都属于一个任务，setInterval都属于另一个任务）结束之后，就会去所有微任务。
+**注意**： 上面文章中[前端基础进阶（十二）：深入核心，详解事件循环机制](https://www.jianshu.com/p/12b9f73c5a4f)对事件循环的解释中，对一次事件循环结束的节点不太正确，应该区分浏览器环境(chrome的webkit内核)和node(10版本,12版本)环境，v8早期版本和v8新版本
 
-相关问题:
+主要可以分为浏览器环境，node10环境和node12环境：
+
+* 在低版本v8环境中，同源的task会在一轮事件循环中执行(setImmediate的优先级和setTimeout/setInterval的优先级不太好说，不确定)，然后才会去执行jobs，其优先级 process.nextTick >then>await
+* 在高版本v8环境中，一轮事件循环中只执行**一个**task，之后会执行所有的jobs，jobs的优先级 process.nextTick>then=await
+* node和浏览器的主要区别是：在node环境中, setTimeout和setInterval是同源的，setImmediate是单独的，而在浏览器环境中setTimeout和setInterval是非同源的
+
+[setTimeout和setImmediate到底谁先执行](https://juejin.im/post/6844904100195205133)
+
+Node.js的EventLoop是分阶段的
+
+![avator](https://user-gold-cdn.xitu.io/2020/3/23/1710556d5509ef63)
+
+1. timers: 执行setTimeout和setInterval的回调
+2. pending callbacks: 执行延迟到下一个循环迭代的 I/O 回调
+3. idle, prepare: 仅系统内部使用
+4. poll: 检索新的 I/O 事件;执行与 I/O 相关的回调。事实上除了其他几个阶段处理的事情，其他几乎所有的异步都在这个阶段处理。
+5. check: setImmediate在这里执行
+6. close callbacks: 一些关闭的回调函数，如：socket.on('close', ...)
+
+![avator](https://user-gold-cdn.xitu.io/2020/3/23/171055711f3b0aac)
+
+例一:
+```javascript
+console.log('outer');
+
+setTimeout(() => {
+  setTimeout(() => {
+    console.log('setTimeout');
+  }, 0);
+  setImmediate(() => {
+    console.log('setImmediate');
+  });
+}, 0);
+
+
+// outer
+// setImmediate
+// setTimeout
+```
+
+题解:
+
+1. 外层是一个setTimeout，所以执行他的回调的时候已经在timers阶段了
+2. 处理里面的setTimeout，因为本次循环的timers正在执行，所以他的回调其实加到了下个timers阶段
+3. 处理里面的setImmediate，将它的回调加入check阶段的队列
+4. 外层timers阶段执行完，进入pending callbacks，idle, prepare，poll，这几个队列都是空的，所以继续往下
+5. 到了check阶段，发现了setImmediate的回调，拿出来执行
+6. 然后是close callbacks，队列是空的，跳过
+7. 又是timers阶段，执行我们的console
+
+
+例二：
+```javascript
+console.log('outer');
+
+setTimeout(() => {
+  console.log('setTimeout');
+}, 0);
+
+setImmediate(() => {
+  console.log('setImmediate');
+});
+
+//这次，outer之后，可能setTimeout在前，也可能setImmediate在前
+```
+题解:
+
+注： node.js里面setTimeout(fn, 0)会被强制改为setTimeout(fn, 1),HTML 5里面setTimeout最小的时间限制是4ms).
+
+1. 外层同步代码一次性全部执行完，遇到异步API就塞到对应的阶段
+2. 遇到setTimeout，虽然设置的是0毫秒触发，但是被node.js强制改为1毫秒，塞入times阶段
+3. 遇到setImmediate塞入check阶段
+4. 同步代码执行完毕，进入Event Loop
+5. 先进入times阶段，检查当前时间过去了1毫秒没有，如果过了1毫秒，满足setTimeout条件，执行回调，如果没过1毫秒，跳过
+6. 跳过空的阶段，进入check阶段，执行setImmediate回调
+
+关键就在这个1毫秒，如果同步代码执行时间较长，进入Event Loop的时候1毫秒已经过了，setTimeout执行，如果1毫秒还没到，就先执行了setImmediate。每次我们运行脚本时，机器状态可能不一样，导致运行时有1毫秒的差距，一会儿setTimeout先执行，一会儿setImmediate先执行。但是这种情况只会发生在还没进入timers阶段的时候。像我们第一个例子那样，因为已经在timers阶段，所以里面的setTimeout只能等下个循环了，所以setImmediate肯定先执行。
+
+同理的还有其他poll阶段的API也是这样的，比如：
+
+```javascript
+var fs = require('fs')
+
+fs.readFile(__filename, () => {
+    setTimeout(() => {
+        console.log('setTimeout');
+    }, 0);
+    setImmediate(() => {
+        console.log('setImmediate');
+    });
+});
+```
+
+1. 我们代码基本都在readFile回调里面，他自己执行时，已经在poll阶段
+2. 遇到setTimeout(fn, 0)，其实是setTimeout(fn, 1)，塞入后面的timers阶段
+3. 遇到setImmediate，塞入后面的check阶段
+4. 遇到nextTick，立马执行，输出'nextTick 1'
+5. 到了check阶段，输出'setImmediate',又遇到个nextTick,立马输出'nextTick 2'
+6. 到了下个timers阶段，输出'setTimeout'
+
 #### 引用数据类型的赋值、深拷贝、浅拷贝
 深拷贝，浅拷贝是针对引用数据类型。
 引用数据类型的赋值，其实是复制的只是引用数据在堆内存中的指向。
@@ -45,28 +142,131 @@ freeze方法其效果在有一定程度与浅拷贝相同，但效果上还要�
     这种方法虽然可以实现数组或对象深拷贝,但不能处理函数,(函数会直接过滤掉)，而正则和Map,Set则会转化成空对象（{}）。
 
 2. 方法二
-```javascript
-const clone = (obj)=>{
-  if(typeof obj !== 'object' || obj === null) return obj;
-  const objType = Object.prototype.toString.call(obj).slice(8, -1);
-  let temObj;
-  if (objType === 'Array'){
-    temObj = [];
-  }else if (objType === 'Object'){
-    temObj = {};
-  }
-  for (let item in obj) {
-    if (obj[item] === obj) continue;
-    if (typeof obj[item] === 'object'){
-      temObj[item] = clone(obj[item]);
-    }else{
-      temObj[item] = obj[item];
+
+    [clone函数](https://github.com/ConardLi/ConardLi.github.io/blob/master/demo/deepClone/src/clone_6.js)
+
+    ```javascript
+    function clone (target, map = new WeakMap()){
+      if (!(target !== null && (typeof target === 'object' || typeof target === 'function'))) return target;
+      const targetType = Object.prototype.toString.call(target).slice(8, -1).toLowerCase();
+      let cloneTarget = undefined;
+      const Ctor = target.constructor;
+
+      if (map.get(target)) {
+        return map.get(target);
+      }
+      map.set(target, cloneTarget);
+
+      const cloneDeep = ['map', 'set', 'object', 'array', 'arguments'];
+      if (cloneDeep.includes(targetType)) {
+        cloneTarget = new Ctor();
+
+        switch (targetType) {
+          case 'set':
+            target.forEach(e => {
+              cloneTarget.add(clone(e, map));
+            });
+            break;
+          case 'set':
+            target.forEach((value, key) => {
+              cloneTarget.set(key, clone(value, map));
+            });
+            break;
+          case 'array':
+          case 'arguments':
+            target.forEach((e, i) => {
+              cloneTarget[i] = clone(e, map);
+            });
+            break;
+          case 'object':
+            Object.keys(target).forEach(e => {
+              cloneTarget[e] = clone(target[e], map);
+            });
+            break;
+        }
+        return cloneTarget;
+      }else {
+        switch (targetType) {
+          case 'boolean':
+          case 'string':
+          case 'number':
+          case 'error':
+          case 'date':
+            return new Ctor(target);
+          case 'regexp':
+            const reFlags = /\w*$/;
+            const result = new Ctor(target.source, reFlags.exec(target));
+            result.lastIndex = target.lastIndex;
+            return result;
+          case 'symbol':
+            return Object(Symbol.prototype.valueOf.call(target));
+          case 'function':
+              const bodyReg = /(?<={)(.|\n)+(?=})/m;
+              const paramReg = /(?<=\().+(?=\)\s+{)/;
+              const funcString = target.toString();
+              if (target.prototype) {
+                  const param = paramReg.exec(funcString);
+                  const body = bodyReg.exec(funcString);
+                  if (body) {
+                      if (param) {
+                          const paramArr = param[0].split(',');
+                          return new Function(...paramArr, body[0]);
+                      } else {
+                          return new Function(body[0]);
+                      }
+                  } else {
+                      return null;
+                  }
+              } else {
+                  return eval(funcString);
+              }
+          default:
+            return null;
+        }
+      }
     }
-  }
-  return temObj;
-}
-```
-这种方法还是处理不了正则、Map、Set、和对象的原型链等
+    ```
+    实际上克隆函数是没有实际应用场景的，两个对象使用一个在内存中处于同一个地址的函数也是没有任何问题的，lodash对函数的处理是：
+
+    ```javascript
+    const isFunc = typeof value == 'function'
+    if (isFunc || !cloneableTags[tag]) {
+            return object ? value : {}
+    }
+    ```
+
+    **通过prototype来区分下箭头函数和普通函数，箭头函数是没有prototype的。**
+
+    **可以直接使用eval和函数字符串来重新生成一个箭头函数，注意这种方法是不适用于普通函数的。**
+
+    分别使用正则取出函数体和函数参数，然后使用new Function ([arg1[, arg2[, ...argN]],] functionBody)构造函数重新构造一个新的函数
+
+    ```javascript
+    function cloneFunction(func) {
+        const bodyReg = /(?<={)(.|\n)+(?=})/m;
+        const paramReg = /(?<=\().+(?=\)\s+{)/;
+        const funcString = func.toString();
+        if (func.prototype) {
+            console.log('普通函数');
+            const param = paramReg.exec(funcString);
+            const body = bodyReg.exec(funcString);
+            if (body) {
+                console.log('匹配到函数体：', body[0]);
+                if (param) {
+                    const paramArr = param[0].split(',');
+                    console.log('匹配到参数：', paramArr);
+                    return new Function(...paramArr, body[0]);
+                } else {
+                    return new Function(body[0]);
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return eval(funcString);
+        }
+    }
+    ```
 
 3. 方法三
 函数库lodash中的_.cloneDeep用来做
@@ -261,6 +461,8 @@ var a = 2;
 
 #### valueOf 和 toString
 
-#### instanceof 和 typeof 和 Object.prototype.toString.call()
+#### instanceof 和 typeof 和 isPrototypeOf 和 Object.prototype.toString.call()
 
 #### {}(字面量)、Object()、new Object() 创建对象有什么区别？ 还有Object.create()有什么区别
+
+#### isPrototypeOf 和 setPrototypeOf
