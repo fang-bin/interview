@@ -355,22 +355,24 @@ script标签jsonp跨域，原因script标签，img标签等不受同源策略限
 手写JSONP
 
 ```javascript
-(function (window,document){
-  'use strict'
-  const jsonp = function(url,data,callback){
-    let dataString = url.indexOf('?') ? '&' : '?';
-    for (let key in data) {
-      dataString += `${key}=${data[key]}&`;
+(function (window, document){
+  "use strict"
+  const jsonp = function (url, options, callback){
+    let jsonpStr = url.indexOf('?') > -1 ? '&' : '?';
+    for (const key in options) {
+      if (options.hasOwnProperty(key)) {
+        jsonpStr += `${key}=${options[key]}`;
+      }
     }
-    const jsonp_cb = Math.random.toString.replace('.', '');
-    dataString += `callback=${jsonp_cb}`;
+    const callbackName = Math.random().toString(16).replace('.', '');
+    jsonpStr += `callback=${callbackName}`;
     const scriptDom = document.createElement('script');
-    scriptDom.src = `${url + dataString}`;
-    window[jsonp_cb] = function (data){
+    scriptDom.src = `${url}${jsonpStr}`;
+    window[callbackName] = function (data){
       callback(data);
       document.body.removeChild(scriptDom);
     }
-    document.body.appendChild(scriptDom);
+    document.appendChild(scriptDom);
   }
   window.$jsonp = jsonp;
 })(window, document);
@@ -389,7 +391,7 @@ CORS是跨源AJAX请求的根本解决方法。相比JSONP只能发GET请求，C
 #### cookie localStorage sessionStorage三者区别
 
 * **容量方面**: localStorage 和 sessionStorage均为5M左右，cookie在不同的浏览器中每个域的数量和大小均不同，不过硬尽量保证数量小于20(ie7+, chrome, firefox最小50个，safari不限制)，大小应尽量小于4k
-* **时效性（声明周期）** localStroage和sessionStorage都以文件的形式存储在本地（硬盘），localStorage存储的数据是永久性的，除非用户人为删除否则一直存在，而sessionStorage是会话级别的本地保存，其标签关闭数据也会被清除。cookie一般由服务器生成，可设置失效时间，如果在浏览器端生成cookie或未设置时效时间，默认关闭浏览器后失效。
+* **时效性（声明周期）** localStroage以文件的形式存储在本地（硬盘），sessionStorage应该是存在于内存中（回话结束则消失），localStorage存储的数据是永久性的，除非用户人为删除否则一直存在，而sessionStorage是会话级别的本地保存，其标签关闭数据也会被清除。cookie一般由服务器生成，可设置失效时间，如果在浏览器端生成cookie或未设置时效时间，默认关闭浏览器后失效。
 * **作用域** localStorage同一浏览器中，同源文档可以共享localStorage数据，而sessionStorage则是只有同一浏览器，同一窗口的同源文档才能共享数据（统一标签窗口不同的iframe也可以共享数据）。
 
 #### 三者相同

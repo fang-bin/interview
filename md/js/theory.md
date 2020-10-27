@@ -461,6 +461,75 @@ var a = 2;
 
 ### valueOf 和 toString
 
+valueOf: 返回对象的原始值表示
+toString: 返回对象的字符串表示
+
+valueOf和toString都是Object.prototype的方法，不过很多内置对象都会重写这两个方法，以适应实际需要。
+
+这里主要讨论对象在参与运算时候，调用这两个方法的情况：
+
+##### Object -> Boolean (`Boolean({})`)
+
+直接转换为true（包装类型也一样），不调用valueOf和toString;
+
+`Boolean(new Boolean(false))` === `true`
+
+##### Object -> Number （`Number({})`）
+
+1. 如果对象具有 valueOf 方法且返回原始值(string、number、boolean、undefined、null),则将该原始值转换为数字（转换失败则会返回NaN），并返回这个数字
+2. 如果对象具有toString方法且返回原始值(string、number、boolean、undefined、null)，则将该原始值转换为数字(转换失败会返回NaN)，并返回这个数字
+3. 如果toString方法返还的还是对象，抛出TypeError
+
+##### Object -> String (`String({})`)
+
+1. 如果对象具有toString方法且返回原始值(string、number、boolean、undefined、null)，则将该原始值转换为字符串，并返回该字符串
+2. 如果对象具有valueOf方法且返回原始值(string、number、boolean、undefined、null)，则将该原始值转换为字符串，并返回该字符串
+3. 如果valueOf方法返回的是对象，抛出TypeError
+
+toString转换规则
+| 对象 |  toString 返回值 |
+| :---: | :---: |
+| Array | 以逗号分割的字符串，如[1,2]的toString返回值为"1,2" |
+| Boolean | "true" |
+| Date | 可读的时间字符串，如"Tue Oct 15 2019 12:20:56 GMT+0800 (中国标准时间)" |
+| Function | 声明函数的JS源代码字符串 |
+| Number | "数字值" |
+| Object | "[object Object]" | 
+| String | "字符串" |
+
+#### 这里补充一下js中有关运算的一些隐性转换
+
+1. 如果有一个是对象，则遵循对象对原始值的转换过程(Date对象直接调用toString完成转换，其他对象通过valueOf转化，如果转换不成功则调用toString)
+2. 如果两个都是对象，两个对象都遵循步骤1转换到字符串
+3. 两个数字，进行算数运算
+4. 两个字符串，直接拼接
+5. 一个字符串一个数字，直接拼接为字符串
+
+相关面试题:
+
+```javascript
+var a = {};
+var b = {};
+var c = {};
+c[a] = 1;
+c[b] = 2;
+
+console.log(c[a]);
+console.log(c[b]);
+```
+
+由于对象的key是字符串，所以c[a]和c[b]中的a和b会执行[对象到字符串]的转换。
+
+根据转换规则, a和b都转换为了[object Object]，所以c[a]和c[b]操作的是同一个键。
+
+答案是输出两个2，c对象的最终结构如下：
+
+```javascript
+{
+  '[object Object]':2
+}
+```
+
 ### instanceof 和 typeof 和 isPrototypeOf 和 Object.prototype.toString.call()
 
 ##### typeof运算符可以返回一个值的数据类型。
