@@ -139,7 +139,18 @@ freeze方法其效果在有一定程度与浅拷贝相同，但效果上还要�
     **序列化**：把变量从内存中变成可存储或传输的过程称之为序列化
     **反序列化**：把变量内容从序列化的对象重新读到内存里称之为反序列化
 
-    这种方法虽然可以实现数组或对象深拷贝,但不能处理函数,(函数会直接过滤掉)，而正则和Map,Set则会转化成空对象（{}）。
+    **序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会变成null，Map、Set、RegExp则会变成{}**
+
+    如果对象定义了toJSON方法，会先调用此方法，然后用它的返回值来进行序列化。默认对象是没有此属性的，如果有需要可以手动添加。
+
+    ```javascript
+    var obj = {name:"Jack"}
+    obj.toJSON = function(){ return {name:”Join"} }
+    
+    JSON.stringify(obj)   // “{“name”:”Join"}"
+    ```
+
+    这种方法虽然可以实现数组或对象深拷贝,但不能处理函数,undefined,Symbol,(函数它们会直接过滤掉)，而正则和Map,Set则会转化成空对象（{}），而且也会丢失对象的原型链。
 
 2. 方法二
 
@@ -461,7 +472,7 @@ var a = 2;
 
 ### valueOf 和 toString
 
-valueOf: 返回对象的原始值表示
+valueOf: 返回对象的原始值表示（可以对一些封装过的基本类型进行拆封操作）
 toString: 返回对象的字符串表示
 
 valueOf和toString都是Object.prototype的方法，不过很多内置对象都会重写这两个方法，以适应实际需要。
@@ -599,6 +610,67 @@ Vehicle.prototype.isPrototypeOf(v)
 
 我们可以通过Object.prototype.toString方法准确判断某个对象值属于哪种内置类型。
 
+在JavaScript中所有类型(如：对象，数组，函数)都包含一个内部属性[[calss]]，此属性可以看作是一个内部分类。它并不是传统面向对象上的类,由于是内部属性，所以我们无法直接访问,不过，可以转换为字符串来查看.
+
+```javascript
+Object.prototype.toString.call([1,2,3]) // '[Object Array]'
+Object.prototype.toString.call(/^[1,2]$/)  // '[Object RegExp]'
+```
+
+每个不同的类型中的[[class]],都对应着它们相应的内部构造函数，也就是对象的内部[[Class]]属性和创建该对象的内建原生构造函数相对应，但有些特例.
+
+```javascript
+//一说特例，我估计就有人想到javascript中比较蛋疼的两个类型
+Object.prototype.toString.call(null) // '[Object Null]'
+Object.prototype.toString.call(undefined) // '[Object Undefined]'
+```
+
+**除了null和undefined，其他都有各自的构造类，都是javascript的内置构造函数。**
+
 #### {}(字面量)、Object()、new Object() 创建对象有什么区别？ 还有Object.create()有什么区别
+
+##### 封装对象
+
+在日常开发中，我们通常不直接使用内置的构造类，而是直接通过常量访问。
+
+通过构造函数实例出来的常量变成了对象，其实就是手动创建其封装对象，封装对象上存在对应的数据类型方法。
+
+**我们在使用常量的方式（.的方式或者[’属性名‘]这类方式）直接访问属性和方法时，javascript会自动为你包装一个封装对象,相当于上面我们手动包装。在操作属性或方法完成之后JavaScript也会释放当前封装对象**
+
+补充:
+
+说到这里，我们可能会想到一个问题，如果需要经常用到这些字符串的属性和方法，比如在for循环当中使用i<a.length,那么一开始创建一个封装对象也许更为方便，这样JavaScript引擎就不用每次都自动创建和自动释放循环执行这些操作了。
+
+其实我们的想法很好，但实际证明这并不是一个好办法，因为**浏览器已经为.length这样常见情况做了性能优化，直接使用封装对象来提前优化代码反而会降低执行效率。**
+
+一般情况下，我们不需要直接使用封装对象，最好是让JavaScript引擎自动选择什么时候应该使用封装对象。
+
+```javascript
+var test = 'abc';
+test.len = 123;
+var t = test.len;
+```
+
+此处t为undefined，第三行是通过新的原始对象访问其.len属性，这并不是上次添加的.len，上次的已经被销毁，当前是一个新的封装对象.
+
+例子:
+
+```javascript
+var s = 'hello world';
+var world = s.toUpperCase();
+```
+
+首先javascript会讲字符串值通过new String(s)的方式转换为封装对象，这个对象继承了来自字符串构造函数的所有方法(这些操作都从第二行访问方法时开始发生),当前s已经变成了一个封装对象,接下来在封装对象中查找需要的方法或属性，找到了之后做出相应的操作。**一旦引用结束，这个新创建的对象就会销毁**。这时候s.toUpperCase已经运行了该方法，随即销毁封装对象。
+
+###### 拆封
+
+封装对象中的基本类型值，我们可以使用valueOf方法拆封获取。
+
+```javascript
+var ss = new String("123");
+ss.valueOf()  //"123"
+```
+
+##### Object() 强制类型转化
 
 #### isPrototypeOf 和 setPrototypeOf
