@@ -459,9 +459,76 @@ var a = 2;
 
 [再来40道this面试题酸爽继续(1.2w字用手整理](https://juejin.im/post/6844904083707396109)
 
-#### valueOf 和 toString
+### valueOf 和 toString
 
-#### instanceof 和 typeof 和 isPrototypeOf 和 Object.prototype.toString.call()
+### instanceof 和 typeof 和 isPrototypeOf 和 Object.prototype.toString.call()
+
+##### typeof运算符可以返回一个值的数据类型。
+
+```javascript
+typeof ''; //string;
+typeof 1; //number;
+typeof false; //boolean;
+typeof Symbol('fangbin'); //symbol;
+typeof undefined;   //undefined;
+
+typeof null;  //object;
+typeof {};  //object;
+typeof (() => {});   //function
+typeof (new Date());  //object;
+typeof Date.now();   //number;
+typeof /abcd/;   //object;
+typeof arguments;  //函数里的arguments   object;
+typeof [];  //object;
+typeof new Set();  //object;
+typeof new Map(); //object;
+```
+
+typeof 在ES5中是一个安全操作，但是在ES6中，由于let/const的暂时性死区的问题，typeof也不再安全。
+
+typeof 只能大致区分类型，尤其面对复杂类型的时候，更是无法区分。
+
+##### instanceof运算符返回一个布尔值，表示对象是否为某个构造函数的实例。
+
+会检查右边构造函数的原型对象（prototype），是否在左边对象的原型链上。
+
+instanceof的原理是检查右边构造函数的prototype属性，是否在左边对象的原型链上。有一种特殊情况，就是左边对象的原型链上，只有null对象。这时，instanceof判断会失真。
+
+**instanceof运算符只能用于对象（纯对象和数组），不适用原始类型（Undefined、Null、Boolean、Number 和 String）的值。**
+
+利用instanceof运算符，还可以巧妙地解决，调用构造函数时，忘了加new命令的问题。
+
+```javascript
+function Fubar (foo, bar) {
+  if (this instanceof Fubar) {
+    this._foo = foo;
+    this._bar = bar;
+  } else {
+    return new Fubar(foo, bar);
+  }
+}
+```
+
+##### isPrototypeOf
+
+用于测试一个对象是否存在于另一个对象的原型链上。
+
+`prototypeObj.isPrototypeOf(object)`
+
+```javascript
+var v = new Vehicle();
+v instanceof Vehicle // true
+
+v instanceof Vehicle
+// 等同于
+Vehicle.prototype.isPrototypeOf(v)
+```
+
+##### Object.prototype.toString.call()
+
+要想区别对象、数组、函数单纯使用 typeof 是不行的。null 和Array 的结果也是 object，有时候我们需要的是 "纯粹" 的 object 对象。
+
+我们可以通过Object.prototype.toString方法准确判断某个对象值属于哪种内置类型。
 
 #### {}(字面量)、Object()、new Object() 创建对象有什么区别？ 还有Object.create()有什么区别
 
