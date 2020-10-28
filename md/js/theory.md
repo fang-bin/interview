@@ -102,7 +102,7 @@ fs.readFile(__filename, () => {
 5. 到了check阶段，输出'setImmediate',又遇到个nextTick,立马输出'nextTick 2'
 6. 到了下个timers阶段，输出'setTimeout'
 
-#### 引用数据类型的赋值、深拷贝、浅拷贝
+### 引用数据类型的赋值、深拷贝、浅拷贝
 深拷贝，浅拷贝是针对引用数据类型。
 引用数据类型的赋值，其实是复制的只是引用数据在堆内存中的指向。
 
@@ -112,7 +112,7 @@ fs.readFile(__filename, () => {
 
 如果被拷贝的对象只有一层，则深拷贝和浅拷贝无甚区别。
 
-**浅拷贝**
+##### 浅拷贝
 
 针对数组使用过slice,concat,展开运算符都行
 
@@ -128,170 +128,179 @@ let cloneObj = Object.assign({}, obj);
 freeze方法其效果在有一定程度与浅拷贝相同，但效果上还要比拷贝多上一层，即freeze冻结，但因为该方法自身 内部属性，该方法的名称又可以称为“浅冻结”，对于第一层数据，如浅拷贝一般，不可被新对象改变，但被freeze方法冻结过的对象，其自身也无法添加、删除或修改其第一层数据，但因为“浅冻结”这名称中浅的这一明显属性，freeze方法对于内部如果存在更深层的数据，是可以被自身修改，且也会被“=”号所引用给新的变量。
 
 
-**深拷贝**
+#### 深拷贝
 
-1. 方法一
-    ```javascript
-    let obj = {...};
-    let cloneObj = JSON.parse(JSON.stringify(obj));
-    ```
-    注：
-    **序列化**：把变量从内存中变成可存储或传输的过程称之为序列化
-    **反序列化**：把变量内容从序列化的对象重新读到内存里称之为反序列化
+##### 方法一
+```javascript
+let obj = {...};
+let cloneObj = JSON.parse(JSON.stringify(obj));
+```
+注：
+**序列化**：把变量从内存中变成可存储或传输的过程称之为序列化
+**反序列化**：把变量内容从序列化的对象重新读到内存里称之为反序列化
 
-    **序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会变成null，Map、Set、RegExp则会变成{}**
+**序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会变成null，Map、Set、RegExp则会变成{}**
 
-    如果对象定义了toJSON方法，会先调用此方法，然后用它的返回值来进行序列化。默认对象是没有此属性的，如果有需要可以手动添加。
+JSON.stringify在将JSON对象序列化为字符串时也使用了toString方法,但需要注意的是JSON.stringify并非严格意义上的强制类型转换，只是涉及toString的相关规则.(`JSON.stringify([1,2,3]); // "[1,2,3]"`)
 
-    ```javascript
-    var obj = {name:"Jack"}
-    obj.toJSON = function(){ return {name:”Join"} }
-    
-    JSON.stringify(obj)   // “{“name”:”Join"}"
-    ```
+如果对象定义了toJSON方法，会先调用此方法，然后用它的返回值来进行序列化。默认对象是没有此属性的，如果有需要可以手动添加。
 
-    这种方法虽然可以实现数组或对象深拷贝,但不能处理函数,undefined,Symbol,(函数它们会直接过滤掉)，而正则和Map,Set则会转化成空对象（{}），而且也会丢失对象的原型链。
+`JSON.stringify(value[, replacer[, space]])`;
+其中replacer可选，如果该参数是一个函数，则在序列化过程中，被序列化的值的每个属性都会经过该函数的转换和处理（类似map,不过其虚参顺序刚好和map相反，`replacer(key, value)）`；如果该参数是一个数组，则只有包含在这个数组中的属性名才会被序列化到最终的 JSON 字符串中；如果该参数为 null 或者未提供，则对象所有的属性都会被序列化。
 
-2. 方法二
+space参数是缩进的字符，如果它是一个数字，就代表缩进多少空格符。如果是字符串，则固定以它为缩进符号。
 
-    [clone函数](https://github.com/ConardLi/ConardLi.github.io/blob/master/demo/deepClone/src/clone_6.js)
+深拷贝代码：
 
-    ```javascript
-    function clone (target, map = new WeakMap()){
-      if (!(target !== null && (typeof target === 'object' || typeof target === 'function'))) return target;
-      const targetType = Object.prototype.toString.call(target).slice(8, -1).toLowerCase();
-      let cloneTarget = undefined;
-      const Ctor = target.constructor;
+```javascript
+var obj = {name:"Jack"}
+obj.toJSON = function(){ return {name:”Join"} }
 
-      if (map.get(target)) {
-        return map.get(target);
-      }
-      map.set(target, cloneTarget);
+JSON.stringify(obj)   // “{“name”:”Join"}"
+```
 
-      const cloneDeep = ['map', 'set', 'object', 'array', 'arguments'];
-      if (cloneDeep.includes(targetType)) {
-        cloneTarget = new Ctor();
+这种方法虽然可以实现数组或对象深拷贝,但不能处理函数,undefined,Symbol,(函数它们会直接过滤掉)，而正则和Map,Set则会转化成空对象（{}），而且也会丢失对象的原型链。
 
-        switch (targetType) {
-          case 'set':
-            target.forEach(e => {
-              cloneTarget.add(clone(e, map));
-            });
-            break;
-          case 'set':
-            target.forEach((value, key) => {
-              cloneTarget.set(key, clone(value, map));
-            });
-            break;
-          case 'array':
-          case 'arguments':
-            target.forEach((e, i) => {
-              cloneTarget[i] = clone(e, map);
-            });
-            break;
-          case 'object':
-            Object.keys(target).forEach(e => {
-              cloneTarget[e] = clone(target[e], map);
-            });
-            break;
-        }
-        return cloneTarget;
-      }else {
-        switch (targetType) {
-          case 'boolean':
-          case 'string':
-          case 'number':
-          case 'error':
-          case 'date':
-            return new Ctor(target);
-          case 'regexp':
-            const reFlags = /\w*$/;
-            const result = new Ctor(target.source, reFlags.exec(target));
-            result.lastIndex = target.lastIndex;
-            return result;
-          case 'symbol':
-            return Object(Symbol.prototype.valueOf.call(target));
-          case 'function':
-              const bodyReg = /(?<={)(.|\n)+(?=})/m;
-              const paramReg = /(?<=\().+(?=\)\s+{)/;
-              const funcString = target.toString();
-              if (target.prototype) {
-                  const param = paramReg.exec(funcString);
-                  const body = bodyReg.exec(funcString);
-                  if (body) {
-                      if (param) {
-                          const paramArr = param[0].split(',');
-                          return new Function(...paramArr, body[0]);
-                      } else {
-                          return new Function(body[0]);
-                      }
+##### 方法二
+
+[clone函数](https://github.com/ConardLi/ConardLi.github.io/blob/master/demo/deepClone/src/clone_6.js)
+
+```javascript
+function clone (target, map = new WeakMap()){
+  if (!(target !== null && (typeof target === 'object' || typeof target === 'function'))) return target;
+  const targetType = Object.prototype.toString.call(target).slice(8, -1).toLowerCase();
+  let cloneTarget = undefined;
+  const Ctor = target.constructor;
+
+  if (map.get(target)) {
+    return map.get(target);
+  }
+  map.set(target, cloneTarget);
+
+  const cloneDeep = ['map', 'set', 'object', 'array', 'arguments'];
+  if (cloneDeep.includes(targetType)) {
+    cloneTarget = new Ctor();
+
+    switch (targetType) {
+      case 'set':
+        target.forEach(e => {
+          cloneTarget.add(clone(e, map));
+        });
+        break;
+      case 'set':
+        target.forEach((value, key) => {
+          cloneTarget.set(key, clone(value, map));
+        });
+        break;
+      case 'array':
+      case 'arguments':
+        target.forEach((e, i) => {
+          cloneTarget[i] = clone(e, map);
+        });
+        break;
+      case 'object':
+        Object.keys(target).forEach(e => {
+          cloneTarget[e] = clone(target[e], map);
+        });
+        break;
+    }
+    return cloneTarget;
+  }else {
+    switch (targetType) {
+      case 'boolean':
+      case 'string':
+      case 'number':
+      case 'error':
+      case 'date':
+        return new Ctor(target);
+      case 'regexp':
+        const reFlags = /\w*$/;
+        const result = new Ctor(target.source, reFlags.exec(target));
+        result.lastIndex = target.lastIndex;
+        return result;
+      case 'symbol':
+        return Object(Symbol.prototype.valueOf.call(target));
+      case 'function':
+          const bodyReg = /(?<={)(.|\n)+(?=})/m;
+          const paramReg = /(?<=\().+(?=\)\s+{)/;
+          const funcString = target.toString();
+          if (target.prototype) {
+              const param = paramReg.exec(funcString);
+              const body = bodyReg.exec(funcString);
+              if (body) {
+                  if (param) {
+                      const paramArr = param[0].split(',');
+                      return new Function(...paramArr, body[0]);
                   } else {
-                      return null;
+                      return new Function(body[0]);
                   }
               } else {
-                  return eval(funcString);
+                  return null;
               }
-          default:
-            return null;
-        }
-      }
+          } else {
+              return eval(funcString);
+          }
+      default:
+        return null;
     }
-    ```
-    实际上克隆函数是没有实际应用场景的，两个对象使用一个在内存中处于同一个地址的函数也是没有任何问题的，lodash对函数的处理是：
+  }
+}
+```
+实际上克隆函数是没有实际应用场景的，两个对象使用一个在内存中处于同一个地址的函数也是没有任何问题的，lodash对函数的处理是：
 
-    ```javascript
-    const isFunc = typeof value == 'function'
-    if (isFunc || !cloneableTags[tag]) {
-            return object ? value : {}
-    }
-    ```
+```javascript
+const isFunc = typeof value == 'function'
+if (isFunc || !cloneableTags[tag]) {
+        return object ? value : {}
+}
+```
 
-    **通过prototype来区分下箭头函数和普通函数，箭头函数是没有prototype的。**
+**通过prototype来区分下箭头函数和普通函数，箭头函数是没有prototype的。**
 
-    **可以直接使用eval和函数字符串来重新生成一个箭头函数，注意这种方法是不适用于普通函数的。**
+**可以直接使用eval和函数字符串来重新生成一个箭头函数，注意这种方法是不适用于普通函数的。**
 
-    分别使用正则取出函数体和函数参数，然后使用new Function ([arg1[, arg2[, ...argN]],] functionBody)构造函数重新构造一个新的函数
+分别使用正则取出函数体和函数参数，然后使用new Function ([arg1[, arg2[, ...argN]],] functionBody)构造函数重新构造一个新的函数
 
-    ```javascript
-    function cloneFunction(func) {
-        const bodyReg = /(?<={)(.|\n)+(?=})/m;
-        const paramReg = /(?<=\().+(?=\)\s+{)/;
-        const funcString = func.toString();
-        if (func.prototype) {
-            console.log('普通函数');
-            const param = paramReg.exec(funcString);
-            const body = bodyReg.exec(funcString);
-            if (body) {
-                console.log('匹配到函数体：', body[0]);
-                if (param) {
-                    const paramArr = param[0].split(',');
-                    console.log('匹配到参数：', paramArr);
-                    return new Function(...paramArr, body[0]);
-                } else {
-                    return new Function(body[0]);
-                }
+```javascript
+function cloneFunction(func) {
+    const bodyReg = /(?<={)(.|\n)+(?=})/m;
+    const paramReg = /(?<=\().+(?=\)\s+{)/;
+    const funcString = func.toString();
+    if (func.prototype) {
+        console.log('普通函数');
+        const param = paramReg.exec(funcString);
+        const body = bodyReg.exec(funcString);
+        if (body) {
+            console.log('匹配到函数体：', body[0]);
+            if (param) {
+                const paramArr = param[0].split(',');
+                console.log('匹配到参数：', paramArr);
+                return new Function(...paramArr, body[0]);
             } else {
-                return null;
+                return new Function(body[0]);
             }
         } else {
-            return eval(funcString);
+            return null;
         }
+    } else {
+        return eval(funcString);
     }
-    ```
+}
+```
 
-3. 方法三
+##### 方法三
 函数库lodash中的_.cloneDeep用来做
 
 
-#### 定时器的执行顺序或机制（牵扯到js的事件循环机制）
+### 定时器的执行顺序或机制（牵扯到js的事件循环机制）
 
 定时器其实是由浏览器当前页面标签进程中的定时器线程来管理的。
 
-#### 作用域链
+### 作用域链
 
 作用域链，是由当前环境和上层环境的一系列变量对象组成，它保证了当前执行环境对符合访问权限的变量和函数的有序访问。
 
-#### 闭包（原理，使用，缺点）
+### 闭包（原理，使用，缺点）
 
 闭包是一种特殊对象，它由两部分组成，执行上下文和在该执行上下文中创建的函数，如果函数执行时，访问了那个执行上下文中变量对象的值，就会产生闭包。（和网上其他一些言论不太一样，chrome上也是这么认定的），一些书籍中都以函数名指代这里生成的闭包，而在chrome中，则以那个执行上下文的函数名指代闭包。
 
@@ -639,7 +648,7 @@ Object.prototype.toString.call(undefined) // '[Object Undefined]'
 
 补充:
 
-说到这里，我们可能会想到一个问题，如果需要经常用到这些字符串的属性和方法，比如在for循环当中使用i<a.length,那么一开始创建一个封装对象也许更为方便，这样JavaScript引擎就不用每次都自动创建和自动释放循环执行这些操作了。
+说到这里，我们可能会想到一个问题，如果需要经常用到这些字符串的属性和方法，比如在for循环当中使用`i < a.length`,那么一开始创建一个封装对象也许更为方便，这样JavaScript引擎就不用每次都自动创建和自动释放循环执行这些操作了。
 
 其实我们的想法很好，但实际证明这并不是一个好办法，因为**浏览器已经为.length这样常见情况做了性能优化，直接使用封装对象来提前优化代码反而会降低执行效率。**
 
@@ -672,5 +681,67 @@ ss.valueOf()  //"123"
 ```
 
 ##### Object() 强制类型转化
+
+Object强制类型转换相当于我们对原有类型进行手动对象包装。
+
+##### 直接字面量创建 (`{} '' [] 1`)
+相当于new关键字创建的一种语法糖。
+
+##### new关键字创建 (`new String() new Boolean() new Object()`)
+相当于直接创建好一个封装对象， 和字面量创建的方式并没有什么区别，当然字面量更高效一些（js已经为字面量对象做了性能优化）
+
+```javascript
+let a = new Object();
+let b = {}
+a.__proto__ === b.__proto__;  //true
+b.__proto__ === Object.prototype;  //true
+a.__proto__ === Object.prototype;  //true
+
+let x = '';
+let y = new String('');
+x.__proto__ === y.__proto__;  //true
+x.__proto__ === String.prototype;  //true
+```
+
+##### Object.create()
+
+`Object.create()`方法创建一个新对象，使用现有的对象来提供新创建对象的`__proto__`
+
+`Object.create(proto[, propertiesObject])`
+
+* proto 必填参数，是新对象的原型对象，如果这个参数是Null，那新对象就彻彻底底是个空对象，没有继承Object.prototype上的任何属性和方法，如`hasOwnProperty()、toString()`等。
+* propertiesObject 是可选参数，指定要添加到新对象上的可枚举属性（即其自定义的属性和方法，可用`hasOwnProperty()`获取的，而不是原型对象上的）的描述符及相应的属性名称。
+
+```javascript
+var bb = Object.create(null, {
+    a: {
+        value: 2,
+        writable: true,
+        configurable: true
+    }
+});
+console.dir(bb); // {a: 2}
+console.log(bb.__proto__); // undefined
+console.log(bb.__proto__ === Object.prototype); // false
+console.log(bb instanceof Object); // false 没有继承`Object.prototype`上的任何属性和方法，所以原型链上不会出现Object
+
+
+var cc = Object.create({b: 1}, {
+    a: {
+        value: 3,
+        writable: true,
+        configurable: true
+    }
+});
+console.log(cc); // {a: 3}
+console.log(cc.hasOwnProperty('a'), cc.hasOwnProperty('b')); // true false 说明第二个参数设置的是新对象自身可枚举的属性
+console.log(cc.__proto__); // {b: 1} 新对象cc的__proto__指向{b: 1}
+console.log(cc.__proto__ === Object.protorype); // false
+console.log(cc instanceof Object); // true cc是对象，原型链上肯定会出现Object
+```
+
+##### 总结
+* 字面量和new关键字创建的对象是Object的实例，原型指向Object.prototype，继承内置对象Object
+* Object.create(arg, pro)创建的对象的原型取决于arg，arg为null，新对象是空对象，没有原型，不继承任何对象；arg为指定对象，新对象的原型指向指定对象，继承指定对象
 
 #### isPrototypeOf 和 setPrototypeOf
