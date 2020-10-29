@@ -540,6 +540,7 @@ MIME类型对大小写不敏感，但是传统写法都是小写。
 JS的官方MIME类型
 
 ##### multipart/form-data
+常见的 POST 数据提交的方式。使用表单上传文件时，必须让 \<form> 表单的 enctype 等于 multipart/form-data。
 
 `multipart/form-data` 可用于HTML表单从浏览器发送信息给服务器。作为多部分文档格式，它由边界线（一个由'--'开始的字符串）划分出的不同部分组成。每一部分有自己的实体，以及自己的 `HTTP` 请求头，`Content-Disposition`和 `Content-Type` 用于文件上传领域，最常用的 (`Content-Length` 因为边界线作为分隔符而被忽略）。
 
@@ -571,6 +572,42 @@ Simple file.
 -----------------------------8721656041911415653955004498--
 ```
 
+##### application/x-www-form-urlencoded
+最常见的POST提交数据的方式，浏览器原生\<form>表单，如果不设置enctype属性，那么最终会以application/x-wwww-form-urlencoded方式提交数据
+
+```json
+POST http://www.example.com HTTP/1.1
+Content-Type: application/x-www-form-urlencoded;charset=utf-8
+
+title=test&sub%5B%5D=1&sub%5B%5D=2&sub%5B%5D=3
+```
+首先，Content-Type 被指定为 application/x-www-form-urlencoded；其次，提交的数据按照 key1=val1&key2=val2 的方式进行编码，key 和 val 都进行了 URL 转码。大部分服务端语言都对这种方式有很好的支持。
+
+很多时候，我们用 Ajax 提交数据时，也是使用这种方式。
+
+##### application/json
+application/json 这个 Content-Type 作为响应头，用来告诉服务端消息主体是序列化后的 JSON 字符串。
+
+这种方案，可以方便的提交复杂的结构化数据，特别适合 RESTful 的接口。
+
+##### text/xml
+
+它是一种使用 HTTP 作为传输协议，XML 作为编码方式的远程调用规范,它的使用也很广泛，能很好的支持已有的 XML-RPC 服务。不过，XML 结构还是过于臃肿，一般场景用 JSON 会更灵活方便。
+
+#### 补充:
+**AJAX跨域POST发送json时，会先发送一个 OPTIONS 预请求**
+
+在跨域请求中，分为简单请求（get和部分post，post时content-type属于application/x-www-form-urlencoded，multipart/form-data，text/plain中的一种）和复杂请求。而复杂请求发出之前，就会出现一次options请求。
+
+在ajax中出现options请求，也是一种提前探测的情况，ajax跨域请求时，如果请求的是json，就属于复杂请求，因此需要提前发出一次options请求，用以检查请求是否是可靠安全的，如果options获得的回应是拒绝性质的，比如404\403\500等http状态，就会停止post、put等请求的发出。
+
+靠javascript客户端取消options请求是不可能的，只能通过服务端对options请求做出正确的回应，这样才能保证options请求之后，post、put等请求可以被发出。但是，我们不能允许所有的options请求，而应该是有条件的，所以最好是通过一个特殊的机制，去验证客户端发出的options请求数据是否是符合服务端的条件的，如果不满足，返回403，则客户端会取消原有的post计划。
+
+前台跨域post请求，由于CORS（cross origin resource share）规范的存在，浏览器会首先发送一次options嗅探，同时header带上origin，判断是否有跨域请求权限，服务器响应access-control-allow-origin的值，供浏览器与origin匹配，如果匹配则正式发送post请求。
+
+如果有服务器程序权限，设置，比如jsp中，设置header access-control-allow-origin等于*，就可以得到跨域访问的目的。
+
+**注意**
 设置正确的MIME类型非常重要，其中只有正确设置了MIME类型的文件才能被 \<video> 或\<audio> 识别和播放
 
 ## 8. 语义化
