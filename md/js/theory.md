@@ -744,4 +744,88 @@ console.log(cc instanceof Object); // true cc是对象，原型链上肯定会�
 * 字面量和new关键字创建的对象是Object的实例，原型指向Object.prototype，继承内置对象Object
 * Object.create(arg, pro)创建的对象的原型取决于arg，arg为null，新对象是空对象，没有原型，不继承任何对象；arg为指定对象，新对象的原型指向指定对象，继承指定对象
 
-#### isPrototypeOf 和 setPrototypeOf
+#### Object.create() 和 Object.setPrototypeOf()区别
+
+`Object.setPrototypeOf(obj, prototype)`  obj为要设置其原型的对象  prototype为该对象的新原型(一个对象 或 null)
+
+Object.setPrototypeOf()方法设置一个指定的对象的原型。
+
+两者都能达到设置对象原型的功能，但是具体表现上有一些区别。
+
+例子: 假设有Animal和Plants俩个函数用于生成对象，并在原型上具备一些方法。 然后我们让Animal的原型指向Plants
+```javascript
+// 初始代码
+function Animal (name,sound) {
+        this.name = name
+        this.sound = sound
+    }
+Animal.prototype.shout = function () {
+    console.log(this.name + this.sound)
+}
+let dog = new Animal('pipi','wang!wang!')
+
+// 定义Plants
+function Plants (name) {
+    this.name = name
+    this.sound = null
+}
+
+// 函数接收参数用于区分
+Plants.prototype.shout = function (xssss) {
+    console.log(this.name + this.sound +'plants tag')
+}
+Plants.prototype.genO2 = function () {
+    console.log(this.name + '生成氧气。')
+}
+```
+
+```javascript
+// 使用Object.create
+Animal.prototype = Object.create(Plants.prototype)
+console.log(Animal.prototype)
+/*
+Plants {}
+    __proto__:
+        shout: ƒ (xssss)
+        genO2: ƒ ()
+        constructor: ƒ Plants()
+        __proto__: Object
+*/
+let cat = new Animal('mimi','miao~miao~')
+
+dog.shout() // pipi wang!wang!
+cat.shout() // mimi miao~miao~ plants tag
+cat.genO2() // mimi 生成氧气。
+```
+
+```javascript
+Object.setPrototypeOf(Animal.prototype,Plants.prototype)
+console.log(Animal.prototype)
+/*
+Plants {shout: ƒ, constructor: ƒ}
+    shout: ƒ (xssss)
+    constructor: ƒ Animal(name,sound)
+    __proto__:
+    shout: ƒ ()
+    genO2: ƒ ()
+    constructor: ƒ Plants()
+    __proto__: Object
+*/
+dog.shout() // pipi wang!wang!
+cat.shout() // mimi miao~miao~
+cat.genO2() // mimi 生成氧气。
+```
+
+总结:
+使用Object.create,Animal.prototype将会指向一个空对象，空对象的原型属性指向Plants的prototytpe。所以我们不能再访问Animal的原有prototypoe中的属性。Object.create的使用方式也凸显了直接重新赋值
+
+使用Object.setPrototypeOf则会将Animal.prototype将会指向Animal原有的prototype，然后这个prototype的prototype再指向Plants的prototytpe。所以我们优先访问的Animal，然后再是plants。
+
+在进行俩个原型之间的委托时使用setPrototype更好，Object.create更适和直接对一个无原生原型的对象快速进行委托。
+
+但是，由于现代js引擎优化属性访问所带来的特性的关系，更改对象的原型在各个浏览器和js引擎上都是一个很慢的操作。其在更改继承的性能上的影响是微妙而又广泛的，这不仅仅限于`obj.__proto__ = ...`语句上的时间花费，而且可能会延伸到任何代码，那些可以访问任何原型已被更改的对象的代码。如果关心性能，应该避免设置一个对象的原型，相反，应该使用`Object.create()`来创建带有想要原型的新对象。
+
+[Object.setPrototypeOf()和Object.create()的区别](https://juejin.im/post/6844903527941144589)
+
+##### Object.getPrototypeOf() 
+可以通过该方法获取对象的原型
