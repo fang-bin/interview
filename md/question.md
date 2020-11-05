@@ -10,12 +10,13 @@
 
 4. call apply bind new实现
 5. 防抖 节流
-6. 数组扁平化
-7. promisify实现
-8. co模块简易实现
-9. 计算字符串中出现相同字母的最大数量和最大的字母
-10. forEach中止
-11. 深拷贝
+6. promisify实现
+7. co模块简易实现
+8. 计算字符串中出现相同字母的最大数量和最大的字母
+9. forEach中止
+10. 深拷贝
+11. 利用Generator函数实现斐波那契数列
+12. 利用Generator函数遍历完全二叉树
 
 
 答案:
@@ -89,8 +90,147 @@ function add (...args){
 }
 ```
 
+##### 4 call apply bind new
 
-快记
+```javascript
+Function.prototype.myCall = function (thisArg, ...args) {
+  const fn = Symbol('fn');
+  thisArg = thisArg || window;
+  thisArg[fn] = this;
+  const result = thisArg[fn](...args);
+  delete thisArg[fn];
+  return result;
+}
+
+Function.prototype.myApply = function (thisArg, args) {
+  const fn = Symbol('fn');
+  thisArg = thisArg || window;
+  thisArg[fn] = this;
+  const result = thisArg[fn](...args);
+  delete thisArg[fn];
+  return result;
+}
+
+Function.prototype.myBind = function (thisArg, ...args) {
+  var self = this
+  // new优先级
+  var funcBind = function () {
+    self.apply(this instanceof self ? this : thisArg, args.concat(Array.prototype.slice.call(arguments)))
+  }
+  // 继承原型上的属性和方法
+  funcBind.prototype = Object.create(self.prototype);
+  return funcBind;
+}
+
+
+function mockNew() {
+  let Constructor = Array.prototype.shift.call(arguments); // 取出构造函数  这个地方之后，arguments就已经去除了obj
+  
+  let obj = {}   // new 执行会创建一个新对象
+  
+  obj.__proto__ = Constructor.prototype 
+  
+  Constructor.apply(obj, arguments)
+  return obj
+}
+```
+
+##### 5. 防抖、节流
+
+```javascript
+// 防抖
+function debounce (fn, time){
+  let _timer = undefined;
+  return function (...args) {
+    const context = this;
+    if (_timer){
+      clearTimeout(_timer);
+      _timer = null;
+    }
+    _timer = setTimeout(() => {
+      fn.apply(context, args);
+    }, time);
+  }
+}
+
+// 节流
+function throttle (fn, time){
+  let _last_time = undefined;
+  return function (...args){
+    const _now_time = new Date();
+    if (!_last_time || _now_time - _last_time > time){
+      fn(...args);
+      _last_time = _now_time;
+    }
+  }
+}
+```
+
+##### 6. promisify实现
+
+```javascript
+// const newFn = promisify(fn)
+// newFn(a) 会执行Promise参数方法
+function promisify(fn) {
+  return function(...args) {
+    // 返回promise的实例
+    return new Promise(function(reslove, reject) {
+      // newFn(a) 时会执行到这里向下执行
+      // 加入参数cb => newFn(a)
+      args.push(function(err, data) {
+        if (err) {
+          reject(err)
+        } else {
+          reslove(data)
+        }
+      })
+      // 这里才是函数真正执行的地方执行newFn(a, cb)
+      fn.apply(null, args)
+    })
+  }
+}
+```
+
+##### 7. co模块简易实现
+
+```javascript
+
+```
+
+##### 8. 计算字符串中出现相同字母的最大数量和最大的字母
+
+```javascript
+```
+
+##### 9. forEach中止
+
+```javascript
+```
+
+##### 10. 深拷贝
+
+```javascript
+```
+
+##### 11. 利用Generator函数实现斐波那契数列
+
+```javascript
+function* fibonacci() {
+  let [prev, curr] = [0, 1];
+  for (;;) {
+    yield prev;
+    [prev, curr] = [curr, prev + curr];
+  }
+}
+```
+
+##### 12. 利用Generator函数遍历完全二叉树
+
+```javascript
+```
+
+## 快记
+
 ##### 1. 形成BFC条件  BFC特点
 条件:
 * 根元素

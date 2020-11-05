@@ -227,7 +227,7 @@ console.log(g.next())
 function* fibonacci() {
   let [prev, curr] = [0, 1];
   for (;;) {
-    yield curr;
+    yield prev;
     [prev, curr] = [curr, prev + curr];
   }
 }
