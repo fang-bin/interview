@@ -144,7 +144,7 @@ class MyPromise {
       const rejectedFn = err => {
         try {
           const result = rejectFn(err);
-          result instanceof MyPromise ? result.then(resolve, reject) : reject(result);
+          result instanceof MyPromise ? result.then(resolve, reject) : resolve(result);   //这个地方要用resolve，因为rejectFn返回的值也可以传递给后面的then
         } catch (error) {
           reject(error);
         }
