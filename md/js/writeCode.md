@@ -22,7 +22,7 @@ class MyPromise {
     this._rejectQueen = [];
     const _resolve = (val) => {
       const run = () => {
-        if (this._status !== PENDING) return;
+        if (this._status !== PENDING) return;   //状态一旦固定下来，就不能更改
         this._status = FULFILLED;
         this._val = val;
         while (this._resolveQueen.length){
@@ -155,7 +155,7 @@ class MyPromise {
           this._rejectQueen.push(rejectedFn);
           break;
         case FULFILLED:
-          fulfilledFn(this._val);
+          fulfilledFn(this._val);  //状态固定的情况下立刻执行
           break;
         case REJECTED:
           rejectedFn(this._val);
@@ -173,6 +173,37 @@ class MyPromise {
     );
   }
 }
+```
+
+结合Promise的实现看上面的实现效果
+```javascript
+Promise
+.resolve(1)
+.then((res) => {
+  console.log(res);  // 1
+  return 2;
+}).catch((err) => {
+  return 3;
+})then((res) => {
+  console.log(res); // 2
+});
+```
+
+```javascript
+Promise
+.reject(1)
+.then((res) => {
+  console.log(res);
+  return 2;
+}).catch((err) => {
+  console.log(err);  // 1
+  return 3;
+}).catch(err => {
+  console.log(err);
+  return 1000;
+}).then((res) => {
+  console.log(res);  // 3
+});
 ```
 
 据我在v8以往版本中查看，v8中关于promise的实现，在 5.0版本之前完全都是通过js自托管实现的，实现方式原理和上方差不多，但是由于其中的微任务队列由c++代码负责管理，我这里实现的方式用的setTimeout不太合适（这就没办法了）而在5.6-6.0版本只见则取消了promise的js自托管，将一些promise新的静态方法通过js自托管实现,在6.0版本之后，则全部取消了js自托管。
