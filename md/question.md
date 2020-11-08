@@ -297,9 +297,41 @@ function* fibonacci() {
 }
 ```
 
+```javascript
+function fib(n){
+   function fib_(n,a,b){
+       if(n==0)  return a
+       else return fib_(n-1,b,a+b)
+   }
+   return fib_(n,0,1)
+}
+```
+
 ##### 11. 利用Generator函数遍历完全二叉树
 
 ```javascript
+function Tree(left, label, right) {
+  this.left = left;
+  this.label = label;
+  this.right = right;
+}
+function make(array) {
+  // 判断是否为叶节点
+  if (array.length == 1) return new Tree(null, array[0], null);
+  return new Tree(make(array[0]), array[1], make(array[2]));
+}
+let tree = make([[['a'], 'b', ['c']], 'd', [['e'], 'f', ['g']]]);
+
+function* inorder(t) {
+  if (t) {
+    yield* inorder(t.left);
+    yield t.label;
+    yield* inorder(t.right);
+  }
+}
+for (let node of inorder(tree)) {
+  console.log(node); //'a', 'b', 'c', 'd', 'e', 'f', 'g'
+}
 ```
 
 ## 快记
