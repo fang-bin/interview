@@ -137,6 +137,7 @@ let cloneObj = JSON.parse(JSON.stringify(obj));
 ```
 注：
 **序列化**：把变量从内存中变成可存储或传输的过程称之为序列化
+
 **反序列化**：把变量内容从序列化的对象重新读到内存里称之为反序列化
 
 **序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会变成null，Map、Set、RegExp则会变成{}**
@@ -167,82 +168,53 @@ JSON.stringify(obj)   // “{“name”:”Join"}"
 
 ```javascript
 function clone (target, map = new WeakMap()){
-  if (!(target !== null && (typeof target === 'object' || typeof target === 'function'))) return target;
-  const targetType = Object.prototype.toString.call(target).slice(8, -1).toLowerCase();
-  let cloneTarget = undefined;
+  if (target === null || typeof target !== 'object') return target;
   const Ctor = target.constructor;
-
-  if (map.get(target)) {
-    return map.get(target);
-  }
+  let cloneTarget = undefined;
+  const targetType = Object.prototype.toString.call(target).slice(8, -1).toLowerCase();
+  const deepType = ['map', 'set', 'array', 'object', 'arguments'];
+  if (deepType.includes(targetType)) cloneTarget = new Ctor();
+  if (map.get(target)) return map.get(target);
   map.set(target, cloneTarget);
 
-  const cloneDeep = ['map', 'set', 'object', 'array', 'arguments'];
-  if (cloneDeep.includes(targetType)) {
-    cloneTarget = new Ctor();
-
-    switch (targetType) {
-      case 'set':
-        target.forEach(e => {
-          cloneTarget.add(clone(e, map));
-        });
-        break;
-      case 'set':
-        target.forEach((value, key) => {
-          cloneTarget.set(key, clone(value, map));
-        });
-        break;
-      case 'array':
-      case 'arguments':
-        target.forEach((e, i) => {
-          cloneTarget[i] = clone(e, map);
-        });
-        break;
-      case 'object':
-        Object.keys(target).forEach(e => {
-          cloneTarget[e] = clone(target[e], map);
-        });
-        break;
-    }
-    return cloneTarget;
-  }else {
-    switch (targetType) {
-      case 'boolean':
-      case 'string':
-      case 'number':
-      case 'error':
-      case 'date':
-        return new Ctor(target);
-      case 'regexp':
-        const reFlags = /\w*$/;
-        const result = new Ctor(target.source, reFlags.exec(target));
-        result.lastIndex = target.lastIndex;
-        return result;
-      case 'symbol':
-        return Object(Symbol.prototype.valueOf.call(target));
-      case 'function':
-          const bodyReg = /(?<={)(.|\n)+(?=})/m;
-          const paramReg = /(?<=\().+(?=\)\s+{)/;
-          const funcString = target.toString();
-          if (target.prototype) {
-              const param = paramReg.exec(funcString);
-              const body = bodyReg.exec(funcString);
-              if (body) {
-                  if (param) {
-                      const paramArr = param[0].split(',');
-                      return new Function(...paramArr, body[0]);
-                  } else {
-                      return new Function(body[0]);
-                  }
-              } else {
-                  return null;
-              }
-          } else {
-              return eval(funcString);
-          }
-      default:
-        return null;
-    }
+  switch (targetType) {
+    case 'map':
+      target.forEach((value, key) => {
+        cloneTarget.set(key, clone(value, map));
+      });
+      return cloneTarget;
+    case 'set':
+      target.forEach(e => {
+        cloneTarget.add(clone(e, map));
+      })
+      return cloneTarget;
+    case 'object':
+      Object.keys(target).forEach(key => {
+        cloneTarget[key] = clone(target[key], map);
+      })
+      return cloneTarget;
+    case 'array':
+    case 'arguments':
+      target.forEach(e => {
+        cloneTarget.push(clone(e, map));
+      })
+      return cloneTarget;
+    case 'string':
+    case 'number':
+    case 'boolean':
+    case 'date':
+    case 'error':
+      return new Ctor(target);
+    case 'regexp':
+      const reFlags = /\w*$/;
+      const res = new Ctor(target.source, reFlags.exec(target));
+      res.lastIndex = target.lastIndex;
+      return res;
+    case 'symbol':
+    case 'bigint':
+      return Object(Object.prototype.valueOf.call(target));
+    default:
+      return null;
   }
 }
 ```

@@ -12,11 +12,10 @@
 5. 防抖 节流
 6. promisify实现
 7. co模块简易实现
-8. 计算字符串中出现相同字母的最大数量和最大的字母
-9. forEach中止
-10. 深拷贝
-11. 利用Generator函数实现斐波那契数列
-12. 利用Generator函数遍历完全二叉树
+8. forEach中止
+9. 深拷贝
+10. 利用Generator函数实现斐波那契数列
+11. 利用Generator函数遍历完全二叉树
 
 
 答案:
@@ -194,25 +193,99 @@ function promisify(fn) {
 ##### 7. co模块简易实现
 
 ```javascript
-
+function run (gen){
+  return new Promise((resolve, reject) => {
+    const g = gen();
+    const _next = (val) => {
+      let res = undefined;
+      try {
+        res = g.next(val);
+      } catch (error) {
+        return reject(error);
+      }
+      if(res.done) {
+        return resolve(res.value);
+      }
+      Promise.resolve(res.value).then(v => {
+        _next(v);
+      }, err => {
+        g.throw(err);
+      });
+    }
+    _next();
+  });
+}
 ```
 
-##### 8. 计算字符串中出现相同字母的最大数量和最大的字母
+##### 8. forEach中止
 
 ```javascript
+var array = [1, 2, 3, 4, 5];
+array.forEach(function(item, index) {
+    if (item === 2) {
+        array = array.concat(array.splice(index, array.length - index));
+        return;    //这里可以跳出当前的条件循环，要不然还会执行后面
+    }
+    console.log(item); //只输出1,2
+});
 ```
 
-##### 9. forEach中止
+##### 9. 深拷贝
 
 ```javascript
+function clone (target, map = new WeakMap()){
+  if (target === null || typeof target !== 'object') return target;
+  const Ctor = target.constructor;
+  let cloneTarget = undefined;
+  const targetType = Object.prototype.toString.call(target).slice(8, -1).toLowerCase();
+  const deepType = ['map', 'set', 'array', 'object', 'arguments'];
+  if (deepType.includes(targetType)) cloneTarget = new Ctor();
+  if (map.get(target)) return map.get(target);
+  map.set(target, cloneTarget);
+
+  switch (targetType) {
+    case 'map':
+      target.forEach((value, key) => {
+        cloneTarget.set(key, clone(value, map));
+      });
+      return cloneTarget;
+    case 'set':
+      target.forEach(e => {
+        cloneTarget.add(clone(e, map));
+      })
+      return cloneTarget;
+    case 'object':
+      Object.keys(target).forEach(key => {
+        cloneTarget[key] = clone(target[key], map);
+      })
+      return cloneTarget;
+    case 'array':
+    case 'arguments':
+      target.forEach(e => {
+        cloneTarget.push(clone(e, map));
+      })
+      return cloneTarget;
+    case 'string':
+    case 'number':
+    case 'boolean':
+    case 'date':
+    case 'error':
+      return new Ctor(target);
+    case 'regexp':
+      const reFlags = /\w*$/;
+      const res = new Ctor(target.source, reFlags.exec(target));
+      res.lastIndex = target.lastIndex;
+      return res;
+    case 'symbol':
+    case 'bigint':
+      return Object(Object.prototype.valueOf.call(target));
+    default:
+      return null;
+  }
+}
 ```
 
-##### 10. 深拷贝
-
-```javascript
-```
-
-##### 11. 利用Generator函数实现斐波那契数列
+##### 10. 利用Generator函数实现斐波那契数列
 
 ```javascript
 function* fibonacci() {
@@ -224,7 +297,7 @@ function* fibonacci() {
 }
 ```
 
-##### 12. 利用Generator函数遍历完全二叉树
+##### 11. 利用Generator函数遍历完全二叉树
 
 ```javascript
 ```
