@@ -378,7 +378,36 @@ setTimeout(() => {
 }, 10000);
 ```
 
-##### 14. 合并二维有序数组成一维有序数组，归并排序的思路
+##### 14. 合并二维有序数组成一维有序数组，归并排序的思路  (头条面试题)
+
+```javascript
+function mergeOrderSort (arr){
+  const merge = (left, right) => {
+    let res = [];
+    while(left.length && right.length) {
+      if (left[0] - right[0] < 0) res.push(left.shift());
+      else res.push(right.shift());
+    }
+    return res.concat(left, right);
+  }
+  const mergeOrder = arr => {
+    if (arr.length === 0) return [];
+    while (arr.length > 1) {
+      let arrItem1 = arr.shift();
+      let arrItem2 = arr.shift();
+      let mergeArr = merge(arrItem1, arrItem2);
+      arr.push(mergeArr);
+    }
+    return arr[0];
+  }
+  return mergeOrder(arr);
+}
+
+let arr1 = [[1,2,3],[4,5,6],[7,8,9],[1,2,3],[4,5,6]];
+let arr2 = [[1,4,6],[7,8,10],[2,6,9],[3,7,13],[1,5,12]];
+console.log(mergeOrderSort(arr1));
+console.log(mergeOrderSort(arr2));
+```
 
 ## 快记
 
