@@ -17,6 +17,8 @@
 10. 利用Generator函数实现斐波那契数列
 11. 利用Generator函数遍历完全二叉树
 12. 冒泡排序 选择排序 插入排序 快速排序 归并排序
+13. 写一个 mySetInterVal(fn, a, b),每次间隔 a,a+b,a+2b 的时间，然后写一个 myClear，停止上面的 mySetInterVal(头条)
+14. 合并二维有序数组成一维有序数组，归并排序的思路
 
 
 答案:
@@ -262,8 +264,8 @@ function clone (target, map = new WeakMap()){
       return cloneTarget;
     case 'array':
     case 'arguments':
-      target.forEach(e => {
-        cloneTarget.push(clone(e, map));
+      target.forEach((e, i) => {
+        cloneTarget[i] = clone(e, map);
       })
       return cloneTarget;
     case 'string':
@@ -334,6 +336,49 @@ for (let node of inorder(tree)) {
   console.log(node); //'a', 'b', 'c', 'd', 'e', 'f', 'g'
 }
 ```
+
+##### 13. 写一个 mySetInterVal(fn, a, b),每次间隔 a,a+b,a+2b 的时间，然后写一个 myClear，停止上面的 mySetInterVal (头条面试题)
+
+```javascript
+function mySetInterVal (fn, a, b){
+  let continueAct = true;
+  (async function (){
+    const sleep = time => new Promise(resolve => {
+      setTimeout(() => {
+        resolve();
+      }, time);
+    });
+    const getTime = function* (a, b){
+      while (true) {
+        yield a;
+        yield a + b;
+        yield a + (2 * b);
+      }
+    }
+    let time = getTime(a, b);
+    while(continueAct) {
+      await sleep(time.next().value);
+      if (!continueAct) return;
+      typeof fn === 'function' && fn();
+    }
+  })();
+  return () => {
+    continueAct = false;
+  }
+}
+
+let t = Date.now();
+const myClear = mySetInterVal(function (){
+  console.log(Date.now() - t);
+  t = Date.now();
+}, 1000, 3000);
+
+setTimeout(() => {
+  myClear();
+}, 10000);
+```
+
+##### 14. 合并二维有序数组成一维有序数组，归并排序的思路
 
 ## 快记
 
