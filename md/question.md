@@ -19,6 +19,9 @@
 12. 冒泡排序 选择排序 插入排序 快速排序 归并排序
 13. 写一个 mySetInterVal(fn, a, b),每次间隔 a,a+b,a+2b 的时间，然后写一个 myClear，停止上面的 mySetInterVal(头条)
 14. 合并二维有序数组成一维有序数组，归并排序的思路
+15. 手写一个ajax实现
+16. 单例模式
+
 
 
 答案:
@@ -117,7 +120,7 @@ Function.prototype.myBind = function (thisArg, ...args) {
   var self = this
   // new优先级
   var funcBind = function () {
-    self.apply(this instanceof self ? this : thisArg, args.concat(Array.prototype.slice.call(arguments)))
+    return self.apply(this instanceof self ? this : thisArg, args.concat(Array.prototype.slice.call(arguments)))
   }
   // 继承原型上的属性和方法
   funcBind.prototype = Object.create(self.prototype);
@@ -411,7 +414,14 @@ console.log(mergeOrderSort(arr2));
 
 ## 快记
 
-##### 1. 形成BFC条件  BFC特点
+##### 1. 形成复合图层
+* 最常用的方式：translate3d、translateZ
+* opacity属性/过渡动画（需要动画执行的过程中才会创建合成层，动画没有开始或结束后元素还会回到之前的状态）
+* will-chang属性（这个比较偏僻），一般配合opacity与translate使用（而且经测试，除了上述可以引发硬件加速的属性外，其它属性并不会变成复合层），作用是提前告诉浏览器要变化，这样浏览器会开始做一些优化工作（这个最好用完后就释放）
+* `<video> <iframe> <canvas> <webgl>`等元素
+* 其它，譬如以前的flash插件
+
+##### 2. 形成BFC条件  BFC特点
 条件:
 * 根元素
 * 浮动（float的值不为none）；
@@ -428,7 +438,7 @@ console.log(mergeOrderSort(arr2));
 * 计算BFC的高度时，考虑BFC所包含的所有元素，包括浮动元素也参与计算；
 * 浮动盒的区域不会叠加到BFC上
 
-##### 2. 形成堆叠上下文条件  堆叠上下文的顺序
+##### 3. 形成堆叠上下文条件  堆叠上下文的顺序
 * 根元素（即HTML元素）
 * 已定位元素（即绝对定位或相对定位）并且z-index不是默认的auto。
 * z-index值不为auto的flex项(父元素display:flex|inline-flex).
@@ -444,10 +454,10 @@ console.log(mergeOrderSort(arr2));
 
 不依赖z-index的层叠上下文，类似于transform不为none,地位与postion: absoulte; z-index:auto;)相当。
 
-##### 3. 伪类选择器顺序
+##### 4. 伪类选择器顺序
 `a:link a:visited a:hover a:active`
 
-##### 4. CSS优化
+##### 5. CSS优化
 
 * 多个css可合并，并尽量减少http请求
 * 属性值为0时，不加单位
@@ -460,7 +470,7 @@ console.log(mergeOrderSort(arr2));
 * 精简规则，尽可能合并不同类的重复规则
 * 遵守盒子模型规则
 
-##### 5. link 与 @import 的区别
+##### 6. link 与 @import 的区别
 * link 是HTML方式， @import 是CSS方式；
 * link最大限度支持并行下载，@import 过多嵌套导致串行下载，出现FOUC；
 * link 可以通过 rel="alternate stylesheet" 指定候选样式；
@@ -469,7 +479,7 @@ console.log(mergeOrderSort(arr2));
 
 总的来说： link优于@import。
 
-##### 6. 一个inline-block元素，如果里面没有inline内联元素，或者overflow不是visible，则该元素的基线就是其margin底边缘，否则，其基线就是元素里面最后一行内联元素的基线。
+##### 7. 一个inline-block元素，如果里面没有inline内联元素，或者overflow不是visible，则该元素的基线就是其margin底边缘，否则，其基线就是元素里面最后一行内联元素的基线。
 
 <style>
 .box{
@@ -487,7 +497,7 @@ console.log(mergeOrderSort(arr2));
 </style>
 <p class="box"><span class="dib-baseline"></span> <span class="dib-baseline" onclick="this.innerHTML=this.innerHTML? '': 'x-baseline'">x-baseline</span></p>
 
-##### 7. 针对一些字体在安卓上渲染靠上的问题
+##### 8. 针对一些字体在安卓上渲染靠上的问题
 
 这个问题通过css是无法解决的，即使解决了也是一种通过微调来实现的hack方法，因为文字在content-area内部渲染的时候已经偏移了，而css的居中方案都是控制的整个content-area的居中。
 
@@ -497,10 +507,10 @@ console.log(mergeOrderSort(arr2));
 
 针对MIUI 8.0+设备：设置 font-family: miui;
 
-##### 8. viewport
+##### 9. viewport
 `<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scale=no">`
 
-##### 9. 语义化
+##### 10. 语义化
 
 语义化是指根据内容的结构化（内容语义化），选择合适的标签（代码语义化），便于开发者阅读和写出更优雅的代码的同时，让浏览器的爬虫和机器很好的解析。
 
@@ -512,7 +522,7 @@ console.log(mergeOrderSort(arr2));
 * 有利于SEO：和搜索引擎建立良好沟通，有助于爬虫抓取更多的有效信息：爬虫依赖于标签来确定上下文和各个关键字的权重；
 * 便于团队开发和维护，语义化更具可读性，遵循W3C标准的团队都遵循这个标准，可以减少差异化。
 
-##### 10. 浏览器的怪异模式（Quirks）和严格模式（Standards）的区别
+##### 11. 浏览器的怪异模式（Quirks）和严格模式（Standards）的区别
 
 * 盒模型 在W3C标准中，如果设置一个元素的宽度和高度，指的是元素内容的宽度和高度，而在Quirks 模式下，IE的宽度和高度还包含了padding和border；
 * 设置行内元素的高宽 在Standards模式下，给等行内元素设置wdith和height都不会生效，而在quirks模式下，则会生效；
@@ -520,13 +530,45 @@ console.log(mergeOrderSort(arr2));
 * 设置百分比的高度 在standards模式下，一个元素的高度是由其包含的内容来决定的，如果父元素没有设置百分比的高度，子元素设置一个百分比的高度是无效的用；
 * 设置水平居中 使用margin:0 auto在standards模式下可以使元素水平居中，但在quirks模式下却会失效。
 
-##### 11. Promise的实现就是一个发布订阅模式，这种收集依赖 -> 触发通知 -> 取出依赖执行的方式，被广泛运用于发布订阅模式的实现。
+##### 12. Promise的实现就是一个发布订阅模式，这种收集依赖 -> 触发通知 -> 取出依赖执行的方式，被广泛运用于发布订阅模式的实现。
 
-##### 12. forEach map filter这些js内置的函数，第二个参数都是可以绑定this的
+##### 13. forEach map filter这些js内置的函数，第二个参数都是可以绑定this的
 
-##### 13 序列化与反序列化
+##### 14 序列化与反序列化
 
 * 序列化：把变量从内存中变成可存储或传输的过程称之为序列化 
 * 反序列化：把变量内容从序列化的对象重新读到内存里称之为反序列化
 
 **序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会变成null，Map、Set、RegExp则会变成{}**
+
+##### 15. clearfix
+
+```css
+.clearfix {
+  content: "";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+```
+
+##### 16. 超出显示省略号
+
+```css
+// 单行省略
+{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+//多行省略
+{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;  //将对象作为弹性伸缩盒子模型展示）
+  -webkit-line-clamp: 2;  //用来限制在一个块元素显示的文本行数
+  -webkit-box-orient: vertical; //设置或检索伸缩盒对象的子元素的排列方式
+}
+```

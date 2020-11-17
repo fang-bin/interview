@@ -147,6 +147,43 @@ console.log(s1.__proto__);  // 为Father
 
 ES5的继承实现，上面有说明
 
+##### 封装、继承、多态
+###### 封装：把客观事物封装成抽象的类，隐藏属性和方法的实现细节，仅对外公开接口。（将属性和方法组成一个类的过程就是封装。）
+
+###### 继承：子类可以使用父类的所有功能，并且对这些功能进行扩展。继承的过程，就是从一般到特殊的过程。
+
+###### es6和es5继承的区别
+
+大多数浏览器的ES5实现之中，每一个对象都有__proto__属性，指向对应的构造函数的prototype属性。而ES6中Class作为构造函数的语法糖，同时有prototype属性和__proto__属性，因此同时存在两条继承链。
+1. 子类的__proto__属性，表示构造函数的继承，总是指向父类。
+2. 子类prototype属性的__proto__属性，表示方法的继承，总是指向父类的prototype属性。
+
+```javascript
+class A {}
+class B extends A {}
+console.log(B.__proto__ === A);  //true
+console.log(B.prototype.__proto__ === A.prototype);  //true
+
+//这样的结果是因为，类的继承是按照下面的模式实现的:
+class A {}
+
+class B {}
+
+// B的实例继承A的实例
+Object.setPrototypeOf(B.prototype, A.prototype);
+
+// B继承A的静态属性
+Object.setPrototypeOf(B, A);
+
+Object.setPrototypeOf的简单实现如下：
+
+Object.setPrototypeOf = function (obj, proto) {
+  obj.__proto__ = proto;
+  return obj;
+}
+```
+###### 多态（Polymorphism）按字面的意思就是“多种状态”。在面向对象语言中，接口的多种不同的实现方式即为多态。
+
 #### 面向对象开发的优点
 
 * 代码开发模块化，更易维护和修改。
