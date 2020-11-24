@@ -104,5 +104,263 @@ Context 能让你将这些数据向组件树下所有的组件进行“广播”
 
 #### 6. 高阶组件（HOC）
 
+在业务开发的过程中，如果完全不同的组件有相似的功能，这就会产生横切关注点（cross-cutting concerns）问题。其根本还是在不同的组件当中复用一些相同的组件逻辑。
+
+高阶组件（HOC）是 React 中用于复用组件逻辑的一种高级技巧。HOC 自身不是 React API 的一部分，它是一种基于 React 的组合特性而形成的设计模式。
+
+**高阶组件是参数为组件，返回值为新组件的函数。**
+
 HOC 不会修改传入的组件，也不会使用继承来复制其行为。相反，HOC 通过将组件包装在容器组件中来组成新组件。HOC 是纯函数，没有副作用。
 
+###### 为什么不推荐使用mixins
+
+mixin函数，其实质就是将mixins中的方法遍历赋值给newObj.prototype，从而实现mixin返回的函数创建的对象都有mixins中的方法，也就是把额外的功能都混入进去。
+
+React 在反对 mixins 的这方面已经说得很清楚了，里面有句中肯话意思是 mixins 本身是没有问题的。
+
+Mixins 的问题在于他太过于灵活，太依赖使用者，mixin这种引入大量不可控因素的方式，导致新人上手代码时对其如何工作越发不理解(incomprehensible)。
+
+其次，ES6 本身是不包含任何 mixin 支持。因此，当你在 React 中使用 ES6 class 时，将不支持 mixins 。
+
+高阶组件的约定:
+
+* 将不相关的 props 传递给被包裹的组件
+* 最大化可组合性
+* 包装显示名称以便轻松调试
+  比如高阶组件名为 withSubscription，并且被包装组件的显示名称为 CommentList，显示名称应该为 WithSubscription(CommentList)
+
+注意:
+* 不要在 render 方法中使用 HOC
+  不应在组件的 render 方法中对一个组件应用 HOC
+  React 的 diff 算法（称为协调）使用组件标识来确定它是应该更新现有子树还是将其丢弃并挂载新子树。 如果从 render 返回的组件与前一个渲染中的组件相同（===），则 React 通过将子树与新子树进行区分来递归更新子树。 如果它们不相等，则完全卸载前一个子树。
+  这将导致子树每次渲染都会进行卸载，和重新挂载的操作！
+  这不仅仅是性能问题 - 重新挂载组件会导致该组件及其所有子组件的状态丢失。
+* 务必复制静态方法
+* Refs 不会被传递
+  虽然高阶组件的约定是将所有 props 传递给被包装组件，但这对于 refs 并不适用。那是因为 ref 实际上并不是一个 prop - 就像 key 一样，它是由 React 专门处理的。如果将 ref 添加到 HOC 的返回组件中，则 ref 引用指向容器组件，而不是被包装组件。
+  可通过使用 React.forwardRef API来解决
+
+#### 7. 深入理解JSX
+
+JSX 仅仅只是 React.createElement(component, props, ...children) 函数的语法糖。
+
+```javascript
+<MyButton color="blue" shadowSize={2}>
+  Click Me
+</MyButton>
+
+// 会编译为
+
+React.createElement(
+  MyButton,
+  {color: 'blue', shadowSize: 2},
+  'Click Me'
+)
+```
+
+#### 8. ShouldComponentUpdate && PureComponent
+
+React的渲染是根据触发render之后，比对Virtual DOM和之前是否完全一样来触发的渲染。
+
+virtual DOM diff 也是需要执行时间的。虽然说速度很快，但再快也比不上完全不呼叫来的快。
+
+一些组件明确不该有任何变化的情况，可以在 shouldComponentUpdate 里直接 return false，或者加上一个比较（深或浅），倾向于 shallowEqual ，因为 deepEqual 在层级深的时候也是很吃资源的。
+
+只有当组件 props.color 或者 state.count 的值改变才需要更新时，你可以使用 shouldComponentUpdate 采用类似“浅比较”的模式来检查 props 和 state 中所有的字段，以此来决定是否组件需要更新。
+
+PureComponent 也就是改写了 shouldComponentUpdate ，加上了浅比较，可以减少不必要的 render 操作的次数，从而提高性能，当组件更新时，如果组件的 props 和 state 都没发生改变，render 方法就不会触发，省去 Virtual DOM 的生成和比对过程，达到提升性能的目的。
+
+```javascript
+// PureComponent
+if (type.prototype && type.prototype.isPureReactComponent) {
+ return (
+   !shallowEqual(oldProps, newProps) || !shallowEqual(oldState, newState)
+ );
+}
+
+const hasOwn = Object.prototype.hasOwnProperty;
+function is(x, y) {
+  if (x === y) {
+    return x !== 0 || y !== 0 || 1 / x === 1 / y;
+  } else {
+    return x !== x && y !== y;
+  }
+}
+
+function shallowEqual(objA, objB) {
+  if (is(objA, objB)) return true
+
+  if (typeof objA !== 'object' || objA === null ||
+      typeof objB !== 'object' || objB === null) {
+    return false
+  }
+
+  const keysA = Object.keys(objA)
+  const keysB = Object.keys(objB)
+
+  if (keysA.length !== keysB.length) return false
+
+  for (let i = 0; i < keysA.length; i++) {
+    if (!hasOwn.call(objB, keysA[i]) ||
+        !is(objA[keysA[i]], objB[keysA[i]])) {
+      return false
+    }
+  }
+
+  return true
+}
+```
+
+is 方法（Object.is） 比 === 修复了 NaN 和 +-0 的情况，可以看出也仅仅是做了一层基本数据类型的比较。所以一些不合理的写法会导致 shadowEqual 结果不正确，比如：
+
+```javascript
+const newObj = this.state.obj
+newObj.id = 2;
+this.setState({
+  obj: newObj
+});
+```
+
+由于 newObj 与 obj 地址相同，所以 shadowEqual 比较结果是 true。可以使用clone（Object.assign、lodash.merge、JSON.parse/stringify）:
+
+```javascript
+const newObj = Object.assign(this.state.obj)
+newObj.id = 2;
+this.setState({
+ obj: newObj
+});
+```
+
+如果 PureComponent 里有 shouldComponentUpdate 函数的话，直接使用 shouldComponentUpdate 的结果作为是否更新的依据，没有shouldComponentUpdate 函数的话，才会去判断是不是 PureComponent ，是的话再去做 shallowEqual浅比较。
+
+**注意**
+
+如果state或者props每次都会变，那么PureComponent效率还不如Component，因为毕竟shadowEqual也是需要执行时间的。
+
+
+#### 9. Portals
+
+Portal 提供了一种将子节点渲染到存在于父组件以外的 DOM 节点的优秀的方案。
+
+`ReactDOM.createPortal(child, container)`
+
+#### 10. React组件的生命周期
+
+* `ComponentWillMount`
+* `render`
+* `ComponentDidMount`
+* `ComponentWillReceiveProps`
+* `ShouldComponentUpdate`
+* `ComponentWillUpdate` 
+* `ComponentDidUpdate`
+* `ComponentWillUnmount`
+
+###### ComponentWillMount()
+
+在渲染前调用
+
+因为componentWillMount是在render之前执行，所以在这个方法中setState不会发生重新渲染(re-render);
+
+在componenetWillMount中 setState，新的state 不会引起新的更新行为，但是新的 state内容会被带到 render 中体现。
+
+这是服务端渲染(server render)中唯一调用的钩子(hook);
+
+###### render()
+严格来说，render也算是React生命周期中的一部分，一般只在两个时机调用:
+
+1. 在componentWillMount()方法之后
+2. 在ComponentWillUpdate()方法之后
+
+###### ComponentDidMount()
+在第一次渲染（render）后调用，只在客户端。之后组件已经生成了对应的DOM结构，可以通过this.getDOMNode()来进行访问。 如果你想和其他JavaScript框架一起使用，可以在这个方法中调用setTimeout, setInterval或者发送AJAX请求等操作(防止异步操作阻塞UI)。
+
+这里可以对DOM进行操作，这个函数之后ref变成实际的DOM，同时也**可以使用setState()方法触发重新渲染(re-render)**;
+
+**ref的current属性会在ComponentDidMount触发前传入DOM元素，并在ComponentDidUpdate触发前更新。在组件卸载时传入null值**
+
+###### componentWillReceiveProps(nextProps)
+
+在已挂载组件接收到一个新的 prop (更新后)时被调用。这个方法在初始化render时不会被调用。
+
+如果需要在props发生变化(或者说新传入的props)来更新state，可能需要比较this.props和nextProps, 然后使用this.setState()方法来改变this.state;
+
+注意：如果只是调用this.setState()而不是从外部传入props, 那么不会触发componentWillReceiveProps(nextProps)函数；这就意味着: this.setState()方法不会触发componentWillReceiveProps(), props的改变或者props没有改变才会触发这个方法;
+
+###### ShouldComponentUpdate(nextProps, nextState)
+
+在接收到新props或state后触发，用来确定是否发生重新渲染，默认情况返回true，表示会发生重新渲染，返回false，则会跳过render(后面的涉及更新重新渲染的生命周期都不会触发)，所以也就不会发生Virtual DOM diff。
+
+这个方法在首次渲染时或者forceUpdate()时不会触发;
+
+现在一些情况，PureComponent已经替代了ShouldComponentUpdate的使用场景。
+
+###### ComponentWillUpdate(nextProps, nextState)
+
+在props或state发生改变或者shouldComponentUpdate(nextProps, nextState)触发后, 在render()之前（首次初始化并不会触发）。
+
+千万不要在这个函数中调用this.setState()方法;
+
+在componentWillUpdate中setState，它的下一步本来就是 render，新的 state 内容不会被带到 render 中。如果在componentWillUpdate确实设置了新的不同的 state，则会引起循环的更新行为(会造成React调用栈溢出，渲染表现不正常)，如果只是调用了 setState，但是 state 内容并无变化，则不会引起循环的渲染更新行为。
+
+当然如果非要在componentWillUpdate中执行setState，有限制判断条件的情况下，可以通过setTimeout函数来执行，这样就不会造成React的栈溢出了。
+
+###### ComponentDidUpdate(prevProps, prevState)
+
+ 在组件完成更新后(componentWillUpdate(nextProps, nextState)后
+)立即调用。在初始化时不会被调用。
+
+###### ComponentWillUnmount
+
+在组件从 DOM 中移除并销毁之前立刻被调用。
+
+这个方法可以让你处理一些必要的清理操作，比如无效的timers、interval，或者取消网络请求，或者清理任何在componentDidMount()中创建的DOM元素(elements);
+
+
+#### 11. Ref
+
+ref的current属性会在ComponentDidMount触发前传入DOM元素，并在ComponentDidUpdate触发前更新。在组件卸载时传入null值
+
+不能在函数组件上使用 ref 属性，因为它们没有实例
+
+如果要在函数组件中使用 ref，你可以使用 forwardRef（可与 useImperativeHandle 结合使用），或者可以将该组件转化为 class 组件。
+
+```javascript
+function CustomTextInput(props) {
+  // 这里必须声明 textInput，这样 ref 才可以引用它
+  const textInput = useRef(null);
+
+  function handleClick() {
+    textInput.current.focus();
+  }
+
+  return (
+    <div>
+      <input
+        type="text"
+        ref={textInput} />
+      <input
+        type="button"
+        value="Focus the text input"
+        onClick={handleClick}
+      />
+    </div>
+  );
+}
+```
+
+#### 12 Render Props
+
+具有 render prop 的组件接受一个函数，该函数返回一个 React 元素并调用它而不是实现自己的渲染逻辑。
+
+```javascript
+<DataProvider render={data => (
+  <h1>Hello {data.target}</h1>
+)}/>
+```
+使用 render prop 的库有 React Router、Downshift 以及 Formik。
+
+render prop 是一个用于告知组件需要渲染什么内容的函数 prop
+
+**注意**:
+
+如果你在 render 方法里创建函数，那么使用 render prop 会抵消使用 React.PureComponent 带来的优势。因为浅比较 props 的时候总会得到 false，并且在这种情况下每一个 render 对于 render prop 将会生成一个新的值。
