@@ -227,3 +227,14 @@ RGBToHex('rgb(255,255,255)')      // '#ffffff'
 
 1. **权限 code**，字符串，形如 index,pos。其中 pos 表示 32 位二进制数中 1 的位置（其余全是 0）； index 表示权限空间，用于突破 JavaScript 数字位数的限制，是从 0 开始的正整数，每个权限code都要归属于一个权限空间。index 和 pos 使用英文逗号隔开。
 2. **用户权限**，字符串，形如 1,16,16。英文逗号分隔每一个权限空间的权限值。例如 1,16,16 的意思就是，权限空间 0 的权限值是 1，权限空间 1 的权限值是 16，权限空间 2 的权限是 16。
+
+
+几道相关的二进制位运算的算法题:
+
+[二进制中1的个数](https://leetcode-cn.com/problems/er-jin-zhi-zhong-1de-ge-shu-lcof/solution/jian-dan-yi-dong-wei-yun-suan-js-cpython-by-azl397/)
+
+`n &= (n - 1)`可以消去二进制n中最右边的1
+
+[数值的整数次方](https://leetcode-cn.com/problems/shu-zhi-de-zheng-shu-ci-fang-lcof/)
+
+一定要注意，js的位运算是以32位带符号的整数进行运算的，所以超过Math.pow(2, 31)的数字进行位运算，都可能有问题。
