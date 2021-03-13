@@ -41,9 +41,9 @@
     scriptDom.src = `${url}${jsonpStr}`;
     window[callbackName] = function (data){
       callback(data);
-      document.removeChild(scriptDom);
+      document.body.removeChild(scriptDom);
     }
-    document.appendChild(scriptDom);
+    document.body.appendChild(scriptDom);
   }
   window.$jsonp = jsonp;
 })(window, document);
