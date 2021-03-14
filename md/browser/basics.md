@@ -39,8 +39,8 @@ webkit浏览器内核
 
 小知识点:
 * WebKit 是一个开源的浏览器引擎。它的前身是KDE在1998年开发的排版引擎KHTML，最初用于Linux和Unix等开源操作系统。因为KHTML拥有更清晰的架构，而且比Gecko更小巧，苹果从KHTML分支出来内部开始了WebKit的研发。
-* webkit内核默认js引擎为javascriptCore，而谷歌把其替换成了v8，所以原先Chrome浏览器虽然也是webkit内核（Chromium项目中研发的渲染引擎，基于并脱离Webkit），用的是v8引擎，而sfari浏览器内使用的webkit内核，其js引擎依旧是javascriptCore.
-* Chromium 是 Google 公司一个开源浏览器项目，使用 Blink 渲染引擎驱动。Chromium是基于Webkit，衍生出Blink。Chromium 和 Google Chrome 的关系，可以理解为：Chromium + 集成 Google 产品 = Google Chrome。可以理解为 Google Chrome 是个商业项目，而 Chromium 是一个中立、无立场的（理论上）的开源项目。微软基于 Google 的 Chromium 开发的新版 Microsoft Edge 浏览器已经正式发布。
+* webkit内核默认js引擎为javascriptCore(苹果基于javascriptCore的Nitro)，而谷歌把其替换成了v8，所以原先Chrome浏览器虽然也是webkit内核（Chromium项目中研发的渲染引擎，基于并脱离Webkit），用的是v8引擎，而sfari浏览器内使用的webkit内核，其js引擎依旧是javascriptCore（苹果现基于javascriptCore项目开发Nitro）.
+* Chromium 是 Google 公司一个开源浏览器项目，使用 Blink 渲染引擎驱动。Chromium是基于Webkit衍生出的Blink。Chromium 和 Google Chrome 的关系，可以理解为：Chromium + 集成 Google 产品 = Google Chrome。可以理解为 Google Chrome 是个商业项目，而 Chromium 是一个中立、无立场的（理论上）的开源项目。微软基于 Google 的 Chromium 开发的新版 Microsoft Edge 浏览器已经正式发布。
 * CEF（Chromium Embeded Framework）
   一个将浏览器功能（页面渲染、js执行）嵌入到其他应用程序的框架，支持windows, Linux, Mac平台
   应用: 做一个浏览器、跨平台的桌面底层方案electron.js、 客户端（如：桌面端app应用）

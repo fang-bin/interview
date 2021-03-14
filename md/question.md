@@ -572,3 +572,34 @@ console.log(mergeOrderSort(arr2));
   -webkit-box-orient: vertical; //设置或检索伸缩盒对象的子元素的排列方式
 }
 ```
+
+##### 17. 跳出循环
+* forEach 遍历数组的每一项，并对每一项执行一个 callback 函数。没有返回值(不论什么情况返回值都可以视为undefined)。forEach 方法没办法使用 break 语句跳出循环，或者使用 continue 跳过这次循环进入下次循环，但是可以通过 return 来实现跳过这次循环进入下次循环。
+* for...of ES6提出的语句，在可迭代对象（Array，Map，Set，String，TypedArray，arguments）上创建一个迭代循环。（所有遍历器对象都可以遍历，即 [Symbol.iterator]=collection 都可以），不同于 forEach 可以使用 break, continue，但是不可以使用return;
+* for...in for...in 语句以任意顺序遍历一个对象的可枚举属性的属性名。但是 for...in 会遍历对象本身的所有可枚举属性和从它原型继承而来的可枚举属性，因此如果想要仅迭代对象本身的属性，要结合hasOwnProperty() 来使用。 for...in遍历数组的情况下，可能会随机顺序遍历。(不可使用 continue break return)
+
+##### 18. 有关原型内容
+###### 判断
+* `typeof` 在ES5中是一个安全操作，但是在ES6中，由于let/const的暂时性死区的问题，typeof也不再安全。typeof 只能大致区分类型，尤其面对复杂类型的时候，更是无法区分。
+* `instanceof` 运算符返回一个布尔值，表示对象是否为某个构造函数的实例。会检查右边构造函数的原型对象（prototype），是否在左边对象的原型链上。有一种特殊情况，就是左边对象的原型链上，只有null对象。这时，instanceof判断会失真。
+* `isPrototypeOf` 用于测试一个对象是否存在于另一个对象的原型链上。
+* `Object.prototype.toString.call()` 可以准确判断某个对象值属于哪种内置类型。在JavaScript中所有类型(如：对象，数组，函数)都包含一个内部属性\[[calss]]，此属性可以看作是一个内部分类。它并不是传统面向对象上的类,由于是内部属性，所以我们无法直接访问,不过，可以通过该方法转换为字符串来查看。除了null和undefined，其他都有各自的构造类，都是javascript的内置构造函数。
+* `Object.getPrototypeOf()` 获取对象的原型（__proto__是厂商实现的私有属性，对环境有依赖，开发中应使用 Object.getPrototypeOf()来获取实例对象的原型）
+
+###### 生成或设置
+* `Object.create()` 方法创建一个新对象，使用现有的对象来提供新创建对象的__proto__。相当于直接将新生成对象的__proto__指向现有对象。Object.create里面的参数是一个原型对象。\[Object.create参数].isPrototypeOf(\[Object.create生成对象]) 为true。
+* `Object.setPrototypeOf(obj, prototype)` 设置 prototype 为 obj 的新原型对象。
+
+###### Object.create 和 Object.setPrototypeOf的区别
+
+两者都能达到设置对象原型的功能，但是具体表现上有一些区别。
+
+`Object.create(Ctor1.prototype, Ctor2.prototype)` 中，Ctor1.protoype 会指向一个新的空对象，空对象的 __proto__ 指向 Ctor2.prototype，会覆盖掉原来Ctor1的prototype对象的属性，凸显了重新赋值。
+
+`Object.setPrototypeOf(Ctor1.prototype, Ctor2.prototype)` 中， Ctor1.prototype 仍会指向原先 Ctor1 的 prototype，然后这个 Ctor1.prototype 的 __proto__ 则会指向 Ctor2.prototype，保留了原先 Ctor1.prototype 上的属性。
+
+在进行俩个原型之间的委托时使用setPrototype更好，Object.create更适和直接对一个无原生原型的对象快速进行委托。
+
+但是，由于现代js引擎优化属性访问所带来的特性的关系，更改对象的原型在各个浏览器和js引擎上都是一个很慢的操作。其在更改继承的性能上的影响是微妙而又广泛的，这不仅仅限于obj.__proto__ = ...语句上的时间花费，而且可能会延伸到任何代码，那些可以访问任何原型已被更改的对象的代码。如果关心性能，应该避免设置一个对象的原型，相反，应该使用Object.create()来创建带有想要原型的新对象。
+
+

@@ -591,14 +591,14 @@ Vehicle.prototype.isPrototypeOf(v)
 
 我们可以通过Object.prototype.toString方法准确判断某个对象值属于哪种内置类型。
 
-在JavaScript中所有类型(如：对象，数组，函数)都包含一个内部属性[[calss]]，此属性可以看作是一个内部分类。它并不是传统面向对象上的类,由于是内部属性，所以我们无法直接访问,不过，可以转换为字符串来查看.
+在JavaScript中所有类型(如：对象，数组，函数)都包含一个内部属性 \[[calss]] ，此属性可以看作是一个内部分类。它并不是传统面向对象上的类,由于是内部属性，所以我们无法直接访问,不过，可以转换为字符串来查看.
 
 ```javascript
 Object.prototype.toString.call([1,2,3]) // '[Object Array]'
 Object.prototype.toString.call(/^[1,2]$/)  // '[Object RegExp]'
 ```
 
-每个不同的类型中的[[class]],都对应着它们相应的内部构造函数，也就是对象的内部[[Class]]属性和创建该对象的内建原生构造函数相对应，但有些特例.
+每个不同的类型中的 \[[class]] ，都对应着它们相应的内部构造函数，也就是对象的内部 \[[class]] 属性和创建该对象的内建原生构造函数相对应，但有些特例.
 
 ```javascript
 //一说特例，我估计就有人想到javascript中比较蛋疼的两个类型
@@ -641,7 +641,7 @@ var s = 'hello world';
 var world = s.toUpperCase();
 ```
 
-首先javascript会讲字符串值通过new String(s)的方式转换为封装对象，这个对象继承了来自字符串构造函数的所有方法(这些操作都从第二行访问方法时开始发生),当前s已经变成了一个封装对象,接下来在封装对象中查找需要的方法或属性，找到了之后做出相应的操作。**一旦引用结束，这个新创建的对象就会销毁**。这时候s.toUpperCase已经运行了该方法，随即销毁封装对象。
+首先 javascript 会将字符串值通过 new String(s) 的方式转换为封装对象，这个对象继承了来自字符串构造函数的所有方法(这些操作都从第二行访问方法时开始发生),当前 s 已经变成了一个封装对象，接下来在封装对象中查找需要的方法或属性，找到了之后做出相应的操作。**一旦引用结束，这个新创建的对象就会销毁**。这时候 s.toUpperCase 已经运行了该方法，随即销毁封装对象。
 
 ###### 拆封
 
@@ -718,7 +718,11 @@ console.log(cc instanceof Object); // true cc是对象，原型链上肯定会�
 
 #### Object.create() 和 Object.setPrototypeOf()区别
 
-`Object.setPrototypeOf(obj, prototype)`  obj为要设置其原型的对象  prototype为该对象的新原型(一个对象 或 null)
+`Object.setPrototypeOf(obj, prototype)`  
+
+obj为要设置其原型的对象  
+
+prototype为该对象的新原型(一个对象 或 null)
 
 Object.setPrototypeOf()方法设置一个指定的对象的原型。
 
