@@ -162,13 +162,6 @@ webkit浏览器内核
 然后通过IPC将合成帧提交给浏览器进程。 此时，可以从UI线程添加另一个合成帧以用于浏览器UI更改，或者从其他渲染器进程添加扩展。 这些合成帧被发送到GPU以在屏幕上显示。 如果发生滚动事件，合成器线程会创建另一个合成帧以发送到GPU。
 
 合成的好处是它可以在不涉及主线程的情况下完成。 合成器线程不需要等待样式计算或JavaScript执行。 这就是为什么仅合成动画被认为是平滑性能的最佳选择。 如果需要再次计算布局或绘图，则必须涉及主线程。
-
-##### load事件与DOMContentLoaded事件的先后
-* 当 DOMContentLoaded 事件触发时，仅当DOM加载完成，不包括样式表，图片(譬如如果有async加载的脚本就不一定完成，但是defer加载的脚本一定执行完成)。
-* 当 onload 事件触发时，页面上所有的DOM，样式表，脚本，图片都已经加载完成了。（渲染完毕了）
-
-所以，顺序是：DOMContentLoaded -> load
-
 #### 普通图层和复合图层
 
 **拥有层叠上下文属性的元素会生成一个新的层叠上下文对象，每个层叠上下文对象都是一个渲染图层，渲染图层与复合图层是不同的概念，渲染图层更像是一个纯二维的概念，无论其怎么层叠覆盖最终都归依于根层叠上下文。而复合图层则完全脱离根层叠上下文，相当于开辟新的位面。**
@@ -700,6 +693,17 @@ reflow 会从 这个 root frame 开始递归往下，依次计算所有的结点
 * 将需要多次重排的元素，position属性设为absolute或fixed，元素脱离了文档流，它的变化不会影响到其他元素；
 * 如果需要创建多个DOM节点，可以使用DocumentFragment创建完后一次性的加入document；
 * 尽量不要使用table布局。
+
+##### load事件与DOMContentLoaded事件的先后
+* DOMContentLoaded 当初始的 HTML 文档被完全加载和解析完成之后，DOMContentLoaded 事件被触发，而无需等待样式表、图像和子框架的完全加载。(譬如如果有async加载的脚本就不一定完成，但是defer加载的脚本一定执行完成)。
+* 当 onload 事件触发时，页面上所有的DOM，样式表，脚本，图片都已经加载完成了。（渲染完毕了）
+
+所以，顺序是：DOMContentLoaded -> load
+
+```javascript
+document.addEventListener('DOMContentLoaded', function() {});
+window.onload = function () {}
+```
 
 
 ###### 参考
