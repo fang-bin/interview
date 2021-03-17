@@ -213,7 +213,7 @@ webkit浏览器内核
 具体的原理时这样的：
 **webkit CSS3中，如果这个元素添加了硬件加速，并且index层级比较低，那么在这个元素的后面其它元素（层级比这个元素高的，或者相同的，并且releative或absolute属性相同的），会默认变为复合层渲染，如果处理不当会极大的影响性能**
 
-简单点理解，其实可以认为是一个隐式合成的概念：如果a是一个复合图层，而且b在a上面，那么b也会被隐式转为一个复合图层，这点需要特别注意
+简单点理解，其实可以认为是一个隐式合成的概念：如果a是一个复合图层，而且b在a后面（兄弟元素）且position不为static，z-index值也不小于a，那么b也会被隐式转为一个复合图层，这点需要特别注意。
 
 #### 从Event Loop谈JS的运行机制
 
@@ -325,7 +325,7 @@ parent.location.href= target + "#" + hash;
 ##### window.postMessage
 HTML5引入了window.postMessage，允许跨窗口通信，不论这两个窗口是否同源。
 
-父窗口http://aaa.com向子窗口http://bbb.com发消息，调用postMessage方法
+父窗口 `http://aaa.com` 向子窗口 `http://bbb.com` 发消息，调用postMessage方法
 
 ```javascript
 var popup = window.open('http://bbb.com', 'title');
@@ -389,7 +389,7 @@ script标签jsonp跨域，原因script标签，img标签等不受同源策略限
       callback(data);
       document.body.removeChild(scriptDom);
     }
-    document.appendChild(scriptDom);
+    document.body.appendChild(scriptDom);
   }
   window.$jsonp = jsonp;
 })(window, document);
@@ -409,10 +409,10 @@ CORS是跨源AJAX请求的根本解决方法。相比JSONP只能发GET请求，C
 
 * **容量方面**: localStorage 和 sessionStorage均为5M左右，cookie在不同的浏览器中每个域的数量和大小均不同，不过硬尽量保证数量小于20(ie7+, chrome, firefox最小50个，safari不限制)，大小应尽量小于4k
 * **时效性（声明周期）** localStroage以文件的形式存储在本地（硬盘），sessionStorage应该是存在于内存中（回话结束则消失），localStorage存储的数据是永久性的，除非用户人为删除否则一直存在，而sessionStorage是会话级别的本地保存，其标签关闭数据也会被清除。cookie一般由服务器生成，可设置失效时间，如果在浏览器端生成cookie或未设置时效时间，默认关闭浏览器后失效。
-* **作用域** localStorage同一浏览器中，同源文档可以共享localStorage数据，而sessionStorage则是只有同一浏览器，同一窗口的同源文档才能共享数据（统一标签窗口不同的iframe也可以共享数据）。
+* **作用域** localStorage同一浏览器中，同源文档可以共享localStorage数据，而sessionStorage则是只有同一浏览器，同一窗口的同源文档才能共享数据（同一标签窗口不同的iframe也可以共享数据）。
 
 #### 三者相同
-* 都受浏览器同源策略限制（不过针对cookie的同源策略，只关注域名和端口，忽略协议）
+* 都受浏览器同源策略限制（不过针对cookie的同源策略，只关注域名，忽略协议和端口）
 
 #### Cookie
 因为HTTP协议是无状态的，对于一个浏览器发出的多次请求，WEB服务器无法区分 是不是来源于同一个浏览器。所以，需要额外的数据用于维护会话。
@@ -421,7 +421,7 @@ Cookie只是一段文本，所以它只能保存字符串。而且浏览器对�
 
 cookie分为 会话cookie 和 持久cookie ，会话cookie是指在不设定它的生命周期 expires 时的状态，浏览器的开启到关闭就是一次会话，当关闭浏览器时，会话cookie就会跟随浏览器而销毁。
 
-两个网址只要域名相同和端口相同，就可以共享 Cookie（参见《同源政策》一章）。注意，这里不要求协议相同。也就是说，http://example.com设置的 Cookie，可以被https://example.com读取。
+两个网址只要域名相同，就可以共享 Cookie（参见《同源政策》一章）。注意，这里不要求协议相同。也就是说，`http://example.com` 设置的 Cookie，可以被 `https://example.com` 读取。
 
 ##### Set-Cookie
 响应首部 Set-Cookie 被用来由服务器端向客户端发送 cookie。
