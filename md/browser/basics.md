@@ -182,8 +182,8 @@ webkit浏览器内核
 
 ##### 如何变成复合图层（硬件加速）
 
-* 最常用的方式：translate3d、translateZ
-* opacity属性/过渡动画（需要动画执行的过程中才会创建合成层，动画没有开始或结束后元素还会回到之前的状态）
+* 最常用的方式：translate3d、translateZ、scale3d、scaleZ(仅仅是transform: translate、scale、skew并不会变成复合图层)
+* 过渡动画(opacity, transform等动画，不包括absolute和margin等动画)（需要动画执行的过程中才会创建合成层，动画没有开始或结束后元素还会回到之前的状态）
 * will-chang属性（这个比较偏僻），一般配合opacity与translate使用（而且经测试，除了上述可以引发硬件加速的属性外，其它属性并不会变成复合层），作用是提前告诉浏览器要变化，这样浏览器会开始做一些优化工作（这个最好用完后就释放）
 * \<video>\<iframe>\<canvas>\<webgl>等元素
 * 其它，譬如以前的flash插件
@@ -204,7 +204,7 @@ webkit浏览器内核
 
 ##### 复合图层的缺点
 
-大量使用复合图层，否则由于资源消耗过度，页面反而会变的更卡
+大量使用复合图层，由于资源消耗过度，页面反而会变的更卡
 
 ##### 硬件加速时请使用index
 
@@ -251,6 +251,11 @@ macrotask中的事件都是放在一个事件队列中的，而这个队列由�
 
 ###### Cache-Control
 HTTP/1.1新增字段，`Cache-Control`可以通过`max-age`设置过期时间，如果设置`Cache-Control: no-cache，no-store, must-revalidate`；浏览器则不会做任何缓存。`Cache-Control`会覆盖`Expires`的设置(它会覆盖其他的一切缓存规则)
+
+* `Cache-Control: no-cache` 缓存但重新验证 每次有请求发出时，缓存会将此请求发到服务器（该请求应该会带有与本地缓存相关的验证字段），服务器端会验证请求中所描述的缓存是否过期，若未过期（注：实际就是返回304），则缓存才使用本地缓存副本。
+* `Cache-Control: no-stroe` 没有缓存 缓存中不得存储任何关于客户端请求和服务端响应的内容。每次由客户端发起的请求都会下载完整的响应内容。
+* `Cache-Control: must-revalidate` 验证方式 当使用了 "must-revalidate" 指令，那就意味着缓存在考虑使用一个陈旧的资源时，必须先验证它的状态，已过期的缓存将不被使用。
+* `Cache-Control: max-age=<seconds>` 过期时长 表示资源能够被缓存（保持新鲜）的最大时间。
 
 ##### 协商缓存（需要向服务器询问缓存是否已经过期）
 ###### Last-Modified
@@ -617,7 +622,7 @@ integrity 属性是资源完整性规范的一部分，它允许你为 script �
 
 上面的代码来自github源码，integrity="sha256-PJJrxrJLzT6CCz1jDfQXTRWOO9zmemDQbmLtSlFQluc=" 告诉浏览器，使用sha256签名算法对下载的js文件进行计算，并与intergrity提供的摘要签名对比，如果二者不一致，就不会执行这个资源。
 
-intergrity 的作用有：
+integrity 的作用有：
 * 减少由【托管在CDN的资源被篡改】而引入的XSS 风险
 * 减少通信过程资源被篡改而引入的XSS风险（同时使用https会更保险）
 * 可以通过一些技术手段，不执行有脏数据的CDN资源，同时去源站下载对应资源
