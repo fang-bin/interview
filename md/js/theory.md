@@ -12,7 +12,7 @@
 
 Node.js的EventLoop是分阶段的
 
-![avator](https://user-gold-cdn.xitu.io/2020/3/23/1710556d5509ef63)
+![node事件循环](https://github.com/fang-bin/interview/blob/master/image/node-event-loop.jpg)
 
 1. timers: 执行setTimeout和setInterval的回调
 2. pending callbacks: 执行延迟到下一个循环迭代的 I/O 回调
