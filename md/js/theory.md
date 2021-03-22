@@ -4,9 +4,10 @@
 
 主要可以分为浏览器环境，node10环境和node12环境：
 
-* 在低版本v8环境中，同源的task会在一轮事件循环中执行(setImmediate的优先级和setTimeout/setInterval的优先级不太好说，不确定)，然后才会去执行jobs，其优先级 process.nextTick >then>await
-* 在高版本v8环境中，一轮事件循环中只执行**一个**task，之后会执行所有的jobs，jobs的优先级 process.nextTick>then=await
-* node和浏览器的主要区别是：在node环境中, setTimeout和setInterval是同源的，setImmediate是单独的，而在浏览器环境中setTimeout和setInterval是非同源的
+* 在低版本v8环境中，**同源的task**会在一轮事件循环中执行，然后才会去执行jobs，其优先级 process.nextTick >then>await
+* 在高版本v8环境中，一轮事件循环中只执行**一个task(没有同源不同源，两个setTimeout也是分成两个task)**，之后会执行所有的jobs，jobs的优先级 process.nextTick>then=await。
+* 在node环境中,setImmediate的执行时机，还要根据node事件循环流程来考虑
+* node和浏览器的主要区别是：在node环境中, setTimeout和setInterval是同源的，setImmediate是单独的，而在浏览器环境中setTimeout和setInterval是非同源的(**在浏览器中高版本的v8环境中，是否是同源任务也不重要了，都是一个macro任务源为一次事件循环**)
 
 [setTimeout和setImmediate到底谁先执行](https://juejin.im/post/6844904100195205133)
 
@@ -21,7 +22,7 @@ Node.js的EventLoop是分阶段的
 5. check: setImmediate在这里执行
 6. close callbacks: 一些关闭的回调函数，如：socket.on('close', ...)
 
-![avator](https://user-gold-cdn.xitu.io/2020/3/23/171055711f3b0aac)
+![node事件循环流程](https://github.com/fang-bin/interview/blob/master/image/node-event-loop-flow.jpg)
 
 例一:
 ```javascript
