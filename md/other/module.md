@@ -39,6 +39,7 @@ CMD规范专门用于浏览器端，模块的加载是异步的，模块使用�
 
 * AMD 是 RequireJS 在推广过程中对模块定义的规范化产出。
 * CMD 是 SeaJS 在推广过程中对模块定义的规范化产出。
+* **对于依赖的模块，AMD推崇依赖前置，CMD推崇依赖就近。AMD是提前执行(RequireJS从2.0开始，也改成可以延迟执行)，CMD是延迟执行。**
 
 ### UMD
 
@@ -218,4 +219,48 @@ CommonJS规范主要用于服务端编程，加载模块是同步的，这并不
 AMD规范在浏览器环境中异步加载模块，而且可以并行加载多个模块。不过，AMD规范开发成本高，代码的阅读和书写比较困难，模块定义方式的语义不顺畅。
 CMD规范与AMD规范很相似，都用于浏览器编程，依赖就近，延迟执行，可以很容易在Node.js中运行。不过，依赖SPM 打包，模块的加载逻辑偏重
 ES6 在语言标准的层面上，实现了模块功能，而且实现得相当简单，完全可以取代 CommonJS 和 AMD 规范，成为浏览器和服务器通用的模块解决方案。
+
+
+##### 按需加载
+
+CommonJS里面的依赖加载是同步的，只有在代码执行阶段才会加载，可以在具体逻辑代码里对依赖的模块进行加载，也就是按需加载。例：
+
+```javascript
+// a
+module.exports = {
+  name: 'a',
+}
+
+// b
+module.exports = {
+  name: 'b',
+}
+
+// main.js
+const fb = require('./a.js');
+if (fb.name === 'a') {
+  const n = require('./b.js');
+  console.log(n.name);  //b
+}
+```
+
+ES Module 中的 import 命令会被 JavaScript 引擎静态分析，先于模块内的其他语句执行（编译时加载）。引擎处理import语句是在编译时，这时不会去分析具体的逻辑语句，所以在语法上无法实现条件加载。
+
+ES2020提案 引入import()函数，支持动态加载模块。
+
+import()返回一个 Promise 对象。
+
+```javascript
+const main = document.querySelector('main');
+
+import(`./section-modules/${someVariable}.js`)
+  .then(module => {
+    module.loadPageInto(main);
+  })
+  .catch(err => {
+    main.textContent = err.message;
+  });
+```
+
+import()函数可以用在任何地方，不仅仅是模块，非模块的脚本也可以使用。它是运行时执行，也就是说，什么时候运行到这一句，就会加载指定的模块。另外，import()函数与所加载的模块没有静态连接关系，这点也是与import语句不相同。import()类似于 Node 的require方法，区别主要是前者是异步加载，后者是同步加载。
 
