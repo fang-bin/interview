@@ -298,22 +298,22 @@ jQuery的CSS()方法，其底层运作就应用了getComputedStyle以及getPrope
 
 ##### getComputedStyle 和 style 的区别
 
-* getComputedStyle方法是只读的，只能获取样式，不能设置；而element.style能读能写。
-* getComputedStyle方法获取的是最终应用在元素上的所有CSS属性对象（即使没有CSS代码，也会把默认的祖宗八代都显示出来）；而element.style只能获取元素style属性中的CSS样式。因此对于一个光秃秃的元素<p>，getComputedStyle方法返回对象中length属性值（如果有）就是190+, 而element.style就是0。
+* getComputedStyle 方法是只读的，只能获取样式，不能设置；而element.style能读能写。
+* getComputedStyle 方法获取的是最终应用在元素上的所有CSS属性对象（即使没有CSS代码，也会把默认的祖宗八代都显示出来）；而 element.style 只能获取**元素style属性**中的CSS样式。因此对于一个光秃秃的元素 \<p> ，getComputedStyle 方法返回对象中 length 属性值（如果有）就是190+, 而 element.style 就是0。
 
 ##### getComputedStyle与currentStyle
 
-currentStyle是IE浏览器自娱自乐的一个属性，其与element.style可以说是近亲，至少在使用形式上类似，element.currentStyle，差别在于element.currentStyle返回的是元素当前应用的最终CSS属性值（包括外链CSS文件，页面中嵌入的\<style>属性等）。
+currentStyle 是IE浏览器自娱自乐的一个属性，其与 element.style 可以说是近亲，至少在使用形式上类似，差别在于 element.currentStyle 返回的是元素当前应用的最终 CSS 属性值（包括外链 CSS 文件，页面中嵌入的 \<style> 属性等）。
 
-因此，从作用上将，getComputedStyle方法与currentStyle属性走的很近，形式上则style与currentStyle走的近。不过，currentStyle属性貌似不支持伪类样式获取，这是与getComputedStyle方法的差异，也是jQuery css()方法无法体现的一点。
+因此，从作用上将，getComputedStyle 方法与 currentStyle 属性走的很近，形式上则 style 与 currentStyle 走的近。不过，currentStyle 属性貌似不支持伪类样式获取，这是与 getComputedStyle 方法的差异，也是 jQuery css() 方法无法体现的一点。
 
 #### getPropertyValue和getAttribute
 
-在老的IE浏览器（包括最新的），getAttribute方法提供了与getPropertyValue方法类似的功能，可以访问CSS样式对象的属性。
+在老的IE浏览器（包括最新的），getAttribute 方法提供了与 getPropertyValue 方法类似的功能，可以访问CSS样式对象的属性。
 
 `window.getComputedStyle("元素").getPropertyValue('属性名')`
 
-## 26. 什么是critical CSS？
+## 26. 什么是Critical CSS？
 
 Critical CSS是一种提取首屏中 CSS 的技术，以便尽快将内容呈现给用户。这是快速加载网页首屏的好方法。
 
@@ -368,7 +368,7 @@ BFC的使用场景
 
 在CSS2.1的年代，在CSS3还没有出现的时候（注意这里的前提），层叠顺序规则遵循下面这张图：
 
-![CSS2.1层叠规则](https://image.zhangxinxu.com/image/blog/201601/2016-01-07_223349.png)
+![CSS2.1层叠规则](https://github.com/fang-bin/interview/blob/master/image/z-stack-context.png)
 
 诸如border/background一般为装饰属性，而浮动和块状元素一般用作布局，而内联元素都是内容。
 

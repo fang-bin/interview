@@ -426,14 +426,19 @@ Async函数就是Generator函数的语法糖，Async函数可以理解成可以�
 
 [类似co模块通过不断调用自身，让Generator自执行实现Async函数效果](./writeCode.md)
 
-### javascript绑定事件的方法都有哪些
-1. on{事件名} 只能绑定一个事件，后面绑定的事件会覆盖前面绑定的事件
+#### javascript绑定事件的方法都有哪些
+1. on{事件名} 只能绑定一个事件，后面绑定的事件会覆盖前面绑定的事件(默认也是冒泡的事件流)
 2. addEventListener 可以绑定多个事件，事件执行的顺序是先绑定先执行，可以设置第三个参数来确定事件流，false-->冒泡阶段（默认） true-->捕获阶段
 3. attachEvent 是ie才有的方法，事件执行的顺序是后绑定先执行，默认是采用的冒泡的事件流，其监听的事件，之前必须加上on,例如 obj.attachEvent('onclick',fn);
 
+#### event对象中 target 和 currentTarget 的区别
+target 在事件流的目标阶段，而 currentTareget 在事件流的捕获、目标、冒泡阶段。只有当事件流处于目标阶段的时候时候，两者才是一致。
 
+target 指向真正的事件源，而 currentTarget 则是指向经过捕获、冒泡阶段的父级元素而触发时间的事件源（触发的事件在哪个元素上绑定，则指向哪个元素，当然它可能是真正的事件源，也可能不是）。
 
-### document.body 和 document.documentElement的区别
+在事件处理函数中（匿名函数，而非箭头函数，因为箭头函数没有this）的this，指向 currentTarget。
+
+#### document.body 和 document.documentElement的区别
 
 document.body：返回html dom中的body节点 即body标签元素
 
@@ -451,6 +456,10 @@ document.documentElement： 返回html dom中的root 节点 即html标签元素
 ```javascript
 var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
 ```
+
+#### document.defaultView
+
+在浏览器中，document.defaultView 返回当前 document 对象所关联的 window 对象，如果没有，会返回 null。是一个只读属性(因为其值为window对象，可以在上面添加或删除属性，但并不能改变其本身) `document.defaultView === window`。
 
 #### 判断一个变量是对象还是数组
 ```javascript
