@@ -415,10 +415,10 @@ console.log(mergeOrderSort(arr2));
 ## 快记
 
 ##### 1. 形成复合图层
-* 最常用的方式：translate3d、translateZ
-* opacity属性/过渡动画（需要动画执行的过程中才会创建合成层，动画没有开始或结束后元素还会回到之前的状态）
+* 最常用的方式：translate3d、translateZ、scale3d、scaleZ(仅仅是transform: translate、scale、skew并不会变成复合图层)
+* 过渡动画(opacity, transform等动画，不包括absolute和margin等动画)（需要动画执行的过程中才会创建合成层，动画没有开始或结束后元素还会回到之前的状态）
 * will-chang属性（这个比较偏僻），一般配合opacity与translate使用（而且经测试，除了上述可以引发硬件加速的属性外，其它属性并不会变成复合层），作用是提前告诉浏览器要变化，这样浏览器会开始做一些优化工作（这个最好用完后就释放）
-* `<video> <iframe> <canvas> <webgl>`等元素
+* \<video>\<iframe>\<canvas>\<webgl>等元素
 * 其它，譬如以前的flash插件
 
 ##### 2. 形成BFC条件  BFC特点

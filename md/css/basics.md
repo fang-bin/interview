@@ -3,28 +3,8 @@
 [层叠上下文详解](https://github.com/fang-bin/interview/blob/master/md/day/index-css.md#28-%E5%B1%82%E5%8F%A0%E4%B8%8A%E4%B8%8B%E6%96%87)
 
 ### BFC（块级格式化上下文）
-主要问及的问题是浮动坍塌和margin重叠等
 
-BFC的全称为Block Formatting Context，即块级格式化上下文。一个BFC有如下特性：
-
-* 处于同一个BFC中的元素相互影响，可能会发生margin collapse；
-* BFC在页面上是一个独立的容器，容器里面的子元素不会影响到外面的元素，反之亦然；
-* 计算BFC的高度时，考虑BFC所包含的所有元素，包括浮动元素也参与计算；
-* 浮动盒的区域不会叠加到BFC上；
-
-创建BFC的方法如下
-* 浮动（float的值不为none）；
-* 绝对定位元素（position的值为absolute或fixed）；
-* 行内块（display为inline-block）
-* 表格单元（display为table、table-cell、table-caption等HTML表格相关属性）；
-* 弹性盒（display为flex或inline-flex）；
-* overflow不为visible；
-
-BFC的使用场景：
-
-1. 防止垂直margin重叠，父子元素的边界重叠，在父元素上加上overflow:hidden;使其成为BFC。
-
-2. 清除内部浮动对元素高度的影响。父元素#float的高度为0，解决方案为为父元素#float创建BFC，这样浮动子元素的高度也会参与到父元素的高度计算。
+[块级格式化上下文详解](https://github.com/fang-bin/interview/blob/master/md/day/index-css.md#27-%E6%A0%BC%E5%BC%8F%E5%8C%96%E4%B8%8A%E4%B8%8B%E6%96%87)
 
 自适应两栏布局
 <section id="layout">
@@ -169,7 +149,7 @@ css盒模型主要由外边距（margin）、边框（border）、内边距（pa
 
 等等其他方法（注意这些方法有一些极端情况，比如说中间元素小于两边元素宽度，或者屏幕宽度过小等等，要尽量设置窗口的最小宽度）:
 * 同行排列之后，左右固定宽度，中间100%宽度，然后设置中间盒模型为标准盒模型，设置padding值分别为左右的宽度
-* 三者皆浮动的情况下，将中间元素放在第一个，然后第二三个元素分别设置`margin-left: -100%`、`margin-left: -(自身宽度)`，这个则是利用**margin/padding取百分比的值时，无论是 left/right 还是 top/bottom，都是基于父元素的宽度的。**
+* 三者皆浮动的情况下，将中间元素放在第一个，然后第二三个元素分别设置`margin-left: -100%`、`margin-left: -(自身宽度)`，这个则是利用**margin/padding取百分比的值时，都是基于父元素的宽度的。**
 
 等其他方法（例如table、grid或者flex）
 
@@ -182,7 +162,9 @@ css盒模型主要由外边距（margin）、边框（border）、内边距（pa
 
 #### 为背景图实现的展位图设置占位高度
 
-可以根据**margin/padding取百分比的值时，无论是 left/right 还是 top/bottom，都是基于父元素的宽度的。**特性，来设置背景图padding值等于（图片高度/图片宽度）基于宽度的百分比来实现。
+可以根据 **margin/padding取百分比的值时，都是基于父元素的宽度** 的特性，来设置背景图padding值等于（图片高度/图片宽度）基于宽度的百分比来实现。
+
+注意: **定位元素 left/right 和 top/bottom 取百分比的值时，则是分别按照父元素的宽高来计算的**
 
 #### 浏览器是怎样解析CSS选择器的？
 
@@ -239,11 +221,3 @@ CSS选择器的解析是从右向左解析的。若从左向右的匹配，发�
 
 页面加载自上而下 当然是先加载样式。
 写在body标签后由于浏览器以逐行方式对HTML文档进行解析，当解析到写在尾部的样式表（外联或写在style标签）会导致浏览器停止之前的渲染，等待加载且解析样式表完成之后重新渲染，在windows的IE下可能会出现FOUC现象（即样式失效导致的页面闪烁问题）
-
-[基础css问题，提供给我一个朋友](https://www.itcodemonkey.com/article/2853.html)
-
-
-
-
-
-
