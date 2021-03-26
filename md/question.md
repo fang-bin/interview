@@ -441,7 +441,7 @@ console.log(mergeOrderSort(arr2));
 ##### 3. 形成堆叠上下文条件  堆叠上下文的顺序
 * 根元素（即HTML元素）
 * 已定位元素（即绝对定位或相对定位）并且z-index不是默认的auto。
-* z-index值不为auto的flex项(父元素display:flex|inline-flex).
+* z-index值不为auto的**flex子项**(父元素display:flex|inline-flex).
 * 元素的opacity值不是1.
 * 元素的transform值不是none.
 * 元素mix-blend-mode值不是normal.

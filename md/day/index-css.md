@@ -395,7 +395,7 @@ BFC的使用场景
   对于包含有position:relative/position:absolute的定位元素，以及FireFox/IE浏览器（不包括Chrome等webkit内核浏览器，它们position:fixed元素天然层叠上下文元素，无需z-index为数值。）下含有position:fixed声明的定位元素，当其z-index值不是auto的时候，会创建层叠上下文。
 * CSS3与新时代的层叠上下文
 
-    * z-index值不为auto的flex项(父元素display:flex|inline-flex).
+    * z-index值不为auto的**flex子项**(父元素display:flex|inline-flex).
     * 元素的opacity值不是1.
     * 元素的transform值不是none.
     * 元素mix-blend-mode值不是normal.

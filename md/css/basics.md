@@ -1,19 +1,6 @@
 ### z-index堆叠规则（z-index数值大的元素就一定会覆盖数值小的元素么？）
 
-z-index用来控制元素重叠时堆叠顺序，已经定位的元素（即position值不为static）;
-
-stacking context: 翻译就是“堆叠上下文”。每个元素仅属于一个堆叠上下文，元素的z-index描述元素在相同堆叠上下文中“z轴”的呈现顺序。(非相同堆叠上下文中的元素，z-index没有可比性)
-
-生成堆叠上下文的规则：
-
-* 根元素（即HTML元素）
-* 已定位元素（即绝对定位或相对定位）并且z-index不是默认的auto。
-* 元素opacity属性不为1(See the specification for opacity)
-* 元素transform不为none
-* 元素min-blend-mode不为normal
-* 元素filter属性不为none
-
-子元素的z-index值只在父元素范围内有效。子堆叠上下文被看做是父堆叠上下文中一个独立的模块，相邻的堆叠上下文完全没关系。
+[层叠上下文详解](https://github.com/fang-bin/interview/blob/master/md/day/index-css.md#28-%E5%B1%82%E5%8F%A0%E4%B8%8A%E4%B8%8B%E6%96%87)
 
 ### BFC（块级格式化上下文）
 主要问及的问题是浮动坍塌和margin重叠等
