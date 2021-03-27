@@ -11,11 +11,11 @@
 **缺点**：浮动元素一旦脱离了文档流，就无法撑起父元素，会造成父级元素的高度塌陷。
 
 清除浮动影响的方法:
-1. 后面元素设置 `clear: both;`
+1. 后面兄弟元素设置 `clear: both;`
 2. 父级添加overflow属性，或者设置高度
-3. 伪类选择器清除浮动
+3. 伪元素选择器清除浮动
     ```css
-    .parent:after{
+    .parent::after{
       /* 设置添加子元素的内容是空 */
       content: '';  
       /* 设置添加子元素为块级元素 */
@@ -568,11 +568,11 @@ will-change虽然可以加速，但是，一定一定要适度使用。那种全
 
 字母x的下边缘(线)就是基线。
 
-![基线](https://image.zhangxinxu.com/image/blog/201506/2015-06-28_105734.png)
+![基线](https://github.com/fang-bin/interview/blob/master/image/baseline.png)
 
 CSS中有一个概念叫做"x-height", 指的是字母'x'的高度。
 
-![x-height](https://image.zhangxinxu.com/image/blog/201506/410px-Typography_Line_Terms.svg.png)
+![x-height](https://github.com/fang-bin/interview/blob/master/image/x-height.png)
 
 需要了解下"x-height"的含义，通俗讲，"x-height"就是指的小写字母'x'的高度；术语描述就是基线和等分线 mean line (也称作中线[midline])之间的距离。
 
