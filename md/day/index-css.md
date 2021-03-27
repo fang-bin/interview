@@ -1,6 +1,6 @@
 ## 1. 居中
 
-![avator](http://47.98.159.95/my_blog/007/center.jpg)
+![居中方式](https://github.com/fang-bin/interview/blob/master/image/set-center.jpeg)
 
 ## 2. 浮动
 
@@ -461,7 +461,7 @@ BFC的使用场景
 
 [深入理解层叠上下文-张鑫旭](https://www.zhangxinxu.com/wordpress/2016/01/understand-css-stacking-context-order-z-index/)
 
-![完善的7阶层叠顺序图](https://image.zhangxinxu.com/image/blog/201601/2016-01-09_211116.png)
+![完善的7阶层叠顺序图](https://github.com/fang-bin/interview/blob/master/image/stacking-context-order.png)
 
 这个地方挺重要。
 
