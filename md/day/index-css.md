@@ -238,11 +238,11 @@ WebP 的优势体现在它具有更优的图像数据压缩算法，能带来更
 
 ## 19. link 与 @import 的区别？
 
-* link 是HTML方式， @import 是CSS方式；
+* @import 是CSS方式，link 是HTML提供的标签，不仅可以加载CSS，还可以定义RSS,rel等连接属性。
+* 加载页面时，link标签引入的 CSS 被同时加载；@import引入的 CSS 将在页面加载完毕后被加载（相当于和页面的加载是串行）。
+* 可以通过 JS 操作 DOM ，插入link标签来改变样式；由于DOM方法是基于文档的，无法使用@import的方式插入样式。
 * link最大限度支持并行下载，@import 过多嵌套导致串行下载，出现FOUC；
-* link 可以通过 rel="alternate stylesheet" 指定候选样式；
 * 浏览器对 link 支持早于@import ，可以使用 @import对老浏览器隐藏样式；
-* @import必须在样式规则之前，可以在css文件中引用其他文件；
 
 总的来说： link优于@import。
 
@@ -324,16 +324,66 @@ Critical CSS是一种提取首屏中 CSS 的技术，以便尽快将内容呈现
 
 ## 27. 格式化上下文
 
-##### 外边距折叠(collapsing margins)
+BFC最初被定义在css2.1规范的Visual formatting model中。
 
-在CSS中，同一个块级格式化上下文中两个或多个毗邻的普通流中的盒子（可能是父子元素，也可能是兄弟元素）在垂直方向上的外边距会发生叠加，这种形成的外边距称之为外边距叠加。
+##### 视觉格式化模型(Visual formatting model)
 
+视觉格式化模型是用来处理文档并将它显示在视觉媒体上的机制，它让视觉媒体知道如何处理文档。（视觉媒体——user agent通常指的浏览器。）
+
+在视觉格式化模型中，文档树的每个元素根据盒模型生成零个或多个盒子。
+
+这些盒子的布局受以下因素控制：
+
+* 盒子的尺寸和类型。
+* 定位方案（普通文档流，浮动流和绝对定位流）。 
+* 文档树中元素间的关系。
+* 外部因素（如视口大小，图像本身的尺寸等）。
+
+**视觉格式化模型会根据CSS盒子模型将文档中的元素转换为一个个盒子。**
+
+##### 定位方案
+
+css布局宏观上来说是受定位方案影响，包括以下几种：
+
+* 普通文档流
+
+  元素按照其在 HTML 中的位置顺序决定排布的过程。并且这种过程遵循标准的描述。
+
+  只要不是float和绝对定位方式布局的，都在普通流里面。
+
+* 浮动文档流
+
+  浮动框不在文档的普通流中，浮动的流会漂浮在普通的流上面。
+
+  浮动的框可以向左或向右移动，直到它的外边缘碰到包含框或另一个浮动框的边框为止。
+
+* 定位文档流
+
+  1. 相对定位在普通流之中，是相对于它在普通流中的位置中进行移动，元素占据原来位置
+
+  2. 绝对定位脱离普通流，不占据空间相对于距离它最近的那个已定位的祖先(相对/绝对)元素决定的。
+
+  3. 固定定位，相对于浏览器窗口定位，脱离普通流，不占据空间
+
+
+##### 格式化上下文
+
+Formatting Context，既格式化上下文。用于决定如何渲染文档的一个区域。
+
+可以简单理解为格式化上下文就是为盒子准备的一套渲染规则。
+
+常见的有：
+
+* BFC（Block Formatting Context）
+* IFC（Inline Formatting Context）
+* FFC（Flex Formatting Context）
+* GFC（Grid Formatting Context）
 ### BFC
 
-BFC的全称为Block Formatting Context，即块级格式化上下文。一个BFC有如下特性：
-* 处于同一个BFC中的元素相互影响，可能会发生margin collapse；（BFC垂直方向边距重叠）
+BFC的全称为Block Formatting Context，即块级格式化上下文。规定了块级盒子的渲染布局方式。一个BFC有如下特性：
+* 处于同一个BFC中的元素相互影响，可能会发生margin collapse；（BFC垂直方向边距重叠，FFC和GFC并不会）
 * BFC在页面上是一个独立的容器，容器里面的子元素不会影响到外面的元素，反之亦然；
-* 计算BFC的高度时，考虑BFC所包含的所有元素，包括浮动元素也参与计算；
+* 计算BFC的高度时，考虑BFC所包含的浮动元素，其也参与计算；
 * 浮动盒的区域不会叠加到BFC上；
 
 创建BFC的方法如下
@@ -342,8 +392,11 @@ BFC的全称为Block Formatting Context，即块级格式化上下文。一个BF
 * 绝对定位元素（position的值为absolute或fixed）；
 * 行内块（display为inline-block）
 * 表格单元（display为table、table-cell、table-caption等HTML表格相关属性）；
-* 弹性盒（display为flex或inline-flex）；
 * overflow不为visible；
+
+在最新的CSS3规范中，以下分别会创建FFC和GFC
+
+* 弹性盒（display为flex或inline-flex）；
 * 网格元素（display为 grid 或 inline-grid 元素的直接子元素） 等等。
 
 BFC的使用场景
