@@ -82,16 +82,14 @@ setTimeout(() => {
 }, 2000);
 ```
 
-补充说明: 因为Promise 是没有中断方法的，xhr.abort()、ajax 有自己的中断方法，axios 是基于 ajax 实现的；fetch 基于 promise，所以他的请求是无法中断的。
+补充说明: 因为Promise 是没有中断方法的，xhr.abort()、ajax 有自己的中断方法，axios 是基于 ajax 实现的；fetch 基于 promise，所以它的请求是无法中断的。
 
 之前对Promise实现比较好的库 q、bluebird、when等
-
-其中 Promise
 
 ## 4. js中的类型
 javascript的7中基本类型: undefined、null、boolean、string、number、symbol、bigint
 
-复杂类型是Object，其中对象类型包括: Array、Function 还有两个特殊的对象 RegExp（正则）和 Date(日期)
+复杂类型是Object，其中对象类型包括: Array、Function，还有三个特殊的对象 RegExp（正则）、Date(日期)、Error(错误)
 
 
 ## 5. meta标签
@@ -106,160 +104,160 @@ meta 标签常用于定义页面的说明、关键字、最后修改日期等元
 
 **name 属性的一些相关定义**:
 
-1. `revisit-after`
+  1. `revisit-after`
 
-  如果页面不是经常更新，为了减轻搜索引擎爬虫对服务器带来的压力，可以设置一个爬虫的重访时间。如果重访时间过短，爬虫将按它们定义的默认时间来访问。 `<meta name="revisit-after" content="7 days" >`
+      如果页面不是经常更新，为了减轻搜索引擎爬虫对服务器带来的压力，可以设置一个爬虫的重访时间。如果重访时间过短，爬虫将按它们定义的默认时间来访问。 `<meta name="revisit-after" content="7 days" >`
 
-2. `renderer`
+  2. `renderer`
 
-  renderer是为双核浏览器准备的，用于指定双核浏览器默认以何种方式渲染页面。比如说360浏览器。`<meta name="renderer" content="webkit">`、`<meta name="renderer" content="ie-comp">`、`<meta name="renderer" content="ie-stand">`
+      renderer是为双核浏览器准备的，用于指定双核浏览器默认以何种方式渲染页面。比如说360浏览器。`<meta name="renderer" content="webkit">`、`<meta name="renderer" content="ie-comp">`、`<meta name="renderer" content="ie-stand">`
 
-3. `referrer`
+  3. `referrer`
 
-  referrer 控制document发起的Request请求中附加的Referer HTTP header，content中的值为:
+      referrer 控制document发起的Request请求中附加的Referer HTTP header，content中的值为:
 
-  * `no-referrer-when-downgrade`（默认值）当请求安全级别下降时不发送 referrer。目前，只有一种情况会发生安全级别下降，即从 HTTPS 到 HTTP。HTTPS 到 HTTP 的资源引用和链接跳转都不会发送 referrer。
-  * `no-referrer` 所有请求不发送 referrer
-  * `same-origin` 对于同源的链接和引用，会发送referrer，其他的不会。
-  * `origin` 在任何情况下仅发送源信息作为引用地址。源信息包括访问协议和域名。
-  * `unsafe-url` 无论是否发生协议降级，无论是本站链接还是站外链接，统统都发送 Referrer 信息。正如其名，这是最宽松而最不安全的策略。
-  * `origin-when-cross-origin` 同源的链接和引用，会发送完全的 referrer 信息；但非同源链接和引用时，只发送源信息。
-  * `strict-origin` 在安全级别下降时不发送 referrer；而在同等安全级别的情况下仅发送源信息。注意：这个是新加的标准，有些浏览器可能还不支持。
-  * `strict-origin-when-cross-origin` 同源的链接和引用，会发送 referrer。安全级别下降时不发送 referrer。其它情况下发送源信息。注意：这个是新加的标准，有些浏览器可能还不支持。
+      * `no-referrer-when-downgrade`（默认值）当请求安全级别下降时不发送 referrer。目前，只有一种情况会发生安全级别下降，即从 HTTPS 到 HTTP。HTTPS 到 HTTP 的资源引用和链接跳转都不会发送 referrer。
+      * `no-referrer` 所有请求不发送 referrer
+      * `same-origin` 对于同源的链接和引用，会发送referrer，其他的不会。
+      * `origin` 在任何情况下仅发送源信息作为引用地址。源信息包括访问协议和域名。
+      * `unsafe-url` 无论是否发生协议降级，无论是本站链接还是站外链接，统统都发送 Referrer 信息。正如其名，这是最宽松而最不安全的策略。
+      * `origin-when-cross-origin` 同源的链接和引用，会发送完全的 referrer 信息；但非同源链接和引用时，只发送源信息。
+      * `strict-origin` 在安全级别下降时不发送 referrer；而在同等安全级别的情况下仅发送源信息。注意：这个是新加的标准，有些浏览器可能还不支持。
+      * `strict-origin-when-cross-origin` 同源的链接和引用，会发送 referrer。安全级别下降时不发送 referrer。其它情况下发送源信息。注意：这个是新加的标准，有些浏览器可能还不支持。
 
-4. `format-detection`
+  4. `format-detection`
 
-  格式检测，用来检测html里的一些格式的，那关于meta的format-detection属性主要是有以下几个设置：`<meta name="format-detection" content="telephone=no">`、`<meta name="format-detection" content="email=no">`、`<meta name="format-detection" content="adress=no" >`
+      格式检测，用来检测html里的一些格式的，那关于meta的format-detection属性主要是有以下几个设置：`<meta name="format-detection" content="telephone=no">`、`<meta name="format-detection" content="email=no">`、`<meta name="format-detection" content="adress=no" >`
 
-5. `robots`
+  5. `robots`
 
-  robots用来告诉爬虫哪些页面需要索引，哪些页面不需要索引。
+      robots用来告诉爬虫哪些页面需要索引，哪些页面不需要索引。
 
-  | 值 | 描述 |
-  | :---: | :---: |
-  | index | 允许robot索引本页面（默认）|
-  | noindex | 不允许robot索引本页面 |
-  | follow | 允许搜索引擎继续通过此网页的链接索引搜索其它的网页（默认）|
-  | nofollow | 搜索引擎不继续通过此网页的链接索引搜索其它的网页 |
-  | none | 相当于noindex，nofollow(仅适用于Google) |
+      | 值 | 描述 |
+      | :---: | :---: |
+      | index | 允许robot索引本页面（默认）|
+      | noindex | 不允许robot索引本页面 |
+      | follow | 允许搜索引擎继续通过此网页的链接索引搜索其它的网页（默认）|
+      | nofollow | 搜索引擎不继续通过此网页的链接索引搜索其它的网页 |
+      | none | 相当于noindex，nofollow(仅适用于Google) |
 
-6. `apple-mobile-web-app-status-bar-style`
-  针对WebApp全屏模式，隐藏状态栏/设置状态栏颜色，content的值为`default`、`black`、`black-translucent` `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />`
+  6. `apple-mobile-web-app-status-bar-style`
 
-**重点讲一下 http-equiv 属性**，其所有允许的值都是特定HTTP头部的名称，顾名思义，相当于http的文件头作用，它可以向浏览器传回一些有用的信息，以帮助正确和精确地显示网页内容，与之对应的属性值为content，content中的内容其实就是各个参数的变量值。
+      针对WebApp全屏模式，隐藏状态栏/设置状态栏颜色，content的值为`default`、`black`、`black-translucent` `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />`
 
-1. `content-security-policy`
+  **重点讲一下 http-equiv 属性**，其所有允许的值都是特定HTTP头部的名称，顾名思义，相当于http的文件头作用，它可以向浏览器传回一些有用的信息，以帮助正确和精确地显示网页内容，与之对应的属性值为content，content中的内容其实就是各个参数的变量值。
 
-  它允许页面作者定义当前页的内容策略。 内容策略主要指定允许的服务器源和脚本端点，这有助于防止跨站点脚本攻击。
+  1. `content-security-policy`
 
-  CSP 的实质就是白名单制度，开发者明确告诉客户端，哪些外部资源可以加载和执行，等同于提供白名单。它的实现和执行全部由浏览器完成，开发者只需提供配置。
+      它允许页面作者定义当前页的内容策略。 内容策略主要指定允许的服务器源和脚本端点，这有助于防止跨站点脚本攻击。
 
-  CSP 大大增强了网页的安全性。攻击者即使发现了漏洞，也没法注入脚本，除非还控制了一台列入了白名单的可信主机。
+      CSP 的实质就是白名单制度，开发者明确告诉客户端，哪些外部资源可以加载和执行，等同于提供白名单。它的实现和执行全部由浏览器完成，开发者只需提供配置。
 
-  两种方法可以启用 CSP。一种是通过 HTTP 头信息的Content-Security-Policy的字段。`Content-Security-Policy: script-src 'self'; object-src 'none';style-src cdn.example.org third-party.org; child-src https:`
+      CSP 大大增强了网页的安全性。攻击者即使发现了漏洞，也没法注入脚本，除非还控制了一台列入了白名单的可信主机。
 
-  另一种是通过网页的<meta>标签。`<meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'none'; style-src cdn.example.org third-party.org; child-src https:">`
+      两种方法可以启用 CSP。一种是通过 HTTP 头信息的Content-Security-Policy的字段。`Content-Security-Policy: script-src 'self'; object-src 'none';style-src cdn.example.org third-party.org; child-src https:`
 
-  上面代码中，CSP 做了如下配置: 脚本：只信任当前域名、<object>标签：不信任任何URL，即不加载任何资源、样式表：只信任cdn.example.org和third-party.org、框架（frame）：必须使用HTTPS协议加载、其他资源：没有限制。
+      另一种是通过网页的<meta>标签。`<meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'none'; style-src cdn.example.org third-party.org; child-src https:">`
 
-  启用后，不符合 CSP 的外部资源就会被阻止加载。
+      上面代码中，CSP 做了如下配置: 脚本：只信任当前域名、<object>标签：不信任任何URL，即不加载任何资源、样式表：只信任cdn.example.org和third-party.org、框架（frame）：必须使用HTTPS协议加载、其他资源：没有限制。
 
-  | CPS指令 | 描述 |
-  | :---: | :---: |
-  | default-src | 默认加载策略 |
-  | script-src | 对于JavaScript脚本的加载策略 |
-  | style-src | 对于样式的加载策略 |
-  | img-src | 图片的加载策略 |
-  | object-src | 显示插件来源，如flash |
-  | frame-src | iframe来源 |
-  | media-src | 媒体 |
-  | report-uri | 请求资源不被允许时，向该地址提交日志 |
+      启用后，不符合 CSP 的外部资源就会被阻止加载。
 
-  | CSP指令值 | 描述 |
-  | :---: | :---: |
-  | * | 允许任何内容 |
-  | 'none' | 不允许加载任何内容 |
-  | 'self' | 允许来自相同源的资源 |
-  | data | 允许data:协议，如base64编码的图片 |
-  | www.host.com | 允许加载指定域名的资源 |
-  | unsafe-inline | 允许加载inline资源，如style属性，inline css, inline js |
-  | unsafe-eval | 允许加载动态js代码 |
+      | CPS指令 | 描述 |
+      | :---: | :---: |
+      | default-src | 默认加载策略 |
+      | script-src | 对于JavaScript脚本的加载策略 |
+      | style-src | 对于样式的加载策略 |
+      | img-src | 图片的加载策略 |
+      | object-src | 显示插件来源，如flash |
+      | frame-src | iframe来源 |
+      | media-src | 媒体 |
+      | report-uri | 请求资源不被允许时，向该地址提交日志 |
 
-2. `content-type`(已过时，直接使用 `<meta charset="utf-8">`)
+      | CSP指令值 | 描述 |
+      | :---: | :---: |
+      | * | 允许任何内容 |
+      | 'none' | 不允许加载任何内容 |
+      | 'self' | 允许来自相同源的资源 |
+      | data | 允许data:协议，如base64编码的图片 |
+      | www.host.com | 允许加载指定域名的资源 |
+      | unsafe-inline | 允许加载inline资源，如style属性，inline css, inline js |
+      | unsafe-eval | 允许加载动态js代码 |
 
-  如果使用这个属性，其值必须是"text/html; charset=utf-8"。注意：该属性只能用于 MIME type 为 text/html 的文档，不能用于MIME类型为XML的文档。
+  2. `content-type`(已过时，直接使用 `<meta charset="utf-8">`)
 
-3. `default-style`
+      如果使用这个属性，其值必须是"text/html; charset=utf-8"。注意：该属性只能用于 MIME type 为 text/html 的文档，不能用于MIME类型为XML的文档。
 
-  设置默认 CSS 样式表组的名称。
+  3. `default-style`
 
-4. `X-UA-Compatible`
+      设置默认 CSS 样式表组的名称。
 
-  用于告知浏览器以何种版本来渲染页面。`<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>`指定IE和Chrome使用最新版本渲染当前页面
+  4. `X-UA-Compatible`
 
-5. `refresh`
+      用于告知浏览器以何种版本来渲染页面。`<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>`指定IE和Chrome使用最新版本渲染当前页面
 
-  这个属性指定:
+  5. `refresh`
 
-  * 如果 content 只包含一个正整数，则为重新载入页面的时间间隔(秒)；
-  * 如果 content 包含一个正整数，并且后面跟着字符串 ';url=' 和一个合法的 URL，则是重定向到指定链接的时间间隔(秒)
+      这个属性指定:
 
-  `＜meta http-equiv="Refresh" content="2；URL=http://www.net.cn/"＞`其中的2是指停留2秒钟后自动刷新到URL网址。
+      * 如果 content 只包含一个正整数，则为重新载入页面的时间间隔(秒)；
+      * 如果 content 包含一个正整数，并且后面跟着字符串 ';url=' 和一个合法的 URL，则是重定向到指定链接的时间间隔(秒)
 
-6. `Expires`
+      `＜meta http-equiv="Refresh" content="2；URL=http://www.net.cn/"＞`其中的2是指停留2秒钟后自动刷新到URL网址。
 
-  可以用于设定网页的到期时间。一旦网页过期，必须到服务器上重新传输。`＜meta http-equiv="expires" content="Wed, 20 Jun 2007 22:33:00 GMT"＞` 必须使用GMT的时间格式
+  6. `Expires`
 
-7. `Pragma`
+      可以用于设定网页的到期时间。一旦网页过期，必须到服务器上重新传输。`＜meta http-equiv="expires" content="Wed, 20 Jun 2007 22:33:00 GMT"＞` 必须使用GMT的时间格式
 
-  禁止浏览器从本地计算机的缓存中访问页面内容，这样设定，访问者将无法脱机浏览
+  7. `Pragma`
 
-8. `Set-Cookie`（已过时, 使用HTTP头的Set-Cookie替代）
+      禁止浏览器从本地计算机的缓存中访问页面内容，这样设定，访问者将无法脱机浏览
 
-  如果网页过期，那么存盘的cookie将被删除。`＜meta http-equiv="Set-Cookie" content="cookievalue=xxx;expires=Wednesday, 20-Jun-2007 22:33:00 GMT； path=/"＞` 必须使用GMT的时间格式。
+  8. `Set-Cookie`（已过时, 使用HTTP头的Set-Cookie替代）
 
-9. `Window-target`
+      如果网页过期，那么存盘的cookie将被删除。`＜meta http-equiv="Set-Cookie" content="cookievalue=xxx;expires=Wednesday, 20-Jun-2007 22:33:00 GMT； path=/"＞` 必须使用GMT的时间格式。
 
-  强制页面在当前窗口以独立页面显示。`＜meta http-equiv="Window-target" content="_top"＞` 用来防止别人在框架里调用自己的页面。
+  9. `Window-target`
 
-  注: `_blank` 在新窗口显示 `_top` 当前整个窗口显示 `_parent` 父容器显示，比如框架嵌套 `_self` 当前容器显示，比如框架嵌套
+      强制页面在当前窗口以独立页面显示。`＜meta http-equiv="Window-target" content="_top"＞` 用来防止别人在框架里调用自己的页面。
 
-10. `content-Type`
+      注: `_blank` 在新窗口显示 `_top` 当前整个窗口显示 `_parent` 父容器显示，比如框架嵌套 `_self` 当前容器显示，比如框架嵌套
 
-  设定页面使用的字符集。`＜meta http-equiv="content-Type" content="text/html; charset=gb2312"＞`
+  10. `content-Type`
 
-11. `Page_Enter`、`Page_Exit`
+      设定页面使用的字符集。`＜meta http-equiv="content-Type" content="text/html; charset=gb2312"＞`
 
-  设定进入(退出)页面时的特殊效果 `<meta http-equiv="Page-Enter" contect="revealTrans(duration=1.0,transtion=12)">`、`<meta http-equiv="Page-Exit" contect="revealTrans(duration=1.0,transtion=12)">`
+  11. `Page_Enter`、`Page_Exit`
 
-  duration的值为网页动态过渡的时间，单位为秒。transition是过渡方式，它的值为0到23，分别对应24种过渡方式。如下：
+      设定进入(退出)页面时的特殊效果 `<meta http-equiv="Page-Enter" contect="revealTrans(duration=1.0,transtion=12)">`、`<meta http-equiv="Page-Exit" contect="revealTrans(duration=1.0,transtion=12)">`
 
-  | 数值 | 效果 | 数值 | 效果 | 数值 | 效果 | 数值 | 效果 |
-  | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-  | 0 | 盒状收缩 | 1 | 盒状放射 | 2 | 圆形收缩 | 3 | 圆形放射 |
-  | 4 | 由下往上 | 5 | 由上往下 | 6 | 从左至右 | 7 | 从右至左 | 
-  | 8 | 垂直百叶窗 | 9 | 水平百叶窗 | 10 | 水平格状百叶窗 | 11 | 垂直格状百叶窗 |
-  | 12 | 随意溶解 | 13 | 从左右两端向中间展开 | 14 | 从中间向左右两端展开 | 15 | 从上下两端向中间展开 |
-  | 16 | 从中间向上下两端展开 | 17 | 从右上角向左下角展开 | 18 | 从右下角向左上角展开 | 19 | 从左上角向右下角展开 |
-  | 20 | 从左下角向右上角展开 | 21 | 水平线状展开 | 22 | 垂直线状展开 | 23 | 随机产生一种过渡方式 |
+      duration的值为网页动态过渡的时间，单位为秒。transition是过渡方式，它的值为0到23，分别对应24种过渡方式。如下：
 
-12. `cache-control`
+      | 数值 | 效果 | 数值 | 效果 | 数值 | 效果 | 数值 | 效果 |
+      | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+      | 0 | 盒状收缩 | 1 | 盒状放射 | 2 | 圆形收缩 | 3 | 圆形放射 |
+      | 4 | 由下往上 | 5 | 由上往下 | 6 | 从左至右 | 7 | 从右至左 | 
+      | 8 | 垂直百叶窗 | 9 | 水平百叶窗 | 10 | 水平格状百叶窗 | 11 | 垂直格状百叶窗 |
+      | 12 | 随意溶解 | 13 | 从左右两端向中间展开 | 14 | 从中间向左右两端展开 | 15 | 从上下两端向中间展开 |
+      | 16 | 从中间向上下两端展开 | 17 | 从右上角向左下角展开 | 18 | 从右下角向左上角展开 | 19 | 从左上角向右下角展开 |
+      | 20 | 从左下角向右上角展开 | 21 | 水平线状展开 | 22 | 垂直线状展开 | 23 | 随机产生一种过渡方式 |
 
-  被用于在http请求和响应中，通过指定指令来实现缓存机制。缓存指令是单向的，这意味着在请求中设置的指令，不一定被包含在响应中。
+  12. `cache-control`
 
-  **可缓存性**：
+      被用于在http请求和响应中，通过指定指令来实现缓存机制。缓存指令是单向的，这意味着在请求中设置的指令，不一定被包含在响应中。
 
-  * `public` 表明响应可以被任何对象（包括：发送请求的客户端，代理服务器，等等）缓存，即使是通常不可缓存的内容。（例如：1.该响应没有max-age指令或Expires消息头；2. 该响应对应的请求方法是 POST 。）
-  * `private` 表明响应只能被单个用户缓存，不能作为共享缓存（即代理服务器不能缓存它）。私有缓存可以缓存响应内容，比如：对应用户的本地浏览器。
-  * `no-cache` 在发布缓存副本之前，强制要求缓存把请求提交给原始服务器进行验证(协商缓存验证)。
-  * `no-store` 缓存不应存储有关客户端请求或服务器响应的任何内容，即不使用任何缓存。
+      **可缓存性**：
 
-  **到期**
-  * `max-age=<seconds>` 设置缓存存储的最大周期，超过这个时间缓存被认为过期(单位秒)。与Expires相反，时间是相对于请求的时间。
+      * `public` 表明响应可以被任何对象（包括：发送请求的客户端，代理服务器，等等）缓存，即使是通常不可缓存的内容。（例如：1.该响应没有max-age指令或Expires消息头；2. 该响应对应的请求方法是 POST 。）
+      * `private` 表明响应只能被单个用户缓存，不能作为共享缓存（即代理服务器不能缓存它）。私有缓存可以缓存响应内容，比如：对应用户的本地浏览器。
+      * `no-cache` 在发布缓存副本之前，强制要求缓存把请求提交给原始服务器进行验证(协商缓存验证)。
+      * `no-store` 缓存不应存储有关客户端请求或服务器响应的任何内容，即不使用任何缓存。
 
-13. `x-dns-prefetch-control`
+      **到期**
+      * `max-age=<seconds>` 设置缓存存储的最大周期，超过这个时间缓存被认为过期(单位秒)。与Expires相反，时间是相对于请求的时间。
 
-  是否允许DNS预解析  `on` `off` 
+  13. `x-dns-prefetch-control`
+      是否允许DNS预解析  `on` `off` 
 
 ## 6. link 和 \<script>
 
