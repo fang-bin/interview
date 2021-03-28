@@ -611,7 +611,50 @@ will-change虽然可以加速，但是，一定一定要适度使用。那种全
 
 如果使用JS添加will-change, 事件或动画完毕，一定要及时remove.（css也是如此，可以分开写，不用一直挂在常态样式上面）
 
-## 31. 深入理解vertical-align 
+## 31. 超链接访问过后hover样式就不出现了
+
+因为被点击访问过的超链接样式不再具有hover和active了。解决方法是改变CSS属性的排列顺序:L-V-H-A ;
+
+```javascript
+ele:link{}
+ele:visited{}
+ele:hover{}
+ele:active{}
+```
+
+## 32. CSS的伪类选择器
+
+* ele:link
+* ele:visited
+* ele:hover
+* ele:active
+* f ele:first-child
+* f ele:last-child
+* f ele:nth-child(n) f元素内所有ele元素的第n个元素(如果第n个元素不是ele类型，则不会选中)
+* f ele:nth-of-type(n) f元素下第n个ele类型的元素
+
+## 33. word-break word-wrap white-space 的区别
+
+1. white-sapce
+  用来控制空白字符的显示，同时还能控制是否自动换行。
+    * normal 默认，空白会被浏览器忽略。(连续空白字符合并)
+    * nowrap 永不换行（自动换行、换行符都不能换行，连续空白字符也会合并，但是\<br />标签可以换行）
+    * pre 空格和换行符都保留，但是不会自动换行（preserve的缩写：保留）
+    * pre-wrap 保留空格和换行符，并且可以自动换行（preserve+wrap的意思）
+    * pre-line 合并空格，但是保留换行符和自动换行
+
+2. word-break
+  控制单词如何被拆分换行
+    * normal 默认，浏览器默认规则
+    * keep-all  所有单词一律不能拆分换行（只能在半角空白字符或者连字符处换行）(这里的单词包括连续的中文字符等)（中文字符中，碰到空格可以出发自动换行）
+    * break-all 所有单词碰到边界一律拆分换行(不论单词长短)
+    * break-word 和word-wrap的break-word效果一样，不过只有Chrome、Safari等支持
+3. word-wrap (CSS3中叫 overflow-wrap)
+  控制单词如何被拆分换行，实际上是作为word-break的互补。
+    * normal 默认，浏览器默认规则
+    * break-word 只有当一个单词一整行都显示不下时，才会拆分换行该单词。
+
+## 34. 深入理解vertical-align 
 
 工作中，我经常遇到明明设置了line-height和行高一致，在安卓上就会偏上，如果设置了`overflow:hideen;`还会截断字体一部分。
 
