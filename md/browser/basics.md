@@ -1,8 +1,6 @@
-### 跨域问题
-
-
 ## 浏览器
 
+[浏览器工作原理](https://www.html5rocks.com/zh/tutorials/internals/howbrowserswork/)
 ### 浏览器内核
 
 浏览器内核分为两个部分: 渲染引擎(render engin)、js引擎(js engin)
