@@ -11,7 +11,7 @@
 
 此属性指定被链接资源的URL。 URL 可以是绝对的，也可以是相对的。
 
-当浏览器遇到href会并行下载资源并且不会停止对当前文档的处理。(同时也是为什么建议使用 link 方式加载 CSS，而不是使用 @import 方式，用@import添加的样式是在页面载入之后再加载，这可能会导致页面因重新渲染而闪烁。并且link方式引入的样式权重高于@import，所以我们建议使用link而不是@import。)
+当浏览器遇到href会并行下载资源并且不会停止对当前文档的处理。(同时也是为什么建议使用 link 方式加载 CSS，而不是使用 @import 方式，用@import添加的样式是在页面载入之后再加载，这可能会导致页面因重新渲染而闪烁。)
 
 主要使用场景
 ```html
@@ -24,47 +24,48 @@
 
 1. DNS Prefetching（DNS预解析）
 
-  DNS 请求在带宽方面非常小，但延迟非常高，特别是在移动网络上。通过推测性地预取 DNS 结果，可以在某些时候显着降低延迟，例如当用户点击链接时。在某些情况下，延迟可能会缩短一秒。
+    DNS 请求在带宽方面非常小，但延迟非常高，特别是在移动网络上。通过推测性地预取 DNS 结果，可以在某些时候显着降低延迟，例如当用户点击链接时。在某些情况下，延迟可能会缩短一秒。
 
-  现在大多数新浏览器已经针对DNS解析进行了优化，典型的一次DNS解析需要耗费 20-120 毫秒，减少DNS解析时间和次数是个很好的优化方式。
+    现在大多数新浏览器已经针对DNS解析进行了优化，典型的一次DNS解析需要耗费 20-120 毫秒，减少DNS解析时间和次数是个很好的优化方式。
 
-  在一些浏览器中实现域名预解析与实际页面内容的获取并行（而不是与其串行）发生。通过这样做，高延迟域名解析过程在获取内容时不会造成任何延迟。
+    在一些浏览器中实现域名预解析与实际页面内容的获取并行（而不是与其串行）发生。通过这样做，高延迟域名解析过程在获取内容时不会造成任何延迟。
 
-  ```html
-  <link rel="dns-prefetch" href="//imgqn.koudaitong.com/" />  
-  ```
+    ```html
+    <link rel="dns-prefetch" href="//imgqn.koudaitong.com/" />  
+    ```
 
-  当然，chrome 会自动把当前页面的所有带href的link的dns都prefetch一遍，所以，需要手动添加link标签的场景是：你预计用户在后面的访问中需要用到当前页面的所有链接都不包含的域名。
+    当然，chrome 会自动把当前页面的所有带href的link的dns都prefetch一遍，所以，需要手动添加link标签的场景是：你预计用户在后面的访问中需要用到当前页面的所有链接都不包含的域名。
 
-  所以:
+    所以:
 
-  * 对静态资源域名做手动dns prefetching。
-  * 对js里会发起的跳转、请求做手动dns prefetching。
-  * 不用对超链接做手动dns prefetching，因为chrome会自动做dns prefetching。
-  * 对重定向跳转的新域名做手动dns prefetching，比如：页面上有个A域名的链接，但访问A会重定向到B域名的链接，这么在当前页对B域名做手动dns prefetching是有意义的。
+    * 对静态资源域名做手动dns prefetching。
+    * 对js里会发起的跳转、请求做手动dns prefetching。
+    * 不用对超链接做手动dns prefetching，因为chrome会自动做dns prefetching。
+    * 对重定向跳转的新域名做手动dns prefetching，比如：页面上有个A域名的链接，但访问A会重定向到B域名的链接，这么在当前页对B域名做手动dns prefetching是有意义的。
 
-  普遍来说合理的dns prefetching能对页面性能带来50ms ~ 300ms的提升(有人做了这方面的统计)
+    普遍来说合理的dns prefetching能对页面性能带来50ms ~ 300ms的提升(有人做了这方面的统计)
 
-  **注意** chrome使用8个线程专门做dns prefetching 而且chrome本身不做dns记录的cache，是直接从操作系统读dns —— 也就是说，直接修改系统的dns记录或者host是可以直接影响chrome的
+    **注意** chrome使用8个线程专门做dns prefetching 而且chrome本身不做dns记录的cache，是直接从操作系统读dns —— 也就是说，直接修改系统的dns记录或者host是可以直接影响chrome的
 
-  手动dns prefetching的代码实际上还是会增加html的代码量的，特别是域名多的情况下。
+    手动dns prefetching的代码实际上还是会增加html的代码量的，特别是域名多的情况下。
 
-  所以，最优的方案应该是：通过js初始化一个iframe异步加载一个页面，而这个页面里包含本站所有的需要手动dns prefetching的域名。
+    所以，最优的方案应该是：通过js初始化一个iframe异步加载一个页面，而这个页面里包含本站所有的需要手动dns prefetching的域名。
 
-  也可以通过iframe来做资源的预加载 [File PreFetching](https://tech.youzan.com/file-frefetching/)
+    也可以通过iframe来做资源的预加载 [File PreFetching](https://tech.youzan.com/file-frefetching/)
 
 2. Prefecth
 
-`<link rel="prefetch" as="script" href="example.js">`
+    `<link rel="prefetch" as="script" href="example.js">`
 
-  当确定网页在未来（下一页）一定会使用某资源时，可以通过prefetch提前请求资源并且缓存以供后续使用。但具体什么时候请求这个资源由浏览器决定。 页面跳转时prefetch发起的请求不会中断。该方法的加载优先级很低，一般用来提高下一个页面的加载速度。
+    当确定网页在未来（下一页）一定会使用某资源时，可以通过prefetch提前请求资源并且缓存以供后续使用。但具体什么时候请求这个资源由浏览器决定。 页面跳转时prefetch发起的请求不会中断。该方法的加载优先级很低，一般用来提高下一个页面的加载速度。
 
 3. Preload
 
-`<link rel="preload" as="script" href="example.js">`
+    `<link rel="preload" as="script" href="example.js">`
 
-Preload是一项新的web标准，旨在提高性能和为开发人员提供更细粒度的加载控制。Preload可以让开发者自定义资源的加载逻辑，且无需忍受基于脚本的资源加载器带来的性能损失。
-preload是声明式的fetch，可以强制浏览器请求资源，将加载和执行分离开，不阻塞渲染和 document 的 onload 事件。
+    Preload是一项新的web标准，旨在提高性能和为开发人员提供更细粒度的加载控制。Preload可以让开发者自定义资源的加载逻辑，且无需忍受基于脚本的资源加载器带来的性能损失。
+
+    preload是声明式的fetch，可以强制浏览器请求资源，将加载和执行分离开，不阻塞渲染和 document 的 onload 事件。
 
 提前加载指定资源，不再出现依赖的 font 字体隔了一段时间才刷出。
 
