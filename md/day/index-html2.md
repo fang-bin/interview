@@ -45,7 +45,7 @@
 
     普遍来说合理的dns prefetching能对页面性能带来50ms ~ 300ms的提升(有人做了这方面的统计)
 
-    **注意** chrome使用8个线程专门做dns prefetching 而且chrome本身不做dns记录的cache，是直接从操作系统读dns —— 也就是说，直接修改系统的dns记录或者host是可以直接影响chrome的
+    **注意** chrome使用8个线程专门做dns prefetching，而且chrome本身不做dns记录的cache，是直接从操作系统读dns —— 也就是说，直接修改系统的dns记录或者host是可以直接影响chrome的。
 
     手动dns prefetching的代码实际上还是会增加html的代码量的，特别是域名多的情况下。
 
