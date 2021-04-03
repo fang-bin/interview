@@ -6,16 +6,23 @@
 
 **可枚举性和是否查找原型总结**
 
-* `for in` 会遍历对象包括其原型链上所有可枚举性的属性
+* `for in` 会遍历对象包括其原型链上所有可枚举性的属性(不包含 Symbol 属性)
 * `hasOwnProperty` 不会去查找原型，只会检查属性是否在当前对象中
-* `Object.keys() Object.values() Object.entries()` 不会去查找原型，只会遍历对象本身可枚举型的属性（属性对）
-* `Object.getOwnPropertyNames()` 不会去查找原型，会遍历对象本身所有的属性（无论是否具有可枚举性）
+* `Object.keys() Object.values() Object.entries()` 不会去查找原型，只会遍历对象本身可枚举（不包含 Symbol）属性（属性对）
+* `Object.getOwnPropertyNames()` 不会去查找原型，会遍历对象本身所有的属性（无论是否具有可枚举性）不包含Symbol属性
 * `Object.prototype.propertyIsEnumerable` 只会检查属性在该对象上是否可枚举
 * `Object.getOwnPropertyDescriptors()` 获取一个对象的所有自身属性的描述符
 * `Object.getOwnPropertyDescriptor()` 获取对象自身某个属性的描述符
 * `Object.getOwnPropertySymbols()` 获取一个给定对象自身的所有 Symbol 属性的数组
-* `Object.assign(target, ...source)`只拷贝自身的可枚举属性，会忽略`enumerable`为`false`的属性(仅限于source对象，target对象的不可枚举属性，也会拷贝)
+* `Object.assign(target, ...source)`只拷贝自身的可枚举属性，会忽略`enumerable`为`false`的属性(仅限于source对象，target对象的不可枚举属性，也会拷贝) **Symbol属性可以被拷贝**
 * `JSON.stringify()` 只串行化对象自身的可枚举的属性
+* `Reflect.ownKeys(obj)` Reflect.ownKeys返回一个数组，包含对象自身的（不含继承的）所有键名，不管键名是 Symbol 或字符串，也不管是否可枚举。
+
+`for in` `Object.keys()` `Object.getOwnPropertyNames()` `Object.getOwnPropertySymbols()` `Reflect.ownKeys()`遍历对象的键名，都遵守同样的属性遍历的次序规则:
+
+* 首先遍历所有数值键，按照数值升序排列。
+* 其次遍历所有字符串键，按照加入时间升序排列。
+* 最后遍历所有 Symbol 键，按照加入时间升序排列。
 
 ## 2. Object.defineProperty(obj, prop, descriptor) 和 Object.defineProperties(obj, props)
 
