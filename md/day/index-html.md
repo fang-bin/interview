@@ -4,9 +4,18 @@
 * 使用create创建的对象，没有任何属性，显示No properties，我们可以把它当作一个非常纯净的map来使用，我们可以自己定义hasOwnProperty、toString方法，不管是有意还是不小心，我们完全不必担心会将原型链上的同名方法覆盖掉。
 * 在我们使用for..in循环的时候会遍历对象原型链上的属性，使用create(null)就不必再对属性进行检查了，当然，我们也可以直接使用Object.keys[]
 
-引申
-* hasOwnProperty 不会去查找原型的。
-* Object.keys 也不会查找原型，只会遍历所有可遍历属性(Object.values, Object.entries也是)
+**可枚举性和是否查找原型总结**
+
+* `for in` 会遍历对象包括其原型链上所有可枚举性的属性
+* `hasOwnProperty` 不会去查找原型，只会检查属性是否在当前对象中
+* `Object.keys() Object.values() Object.entries()` 不会去查找原型，只会遍历对象本身可枚举型的属性（属性对）
+* `Object.getOwnPropertyNames()` 不会去查找原型，会遍历对象本身所有的属性（无论是否具有可枚举性）
+* `Object.prototype.propertyIsEnumerable` 只会检查属性在该对象上是否可枚举
+* `Object.getOwnPropertyDescriptors()` 获取一个对象的所有自身属性的描述符
+* `Object.getOwnPropertyDescriptor()` 获取对象自身某个属性的描述符
+* `Object.getOwnPropertySymbols()` 获取一个给定对象自身的所有 Symbol 属性的数组
+* `Object.assign(target, ...source)`只拷贝自身的可枚举属性，会忽略`enumerable`为`false`的属性(仅限于source对象，target对象的不可枚举属性，也会拷贝)
+* `JSON.stringify()` 只串行化对象自身的可枚举的属性
 
 ## 2. Object.defineProperty(obj, prop, descriptor) 和 Object.defineProperties(obj, props)
 

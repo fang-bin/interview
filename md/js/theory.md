@@ -143,6 +143,8 @@ let cloneObj = JSON.parse(JSON.stringify(obj));
 
 **序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会变成null，Map、Set、RegExp则会变成{}**
 
+**同时，`JSON.stringify` 只串行化自身的可枚举属性**
+
 JSON.stringify在将JSON对象序列化为字符串时也使用了toString方法,但需要注意的是JSON.stringify并非严格意义上的强制类型转换，只是涉及toString的相关规则.(`JSON.stringify([1,2,3]); // "[1,2,3]"`)
 
 如果对象定义了toJSON方法，会先调用此方法，然后用它的返回值来进行序列化。默认对象是没有此属性的，如果有需要可以手动添加。
@@ -164,6 +166,23 @@ JSON.stringify(obj)   // “{“name”:”Join"}"
 这种方法虽然可以实现数组或对象深拷贝,但不能处理函数,undefined,Symbol,(函数它们会直接过滤掉)，而正则和Map,Set则会转化成空对象（{}），而且也会丢失对象的原型链。
 
 ##### 方法二
+
+```javascript
+let obj1 = {a: 1};
+Object.defineProperty(obj1, 'b', {
+  configurable: true,
+  enumerable: false,
+  value: 2,
+  writable: true,
+});
+
+let obj2 = Object.assign({}, obj1);
+// 如果是 let obj2 = Object.assign(obj1)  则会拷贝obj1所有自身的属性，包括不可枚举属性
+```
+
+缺点：浅拷贝的缺点还有 **`Object.assign(target, ...source)`只拷贝自身的可枚举属性，会忽略`enumerable`为`false`的属性(仅限于source对象)**
+
+##### 方法三
 
 [clone函数](https://github.com/ConardLi/ConardLi.github.io/blob/master/demo/deepClone/src/clone_6.js)
 
@@ -261,7 +280,7 @@ function cloneFunction(func) {
 }
 ```
 
-##### 方法三
+##### 方法四
 函数库lodash中的_.cloneDeep用来做
 
 
