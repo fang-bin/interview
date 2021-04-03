@@ -4,7 +4,7 @@
 
 #### 1. Object.is()
 
-ES5 比较两个值是否相等，只有两个运算符：相等运算符（==）和严格相等运算符（===）。它们都有缺点，前者会自动转换数据类型，后者的NaN不等于自身，以及+0等于-0。
+ES5 比较两个值是否相等，只有两个运算符：相等运算符（\==）和严格相等运算符（===）。它们都有缺点，前者会自动转换数据类型，后者的NaN不等于自身，以及+0等于-0。
 
 ```javascript
 +0 === -0 //true
@@ -75,12 +75,203 @@ Object.getOwnPropertySymbols(Object('abc').__proto__); //[Symbol(Symbol.iterator
 
 **Object.assign()拷贝的属性是有限制的，只拷贝源对象的自身属性（不拷贝继承属性），也不拷贝不可枚举的属性（enumerable: false）。**
 
+**Object.assign()只能进行值的复制，如果要复制的值是一个取值函数，那么将求值后再复制。**
+
+```javascript
+const source = {
+  get foo() { return 1 }
+};
+const target = {};
+
+Object.assign(target, source)
+// { foo: 1 }
+```
+
 ###### 常见用途
 
 * 为对象添加属性、方法
 * 克隆对象（浅拷贝，不能拷贝继承的对象和原型链）
 * 合并多个对象
 * 为属性指定默认值
+
+#### 3. Object.getOwnPropertyDescriptor() 和 Object.getOwnPropertyDescriptors()
+
+ES5 的Object.getOwnPropertyDescriptor()方法会返回某个对象属性的描述对象（descriptor）。
+
+ES2017 引入了Object.getOwnPropertyDescriptors()方法，返回指定对象所有自身属性（非继承属性）的描述对象。
+
+实现:
+
+```javascript
+function getOwnPropertyDescriptors(obj) {
+  const result = {};
+  for (let key of Reflect.ownKeys(obj)) {
+    result[key] = Object.getOwnPropertyDescriptor(obj, key);
+  }
+  return result;
+}
+```
+
+**该方法的引入目的，主要是为了解决Object.assign()无法正确拷贝get属性和set属性的问题。**
+
+```javascript
+const source = {
+  set foo(value) {
+    console.log(value);
+  }
+};
+
+const target2 = {};
+Object.defineProperties(target2, Object.getOwnPropertyDescriptors(source));
+Object.getOwnPropertyDescriptor(target2, 'foo')
+// { get: undefined,
+//   set: [Function: set foo],
+//   enumerable: true,
+//   configurable: true }
+
+// 上面代码中，两个对象合并的逻辑可以写成一个函数。
+
+const shallowMerge = (target, source) => Object.defineProperties(
+  target,
+  Object.getOwnPropertyDescriptors(source)
+);
+```
+
+Object.getOwnPropertyDescriptors()方法的另一个用处，是配合Object.create()方法，将对象属性克隆到一个新对象。这属于浅拷贝。
+
+```javascript
+const clone = Object.create(Object.getPrototypeOf(obj),
+  Object.getOwnPropertyDescriptors(obj));
+
+// 或者
+
+const shallowClone = (obj) => Object.create(
+  Object.getPrototypeOf(obj),
+  Object.getOwnPropertyDescriptors(obj)
+);
+```
+
+另外，Object.getOwnPropertyDescriptors()方法可以实现一个对象继承另一个对象。
+
+```javascript
+const obj = Object.create(prot);
+obj.foo = 123;
+// 或者
+const obj = Object.assign(
+  Object.create(prot),
+  {
+    foo: 123,
+  }
+);
+
+// 可以改写为下面方式
+
+const obj = Object.create(
+  prot,
+  Object.getOwnPropertyDescriptors({
+    foo: 123,
+  })
+);
+```
+
+Object.getOwnPropertyDescriptors()也可以用来实现 Mixin（混入）模式。
+
+```javascript
+let mix = (object) => ({
+  with: (...mixins) => mixins.reduce(
+    (c, mixin) => Object.create(
+      c, Object.getOwnPropertyDescriptors(mixin)
+    ), object)
+});
+
+// multiple mixins example
+let a = {a: 'a'};
+let b = {b: 'b'};
+let c = {c: 'c'};
+let d = mix(c).with(a, b);
+
+d.c // "c"
+d.b // "b"
+d.a // "a"
+// 返回一个新的对象d，代表了对象a和b被混入了对象c的操作。
+```
+
+#### 4. __proto__、Object.setPrototypeOf()、Object.getPrototypeOf()
+
+__proto__前后的双下划线，说明它本质上是一个内部属性，而不是一个正式的对外的 API，只是由于浏览器广泛支持，才被加入了 ES6。标准明确规定，只有浏览器必须部署这个属性，其他运行环境不一定需要部署，而且新的代码最好认为这个属性是不存在的。因此，无论从语义的角度，还是从兼容性的角度，都不要使用这个属性，而是使用下面的`Object.setPrototypeOf()`（写操作）、`Object.getPrototypeOf()`（读操作）、`Object.create()`（生成操作）代替。
+
+`Object.setPrototypeOf`方法的作用与__proto__相同，用来设置一个对象的原型对象（prototype），返回参数对象本身。它是 ES6 正式推荐的设置原型对象的方法。
+
+`Object.getPrototypeOf()` 用于读取一个对象的原型对象。
+
+#### 5. 其他
+
+* `Object.keys()`
+* `Object.values()`
+* `Object.entries()`
+* `Object.fromEntries()`
+  Object.fromEntries()方法是Object.entries()的逆操作，用于将一个键值对数组转为对象。
+  该方法的主要目的，是将键值对的数据结构还原为对象，因此特别适合将 Map 结构转为对象。
+  ```javascript
+  // 例一
+  const entries = new Map([
+    ['foo', 'bar'],
+    ['baz', 42]
+  ]);
+
+  Object.fromEntries(entries)
+  // { foo: "bar", baz: 42 }
+
+  // 例二
+  const map = new Map().set('foo', true).set('bar', false);
+  Object.fromEntries(map)
+  // { foo: true, bar: false }
+  ```
+  该方法的一个用处是配合URLSearchParams对象，将查询字符串转为对象。
+  ```javascript
+  Object.fromEntries(new URLSearchParams('foo=bar&baz=qux'))
+  // { foo: "bar", baz: "qux" }
+  ```
+
+补充:
+
+`URLSearchParams`用来处理URL上的参数串
+
+`Object.fromEntries(new URLSearchParams(window.location.search))`
+
+* URLSearchParams.append(name, value)
+* URLSearchParams.delete(name)
+* URLSearchParams.entries()
+* URLSearchParams.forEach()
+* URLSearchParams.get(name)
+* URLSearchParams.getAll(name) 返回数组
+* URLSearchParams.has(name)
+* URLSearchParams.keys()
+* URLSearchParams.set(name, value)
+* URLSearchParams.sort()
+* URLSearchParams.toString()
+* URLSearchParams.values()
+
+```javascript
+var paramsString = "q=URLUtils.searchParams&topic=api";
+var searchParams = new URLSearchParams(paramsString);
+
+//Iterate the search parameters.
+for (let p of searchParams) {
+  console.log(p);
+}
+
+searchParams.has("topic") === true; // true
+searchParams.get("topic") === "api"; // true
+searchParams.getAll("topic"); // ["api"]
+searchParams.get("foo") === null; // true
+searchParams.append("topic", "webdev");
+searchParams.toString(); // "q=URLUtils.searchParams&topic=api&topic=webdev"
+searchParams.set("topic", "More webdev");
+searchParams.toString(); // "q=URLUtils.searchParams&topic=More+webdev"
+searchParams.delete("topic");
+searchParams.toString(); // "q=URLUtils.searchParams"
+```
 
 ### Symbol
 
