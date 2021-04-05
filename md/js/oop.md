@@ -100,64 +100,27 @@ Child.prototype.constructor = Child;
 
 ![面向对象](https://github.com/fang-bin/interview/blob/master/image/oop.jpeg)
 
-#### ES5的继承和ES6中的继承有什么区别
-ES5的继承时通过prototype或构造函数机制来实现。即（将将子类的prototype等于父类的实例，再在上面挂在方法）**ES5的继承实质上是先创建子类的实例对象，然后再将父类的方法添加到this上**
+### ES5的类和ES6类的不同
 
-ES6的继承机制完全不同，实质上是先创建父类的实例对象this（所以必须先调用父类的super()方法），然后再用子类的构造函数修改this。
+#### 继承方式
+
+**ES5的继承时通过prototype或构造函数机制来实现。即（将将子类的prototype等于父类的实例，再在上面挂在方法），ES5的继承实质上是先创建子类的实例对象，然后再将父类的方法添加到this上**
+
+**ES6的继承机制完全不同，实质上是先创建父类的实例对象this（所以必须先调用父类的super()方法），然后再用子类的构造函数修改this。**
 
 (A父类，B子类)
 实现上，在不是继承原生构造函数的情况下，A.call(this) 与 super() 在功能上是没有区别的。通过Babel转译ES6的继承，也是通过A.call(this)这种方式实现super()，但是在继承原生构造函数的情况下，A.call(this) 与 super() 在功能上是有区别的，ES5 中 A.call(this) 中的 this 是构造函数 B 的实例，也就是在实现实例属性继承上，ES5 是先创造构造函数 B 的实例，然后在让这个实例通过 A.call(this) 实现实例属性继承，在 ES6 中，是先新建父类的实例对象this，然后再用子类的构造函数修饰 this，使得父类的所有行为都可以继承。
 
 具体的：ES6通过class关键字定义类，里面有构造方法，类之间通过extends关键字实现继承。子类必须在constructor方法中调用super方法，否则新建实例报错。因为子类没有自己的this对象，而是继承了父类的this对象，然后对其进行加工。如果不调用super方法，子类得不到this对象。
 
-ES6的继承实现
+**ES5 是先新建子类的实例对象this，再将父类的属性添加到子类上，由于父类的内部属性无法获取，导致无法继承原生的构造函数。**
 
-```javascript
-class Father{
-  constructor(name){
-    this.name = name;
-  }
-  getName(){
-    console.log(this.name);
-  }
-  //  这里是父类的f方法
-  f(){
-    console.log('fffffffffffffffffffffff');
-  }
-}
-class Son extends Father{
-  constructor(name,age){
-    super(name); // HACK: 这里super()要在第一行
-    this.age = age;
-  }
-  getAge(){
-    console.log(this.age);
-  }
-  //  子类的f方法
-  f(){
-    console.log('sssssssssssssssssssssss');
-  }
-}
-var s1 = new Son('张一',12);
-s1.getName();
-s1.getAge();
-console.log(s1.__proto__); //  为Son，不用修正
-s1.f(); //  打印ssssssssssssss
-s1.__proto__ = new Father();  //  改变s1的原型指向，改为Father
-s1.f();  // 打印ffffffffffffff
-console.log(s1.__proto__);  // 为Father
-```
+**ES6 允许继承原生构造函数定义子类，因为 ES6 是先新建父类的实例对象this，然后再用子类的构造函数修饰this，使得父类的所有行为都可以继承。**
 
-ES5的继承实现，上面有说明
+#### 继承链
 
-##### 封装、继承、多态
-###### 封装：把客观事物封装成抽象的类，隐藏属性和方法的实现细节，仅对外公开接口。（将属性和方法组成一个类的过程就是封装。）
+**大多数浏览器的ES5实现之中，每一个对象都有__proto__属性，指向对应的构造函数的prototype属性。而ES6中Class作为构造函数的语法糖，同时有prototype属性和__proto__属性，因此同时存在两条继承链。**
 
-###### 继承：子类可以使用父类的所有功能，并且对这些功能进行扩展。继承的过程，就是从一般到特殊的过程。
-
-###### es6和es5继承的区别
-
-大多数浏览器的ES5实现之中，每一个对象都有__proto__属性，指向对应的构造函数的prototype属性。而ES6中Class作为构造函数的语法糖，同时有prototype属性和__proto__属性，因此同时存在两条继承链。
 1. 子类的__proto__属性，表示构造函数的继承，总是指向父类。
 2. 子类prototype属性的__proto__属性，表示方法的继承，总是指向父类的prototype属性。
 
@@ -185,7 +148,21 @@ Object.setPrototypeOf = function (obj, proto) {
   return obj;
 }
 ```
-###### 多态（Polymorphism）按字面的意思就是“多种状态”。在面向对象语言中，接口的多种不同的实现方式即为多态。
+
+#### 类静态方法的继承
+
+ES5 没办法继承父类的静态方法，ES6 的子类可以继承父类的静态方法。
+
+#### 类原型对象上方法的枚举性
+
+**ES6 类的内部所有定义的方法，都是不可枚举的（non-enumerable）。这一点与 ES5 的行为不一致。**
+
+
+### 封装、继承、多态
+
+* 封装：把客观事物封装成抽象的类，隐藏属性和方法的实现细节，仅对外公开接口。（将属性和方法组成一个类的过程就是封装。）
+* 继承：子类可以使用父类的所有功能，并且对这些功能进行扩展。继承的过程，就是从一般到特殊的过程。
+* 多态（Polymorphism）按字面的意思就是“多种状态”。在面向对象语言中，接口的多种不同的实现方式即为多态。
 
 #### 面向对象开发的优点
 
