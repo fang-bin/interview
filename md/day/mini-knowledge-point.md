@@ -42,14 +42,15 @@
     **顺便附上一个封装curry函数**
     ```javascript
     function curry (fn, args = []){
-        const len = fn.length;
-        return (..._args) => {
-            args.push(..._args);
-            if (args.length < len) {
-            return curry.call(this, fn, args);
-            }
-            return fn.apply(this, args);
+    const len = fn.length;
+    return function (..._args) {
+        // 必须新建一个变量来承载参数
+        let params = args.concat(_args);
+        if (params.length < len) {
+        return curry.call(this, fn, params);
         }
+        return fn.apply(this, params);
+    }
     }
     ```
 

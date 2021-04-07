@@ -67,11 +67,12 @@ function abortPromise (promise){
 function curry (fn, args = []){
   const len = fn.length;
   return function (..._args) {
-    args.push(..._args);
-    if (args.length < len) {
-      return curry.call(this, fn, args);
+    // 必须新建一个变量来承载参数
+    let params = args.concat(_args);
+    if (params.length < len) {
+      return curry.call(this, fn, params);
     }
-    return fn.apply(this, args);
+    return fn.apply(this, params);
   }
 }
 ```
@@ -128,15 +129,12 @@ Function.prototype.myBind = function (thisArg, ...args) {
 }
 
 
-function mockNew() {
-  let Constructor = Array.prototype.shift.call(arguments); // 取出构造函数  这个地方之后，arguments就已经去除了obj
-  
-  let obj = {}   // new 执行会创建一个新对象
-  
-  obj.__proto__ = Constructor.prototype 
-  
-  Constructor.apply(obj, arguments)
-  return obj
+function mockNew (){
+  const Con = Array.prototype.shift.call(arguments);
+  let obj = Object.create(Con.prototype);
+  let ret = Con.apply(obj, arguments);
+  // 这里优先返回构造函数返回的对象
+  return ret instanceof Object ? ret : obj;
 }
 ```
 
@@ -261,7 +259,7 @@ function clone (target, map = new WeakMap()){
       })
       return cloneTarget;
     case 'object':
-      Object.keys(target).forEach(key => {
+      Reflect.ownKeys(target).forEach(key => {
         cloneTarget[key] = clone(target[key], map);
       })
       return cloneTarget;

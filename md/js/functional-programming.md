@@ -120,17 +120,20 @@ var welcomeUser = function(Email, user) {};
 柯里化允许和鼓励你将一个复杂过程分割成一个个更小的更容易分析的过程（这些小的逻辑单元将更容易被理解和测试），最后这样一个难于理解复杂的过程将变成一个个小的逻辑简单的过程的组合。
 
 ```javascript
-function curry (func, args = []){
-  const len = func.length;  //是函数的形参数量
-  return (..._args) => {
-    args.push(..._args);
-    if (args.length < len){
-      return curry.call(this, func, args);
+function curry (fn, args = []){
+  const len = fn.length;
+  return function (..._args) {
+    // 必须新建一个变量来承载参数
+    let params = args.concat(_args);
+    if (params.length < len) {
+      return curry.call(this, fn, params);
     }
-    return func.apply(this, args);
+    return fn.apply(this, params);
   }
 }
 ```
+
+[这里的实现可以参考](https://github.com/mqyqingfeng/Blog/issues/42)
 
 纯函数所说的接受一个输入返回一个输出。curry 函数所做的正是这样：每传递一个参数调用函数，就返回一个新函数处理剩余的参数。这就是一个输入对应一个输出啊。
 

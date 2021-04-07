@@ -209,7 +209,7 @@ function clone (target, map = new WeakMap()){
       })
       return cloneTarget;
     case 'object':
-      Object.keys(target).forEach(key => {
+      Reflect.ownKeys(target).forEach(key => {
         cloneTarget[key] = clone(target[key], map);
       })
       return cloneTarget;

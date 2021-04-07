@@ -158,15 +158,12 @@ Function.prototype.myBind = function (thisArg, ...args) {
 ### 3. new实现
 
 ```javascript
-function mockNew() {
-  let Constructor = Array.prototype.shift.call(arguments); // 取出构造函数  这个地方之后，arguments就已经去除了obj
-  
-  let obj = {}   // new 执行会创建一个新对象
-  
-  obj.__proto__ = Constructor.prototype 
-  
-  Constructor.apply(obj, arguments)
-  return obj
+function mockNew (){
+  const Con = Array.prototype.shift.call(arguments);
+  let obj = Object.create(Con.prototype);
+  let ret = Con.apply(obj, arguments);
+  // 这里优先返回构造函数返回的对象
+  return ret instanceof Object ? ret : obj;
 }
 ```
 

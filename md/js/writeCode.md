@@ -46,6 +46,51 @@ class MyPromise {
     }
     executor(_resolve, _reject);
   }
+  then(resolveFn, rejectFn) {
+    typeof resolveFn !== 'function' && (resolveFn = val => val);
+    typeof rejectFn !== 'function' && (rejectFn = error => {
+      throw new Error(error instanceof Error ? error.message : error);
+    });
+    return new MyPromise((resolve, reject) => {
+      const fulfilledFn = val => {
+        try {
+          const result = resolveFn(val);
+          result instanceof MyPromise ? result.then(resolve, reject) : resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      }
+      const rejectedFn = err => {
+        try {
+          const result = rejectFn(err);
+          result instanceof MyPromise ? result.then(resolve, reject) : resolve(result);   //这个地方要用resolve，因为rejectFn返回的值也可以传递给后面的then
+        } catch (error) {
+          reject(error);
+        }
+      }
+      switch (this._status) {
+        case PENDING:
+          this._resolveQueen.push(fulfilledFn);
+          this._rejectQueen.push(rejectedFn);
+          break;
+        case FULFILLED:
+          fulfilledFn(this._val);  //状态固定的情况下立刻执行
+          break;
+        case REJECTED:
+          rejectedFn(this._val);
+          break;
+      }
+    });
+  }
+  catch(rejectFn) {
+    return this.then(undefined, rejectFn);
+  }
+  finally(callback) {
+    return this.then(
+      value => MyPromise.resolve(callback()).then(() => value),
+      error => MyPromise.resolve(callback()).then(() => {throw error}),
+    );
+  }
   static resolve(val) {
     if (val instanceof MyPromise) return val;
     return new MyPromise(resolve => resolve(val));
@@ -127,50 +172,22 @@ class MyPromise {
       });
     });
   }
-  then(resolveFn, rejectFn) {
-    typeof resolveFn !== 'function' && (resolveFn = val => val);
-    typeof rejectFn !== 'function' && (rejectFn = error => {
-      throw new Error(error instanceof Error ? error.message : error);
-    });
-    return new MyPromise((resolve, reject) => {
-      const fulfilledFn = val => {
-        try {
-          const result = resolveFn(val);
-          result instanceof MyPromise ? result.then(resolve, reject) : resolve(result);
-        } catch (error) {
-          reject(error);
-        }
-      }
-      const rejectedFn = err => {
-        try {
-          const result = rejectFn(err);
-          result instanceof MyPromise ? result.then(resolve, reject) : resolve(result);   //这个地方要用resolve，因为rejectFn返回的值也可以传递给后面的then
-        } catch (error) {
-          reject(error);
-        }
-      }
-      switch (this._status) {
-        case PENDING:
-          this._resolveQueen.push(fulfilledFn);
-          this._rejectQueen.push(rejectedFn);
-          break;
-        case FULFILLED:
-          fulfilledFn(this._val);  //状态固定的情况下立刻执行
-          break;
-        case REJECTED:
-          rejectedFn(this._val);
-          break;
-      }
-    });
+  // 实现Promise.try
+  static try(fn) {
+    return new MyPromise(resolve => resolve(typeof fn === 'function' ? fn() : fn));
   }
-  catch(rejectFn) {
-    return this.then(undefined, rejectFn);
-  }
-  finally(callback) {
-    return this.then(
-      value => MyPromise.resolve(callback()).then(() => value),
-      error => MyPromise.resolve(callback()).then(() => {throw error}),
-    );
+  // 实现一个可以返回带中断Promise的静态方法，参数只能是Promise
+  static abort(promise) {
+    if (!(promise instanceof MyPromise)) {
+      return MyPromise.reject('错误');
+    };
+    let _abort = undefined;
+    let _abort_promise = new MyPromise((_, reject) => {
+      _abort = reject;
+    });
+    let p = MyPromise.race([promise, _abort_promise]);
+    p.abort = _abort;
+    return p;
   }
 }
 ```
