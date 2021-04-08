@@ -471,7 +471,14 @@ var a = 2;
 
 [再来40道this面试题酸爽继续(1.2w字用手整理](https://juejin.im/post/6844904083707396109)
 
-### valueOf 和 toString
+### valueOf 和 toString 和 [Symbol.toPrimitive]
+
+**对象转原始类型过程**
+
+1. 如果有\[Symbol.toPrimitive]方法，优先调用再返回
+2. 调用valueOf()，如果转换为原始类型，则返回
+3. 调用toString()，如果转换为原始类型，则返回
+4. 如果都没有返回原始类型，会报错
 
 valueOf: 返回对象的原始值表示（可以对一些封装过的基本类型进行拆封操作）
 toString: 返回对象的字符串表示

@@ -299,11 +299,11 @@ let p = {
 let handler = {
   set(target, key, value, receiver) {
     console.log('set');
-    Reflect.set(target, key, value, receiver)
+    return Reflect.set(target, key, value, receiver)
   },
   defineProperty(target, key, attribute) {
     console.log('defineProperty');
-    Reflect.defineProperty(target, key, attribute);
+    return Reflect.defineProperty(target, key, attribute);
   }
 };
 
