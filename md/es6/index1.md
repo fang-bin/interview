@@ -22,6 +22,7 @@ function bar(func = () => foo) {
 bar(); // outer
 
 // 三
+var x = 1;
 function foo(x, y = function() { x = 2; }) {
   var x = 3;
   y();
@@ -303,13 +304,13 @@ let obj = {
 * `for in` 会遍历对象包括其原型链上所有可枚举性的属性(不包含 Symbol 属性)
 * `hasOwnProperty` 不会去查找原型，只会检查属性是否在当前对象中
 * `Object.keys() Object.values() Object.entries()` 不会去查找原型，只会遍历对象本身可枚举（不包含 Symbol）属性（属性对）
-* `Object.getOwnPropertyNames()` 不会去查找原型，会遍历对象本身所有的属性（无论是否具有可枚举性）
+* `Object.getOwnPropertyNames()` 不会去查找原型，会遍历对象本身所有（无论是否具有可枚举性，但是不包括 Symbol）的属性
 * `Object.prototype.propertyIsEnumerable` 只会检查属性在该对象上是否可枚举
 * `Object.getOwnPropertyDescriptors()` 获取一个对象的所有自身属性的描述符
 * `Object.getOwnPropertyDescriptor()` 获取对象自身某个属性的描述符
 * `Object.getOwnPropertySymbols()` 获取一个给定对象自身的所有 Symbol 属性的数组
 * `Object.assign(target, ...source)`只拷贝自身的可枚举属性，会忽略`enumerable`为`false`的属性(仅限于source对象，target对象的不可枚举属性，也会拷贝)
-* `JSON.stringify()` 只串行化对象自身的可枚举的属性(其第二个参数是个类似map的遍历函数，不过这个函数的入参是index、element)
+* `JSON.stringify()` 只串行化对象自身的可枚举的属性(其第二个参数是个类似map的遍历函数，不过这个函数的入参是index、element),不包括 Symbol 属性。
 * `Reflect.ownKeys(obj)` Reflect.ownKeys返回一个数组，包含对象自身的（不含继承的）所有键名，不管键名是 Symbol 或字符串，也不管是否可枚举。
 
 `for in` `Object.keys()` `Object.getOwnPropertyNames()` `Object.getOwnPropertySymbols()` `Reflect.ownKeys()`遍历对象的键名，都遵守同样的属性遍历的次序规则:

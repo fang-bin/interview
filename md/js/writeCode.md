@@ -15,69 +15,66 @@ const PENDING = 'pending';
 const FULFILLED = 'fulfilled';
 const REJECTED = 'rejected';
 class MyPromise {
+  _status = PENDING;
+  _val = undefined;
+  _fulfilledQueue = [];
+  _rejectedQueue = [];
   constructor(executor) {
-    this._status = PENDING;
-    this._val = undefined;
-    this._resolveQueen = [];
-    this._rejectQueen = [];
-    const _resolve = (val) => {
-      const run = () => {
-        if (this._status !== PENDING) return;   //状态一旦固定下来，就不能更改
-        this._status = FULFILLED;
-        this._val = val;
-        while (this._resolveQueen.length){
-          const callback = this._resolveQueen.shift();
-          callback && callback(val);
-        }
-      }
-      setTimeout(run);
+    const _resolve = val => {
+      if (this._status !== PENDING) return;
+      this._status = FULFILLED;
+      this._val = val;
+      while(this._fulfilledQueue.length) this._fulfilledQueue.shift()(val);
     }
-    const _reject = (val) => {
-      const run = () => {
-        if (this._status !== PENDING) return;
-        this._status = REJECTED;
-        this._val = val; 
-        while (this._rejectQueen.length) {
-          const callback = this._rejectQueen.shift();
-          callback && callback(val);
-        }
-      }
-      setTimeout(run);
+    const _reject = err => {
+      if (this._status !== PENDING) return;
+      this._status = REJECTED;
+      this._val = err;
+      while(this._rejectedQueue.length) this._rejectedQueue.shift()(err);
     }
-    executor(_resolve, _reject);
+    try {
+      executor(_resolve, _reject);
+    } catch(err) {
+      _reject(err);
+    }
   }
   then(resolveFn, rejectFn) {
     typeof resolveFn !== 'function' && (resolveFn = val => val);
-    typeof rejectFn !== 'function' && (rejectFn = error => {
-      throw new Error(error instanceof Error ? error.message : error);
+    typeof rejectFn !== 'function' && (rejectFn = err => {
+      throw new Error(err instanceof Error ? err.message : err);
     });
     return new MyPromise((resolve, reject) => {
-      const fulfilledFn = val => {
-        try {
-          const result = resolveFn(val);
-          result instanceof MyPromise ? result.then(resolve, reject) : resolve(result);
-        } catch (error) {
-          reject(error);
-        }
+      const _fulfilledFn = () => {
+        queueMicrotask(() => {
+          try{
+            const res = resolveFn(this._val);
+            res instanceof MyPromise ? res.then(resolve, reject) : resolve(res);
+          } catch(err) {
+            reject(err);
+          }
+        });
       }
-      const rejectedFn = err => {
-        try {
-          const result = rejectFn(err);
-          result instanceof MyPromise ? result.then(resolve, reject) : resolve(result);   //这个地方要用resolve，因为rejectFn返回的值也可以传递给后面的then
-        } catch (error) {
-          reject(error);
-        }
+      const _rejectedFn = () => {
+        queueMicrotask(() => {
+          try{
+            const res = rejectFn(this._val);
+            res instanceof MyPromise ? res.then(resolve, reject) : resolve(res);
+          } catch(err) {
+            reject(err);
+          }
+        })
       }
+
       switch (this._status) {
         case PENDING:
-          this._resolveQueen.push(fulfilledFn);
-          this._rejectQueen.push(rejectedFn);
+          this._fulfilledQueue.push(_fulfilledFn);
+          this._rejectedQueue.push(_rejectedFn);
           break;
         case FULFILLED:
-          fulfilledFn(this._val);  //状态固定的情况下立刻执行
+          _fulfilledFn();
           break;
         case REJECTED:
-          rejectedFn(this._val);
+          _rejectedFn();
           break;
       }
     });
@@ -87,30 +84,52 @@ class MyPromise {
   }
   finally(callback) {
     return this.then(
-      value => MyPromise.resolve(callback()).then(() => value),
-      error => MyPromise.resolve(callback()).then(() => {throw error}),
+      val => Promise.resolve(callback()).then(() => val),
+      err => Promise.resolve(callback()).then(() => {throw err}),
     );
   }
   static resolve(val) {
     if (val instanceof MyPromise) return val;
     return new MyPromise(resolve => resolve(val));
   }
-  static reject(val) {
-    return new MyPromise((resolve, reject) => reject(val));
+  static reject(err) {
+    if (err instanceof MyPromise) return err;
+    return new MyPromise((_, reject) => reject(err));
   }
   static all(promiseArr) {
-    let index = 0;
-    let resultArr = [];
-    return new MyPromise((resolve, reject) => {
+    let resultArr = [],
+      index = 0;
+    return new MyPromise((resolve ,reject) => {
       promiseArr.forEach((p, i) => {
         MyPromise.resolve(p).then(val => {
-          index++;
           resultArr[i] = val;
-          if(index === promiseArr.length) {
-            resolve(resultArr);
-          }
+          index++;
+          if (index === promiseArr.length) resolve(resultArr);
         }, err => {
           reject(err);
+        });
+      });
+    })
+  }
+  static allSettled(promiseArr) {
+    let resultArr = [],
+      index = 0;
+    return new MyPromise(resolve => {
+      promiseArr.forEach((p, i) => {
+        MyPromise.resolve(p).then(val => {
+          resultArr[i] = {
+            status: 'fulfilled',
+            value: val,
+          };
+          index++;
+          if (index === promiseArr.length) resolve(resultArr);
+        }, err => {
+          resultArr[i] = {
+            status: 'rejected',
+            reason: err,
+          };
+          index++;
+          if (index === promiseArr.length) resolve(resultArr);
         });
       });
     });
@@ -127,56 +146,23 @@ class MyPromise {
     });
   }
   static any(promiseArr) {
-    return new MyPromise((resolve, reject) => {
-      let index = 0;
-      let errorArr = [];
-      return new MyPromise((resolve, reject) => {
-        promiseArr.forEach((p, i) => {
-          MyPromise.resolve(p).then(val => {
-            resolve(val);
-          }, err => {
-            index++;
-            errorArr[i] = err;
-            if (index === promiseArr.length){
-              reject(errorArr);
-            }
-          });
-        });
-      });
-    });
-  }
-  static allSettled(promiseArr) {
-    let index = 0;
-    let resultArr = [];
+    let errorArr = [],
+      index = 0;
     return new MyPromise((resolve, reject) => {
       promiseArr.forEach((p, i) => {
         MyPromise.resolve(p).then(val => {
-          index++;
-          resultArr[i] = {
-            status: 'fulfilled',
-            value: val,
-          };
-          if (index === promiseArr.length){
-            resolve(resultArr);
-          }
+          resolve(val);
         }, err => {
+          errorArr[i] = err;
           index++;
-          resultArr[i] = {
-            status: 'rejected',
-            reason: err,
-          };
-          if (index === promiseArr.length){
-            resolve(resultArr);
-          }
+          if (index === promiseArr.length) reject(errorArr);
         });
       });
     });
   }
-  // 实现Promise.try
   static try(fn) {
-    return new MyPromise(resolve => resolve(typeof fn === 'function' ? fn() : fn));
+    return new Promise(resolve => resolve(typeof fn === 'function' ? fn() : fn));
   }
-  // 实现一个可以返回带中断Promise的静态方法，参数只能是Promise
   static abort(promise) {
     if (!(promise instanceof MyPromise)) {
       return MyPromise.reject('错误');
@@ -223,7 +209,7 @@ Promise
 });
 ```
 
-据我在v8以往版本中查看，v8中关于promise的实现，在 5.0版本之前完全都是通过js自托管实现的，实现方式原理和上方差不多，但是由于其中的微任务队列由c++代码负责管理，我这里实现的方式用的setTimeout不太合适（这就没办法了）而在5.6-6.0版本只见则取消了promise的js自托管，将一些promise新的静态方法通过js自托管实现,在6.0版本之后，则全部取消了js自托管。
+据我在v8以往版本中查看，v8中关于promise的实现，在 5.0版本之前完全都是通过js自托管实现的，实现方式原理和上方差不多，这里针对then生成的微任务的情况，我使用了queueMicrotask，有兴趣可以了解一下，而在5.6-6.0版本只见则取消了promise的js自托管，将一些promise新的静态方法通过js自托管实现,在6.0版本之后，则全部取消了js自托管。
 
 ### Generator
 
