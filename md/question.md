@@ -20,7 +20,6 @@
 13. 写一个 mySetInterVal(fn, a, b),每次间隔 a,a+b,a+2b 的时间，然后写一个 myClear，停止上面的 mySetInterVal(头条)
 14. 合并二维有序数组成一维有序数组，归并排序的思路
 15. 手写一个ajax实现
-16. 单例模式
 
 
 
@@ -145,14 +144,11 @@ function mockNew (){
 function debounce (fn, time){
   let _timer = undefined;
   return function (...args) {
-    const context = this;
     if (_timer){
       clearTimeout(_timer);
       _timer = null;
     }
-    _timer = setTimeout(() => {
-      fn.apply(context, args);
-    }, time);
+    _timer = setTimeout(fn.bind(this, ...args), time);
   }
 }
 
@@ -162,7 +158,7 @@ function throttle (fn, time){
   return function (...args){
     const _now_time = new Date();
     if (!_last_time || _now_time - _last_time > time){
-      fn(...args);
+      fn.apply(this, args);
       _last_time = _now_time;
     }
   }
@@ -408,6 +404,71 @@ let arr1 = [[1,2,3],[4,5,6],[7,8,9],[1,2,3],[4,5,6]];
 let arr2 = [[1,4,6],[7,8,10],[2,6,9],[3,7,13],[1,5,12]];
 console.log(mergeOrderSort(arr1));
 console.log(mergeOrderSort(arr2));
+```
+
+##### 15.
+
+```javascript
+function ajax (options){
+  let opts = Object.assign({
+    url: '',
+    data: {},
+    async: true,
+    dataType: 'json',
+    fail: function () {},
+    success: function() {},
+    timeout: 0,
+  }, options);
+  opts.type = (options.type || 'GET').toUpperCase();
+  const formatParams = obj => {
+    let arr = [];
+    for (const key in obj) {
+      if (Object.hasOwnProperty.call(obj, key)) {
+        arr.push(`${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`);
+      }
+    }
+    arr.push(`v=${Math.random().toString(16).raplace('.', '')}`);
+    return arr.join('&');
+  }
+  const params = formatParams(opts.data);
+  let xhr = null;
+  if (window.XMLHttpRequest) {
+    xhr = new XMLHttpRequest();
+  }else {
+    xhr = new ActiveXObject();
+  }
+  xhr.onreadystatechange = function (){
+    if (xhr.readystate === 4) {
+      const status = xhr.status;
+      if ((status >= 200 && status < 300) || status === 304) {
+        opts.success && opts.success(data.dataType === 'json' ? JSON.parse(xhr.responseText) : xhr.responseText);
+      }else {
+        opts.fail && opts.fail(status);
+      }
+    }
+  }
+  xhr.onabort = function (){
+    opts.fail('终止');
+  }
+  xhr.ontimeout = function (){
+    opts.fail('超时');
+  }
+  xhr.onerror = function (err) {
+    opts.fail(err);
+  }
+
+  if (opts.type === 'GET') {
+    xhr.open('GET', `${opts.url}?${params}`, opts.async);
+    opts.timeout && opts.timeout > 0 && (xhr.timeout = opts.timeout);
+    xhr.send(null);
+  }else if (opts.type === 'POST') {
+    xhr.open('GET', opts.url, opts.async);
+    opts.timeout && options.timeout > 0 && (xhr.timeout = opts.timeout);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.send(params);
+  }
+  return xhr;
+}
 ```
 
 ## 快记

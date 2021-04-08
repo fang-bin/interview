@@ -2,12 +2,108 @@
 
 AJAX的本质是使用XMLHttpRequest对象来请求数据，它是对原生XMLHttpRequest对象的封装。
 
+实例化XMLHttpRequest对象之后，可以通过该实例对象发送请求
+
+### 方法：
+##### `XMLHttpRequest.prototype.open(method, url[, async[, user[, password]]])`
+
+这个方法的作用是初始化一个请求，并不会发起真正的请求。
+
+* async 是否异步执行操作  默认为true。如果值为false，send()方法直到收到答复前不会返回。如果true，已完成事务的通知可供事件监听器使用。
+* user 可选的用户名用于认证用途；默认为null。
+* password 可选的密码用于认证用途，默认为null。
+
+##### `XMLHttpRequest.prototype.send(body)`
+
+发送请求，并接受一个可选参数(在XHR请求中要发送的数据体)
+
+当请求方式为 post 时，可以将请求体的参数传入
+
+当请求方式为 get 时，可以不传或传入 null
+
+不管是 get 还是 post，参数都需要通过 encodeURIComponent 编码后拼接
+xhr.send(data)
+
+##### `XMLHttpRequest.prototype.abort()`
+
+如果该请求已被发出，XMLHttpRequest.abort() 方法将终止该请求。
+
+当一个请求被终止，它的  readyState 将被置为 XMLHttpRequest.UNSENT（0）。并且请求的 status 置为 0。
+
+##### `XMLHttpRequest.prototype.setRequestHeader(header, value)`
+
+* header 属性名
+* value 属性值
+
+设置HTTP请求头部的方法。此方法必须在  open() 方法和 send()   之间调用。如果多次对同一个请求头赋值，只会生成一个合并了多个值的请求头。
+
+**在通过send方法发送请求后，xhr 对象在收到响应数据时会自动填充到其对应的属性中**
+
+### 属性：
+
+##### `XMLHttpRequest.prototype.timeout`
+
+超时时间(毫秒)，默认值为0，意味着没有超时，而不是真的就是超时时间为0。
+
+在IE中，超时属性可能只能在调用 open() 方法之后且在调用 send() 方法之前设置。
+
+##### `XMLHttpRequest.prototype.onreadystatechange = callback`
+
+只要 readyState 属性发生变化，就会调用相应的处理函数。
+
+当一个 XMLHttpRequest 请求被 abort() 方法取消时，其对应的 readystatechange 事件不会被触发。
+
+其他的一些方法：
+
+**onerror** 当 request 遭遇错误时触发。
+
+**onabort** 当 request 被停止时触发，例如当程序调用 XMLHttpRequest.abort() 时。
+
+**ontimeout** 在预设时间内没有接收到响应时触发。
+
+**onload** XMLHttpRequest请求成功完成时触发。
+
+**loadend** 当请求结束时触发, 无论请求成功 ( load) 还是失败 (abort 或 error)。
+
+**onprogress** 当请求接收到更多数据时，周期性地触发。
+
+##### `XMLHttpRequest.prototype.readyState`
+
+返回一个 XMLHttpRequest  代理当前所处的状态
+
+| 值 | 状态 | 描述 |
+| --- | --- | --- |
+| 0 | UNSENT | 代理被创建，但尚未调用 open() 方法 |
+| 1 | OPENED | open() 方法已经被调用 |
+| 2 | HEADERS_RECEIVED | send() 方法已经被调用，并且头部和状态已经可获得 |
+| 3 | LOADING | 下载中； responseText 属性已经包含部分数据 |
+| 4 | DONE | 下载操作已完成 |
+
+##### `XMLHttpRequest.prototype.status`
+
+返回 XMLHttpRequest 响应中的数字状态码
+
+##### `XMLHttpRequest.prototype.response`
+
+response 属性返回响应的正文。返回的类型为 ArrayBuffer 、 Blob 、 Document 、 JavaScript Object 或 DOMString 中的一个。 这取决于 responseType 属性。
+
+##### `XMLHttpRequest.prototype.responseType`
+
+XMLHttpRequest.responseType 属性是一个枚举类型的属性，返回响应数据的类型。
+
+##### `XMLHttpRequest.prototype.responseText`
+
+只读，返回一个 DOMString，该 DOMString 包含对请求的响应，如果请求未成功或尚未发送，则返回 null。
+
+##### `XMLHttpRequest.prototype.responseXML`
+
+只读，返回一个包含请求检索的HTML或XML的Document，如果请求未成功，尚未发送，或者检索的数据无法正确解析为 XML 或 HTML，则为 null。
+
 封装ajax
 ```javascript
 function ajax (options){
   let opts = Object.assign({}, options);
   opts.type = (options.type || 'GET').toUpperCase();
-  opts.dataType = options.dataType || 'json';
   const formatParams = (obj) => {
     let arr = [];
     for (const name in obj) {
@@ -35,10 +131,24 @@ function ajax (options){
       }
     }
   }
+
+  xhr.onabort = function (){
+    opts.fail('终止');
+  }
+  xhr.ontimeout = function (){
+    opts.fail('超时');
+  }
+  xhr.onerror = function (err) {
+    opts.fail(err);
+  }
+
   if (opts.type === 'GET'){
     xhr.open('GET', opts.url + '?' + params, true);
+    opts.timeout && opts.timeout > 0 && (xhr.timeout = opts.timeout);
+    xhr.send(null);
   }else if (opts.type === 'POST'){
     xhr.open('POST', opts.url, true);
+    opts.timeout && opts.timeout > 0 && (xhr.timeout = opts.timeout);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.send(params);
   }
