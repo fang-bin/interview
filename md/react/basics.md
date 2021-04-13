@@ -454,3 +454,202 @@ render prop 是一个用于告知组件需要渲染什么内容的函数 prop
 如果你在 render 方法里创建函数，那么使用 render prop 会抵消使用 React.PureComponent 带来的优势。因为浅比较 props 的时候总会得到 false，并且在这种情况下每一个 render 对于 render prop 将会生成一个新的值。
 
 ## React Hooks
+
+Hook 是一些可以让你在函数组件里“钩入” React state 及生命周期等特性的函数。
+
+* Hook 使你在无需修改组件结构的情况下复用状态逻辑。 (在组件之间复用状态逻辑很难)
+* Hook 将组件中相互关联的部分拆分成更小的函数，比如设置订阅或请求数据;(复杂组件变得难以理解)
+* Hook 使你在非 class 的情况下可以使用更多的 React 特性。(难以理解的 class)
+
+使用规则:
+
+* 只能在函数最外层调用 Hook。不要在循环、条件判断或者子函数中调用。
+* 只能在 React 的函数组件中调用 Hook。不要在其他 JavaScript 函数中调用。（还有一个地方可以调用 Hook —— 就是自定义的 Hook 中）
+
+#### `useState(initialValue)`
+
+`const [state, setState] = useState(initialValue)`
+
+useState 会返回一对值：当前状态和一个让你更新它的函数。
+
+类似 class 组件的 this.setState，但是它不会把新的 state 和旧的 state 进行合并(更新 state 变量总是替换它而不是合并它)。
+
+setState 函数用于更新 state。它接收一个新的 state 值并将组件的一次重新渲染加入队列。
+
+##### 函数式更新
+
+如果新的 state 需要通过使用先前的 state 计算得出，那么可以将函数传递给 setState。该函数将接收先前的 state，并返回一个更新后的值。
+
+##### 惰性初始state
+
+initialState 参数只会在组件的初始渲染中起作用，后续渲染时会被忽略。如果初始 state 需要通过复杂计算获得，则可以传入一个函数，在函数中计算并返回初始的 state，此函数只在初始渲染时被调用
+
+```javascript
+const [state, setState] = useState(() => {
+  const initialState = someExpensiveComputation(props);
+  return initialState;
+});
+```
+
+##### 跳过 state 更新
+
+调用 State Hook 的更新函数并传入当前的 state 时，React 将跳过子组件的渲染及 effect 的执行。（React 使用 Object.is 比较算法 来比较 state。）
+
+#### `useEffect(didUpdate)`
+
+useEffect 就是一个 Effect Hook，给函数组件增加了操作副作用的能力。它跟 class 组件中的 componentDidMount、componentDidUpdate 和 componentWillUnmount 具有相同的用途，只不过被合并成了一个 API。
+
+如果 effect 返回一个函数，React 将会在执行清除操作时调用它。
+
+如果某些特定值在两次重渲染之间没有发生变化，你可以通知 React 跳过对 effect 的调用，只要传递数组作为 useEffect 的第二个可选参数即可。
+
+#### `useContext(Context)`
+
+```javascript
+const value = useContext(MyContext);
+```
+
+接收一个 context 对象（React.createContext 的返回值）并返回该 context 的当前值。当前的 context 值由上层组件中距离当前组件最近的 \<MyContext.Provider\> 的 value prop 决定。
+
+当组件上层最近的 \<MyContext.Provider\> 更新时，该 Hook 会触发重渲染，并使用最新传递给 MyContext provider 的 context value 值。即使祖先使用 React.memo 或 shouldComponentUpdate，也会在组件本身使用 useContext 时重新渲染。
+
+#### `useReducer(reducer, initialArg, init)`
+
+```javascript
+const [state, dispatch] = useReducer(reducer, initialArg, init);
+```
+
+useState 的替代方案。它接收一个形如 (state, action) => newState 的 reducer，并返回当前的 state 以及与其配套的 dispatch 方法。
+
+在某些场景下，useReducer 会比 useState 更适用，例如 state 逻辑较复杂且包含多个子值，或者下一个 state 依赖于之前的 state 等。并且，使用 useReducer 还能给那些会触发深更新的组件做性能优化，因为你可以向子组件传递 dispatch 而不是回调函数 。
+
+例：
+
+```javascript
+const initialState = {count: 0};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      return {count: state.count + 1};
+    case 'decrement':
+      return {count: state.count - 1};
+    default:
+      throw new Error();
+  }
+}
+
+function Counter() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  return (
+    <>
+      Count: {state.count}
+      <button onClick={() => dispatch({type: 'decrement'})}>-</button>
+      <button onClick={() => dispatch({type: 'increment'})}>+</button>
+    </>
+  );
+}
+```
+
+#### `useCallback`
+
+```javascript
+const memoizedCallback = useCallback(
+  () => {
+    doSomething(a, b);
+  },
+  [a, b],
+);
+```
+
+返回一个 memoized 回调函数。
+
+把内联回调函数及依赖项数组作为参数传入 useCallback，它将返回该回调函数的 memoized 版本，该回调函数仅在某个依赖项改变时才会更新。当你把回调函数传递给经过优化的并使用引用相等性去避免非必要渲染（例如 shouldComponentUpdate）的子组件时，它将非常有用。
+
+`useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`。
+
+#### `useMemo`
+
+```javascript
+const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+```
+
+返回一个 memoized 值。
+
+把“创建”函数和依赖项数组作为参数传入 useMemo，它仅会在某个依赖项改变时才重新计算 memoized 值。这种优化有助于避免在每次渲染时都进行高开销的计算。
+
+记住，传入 useMemo 的函数会在渲染期间执行。请不要在这个函数内部执行与渲染无关的操作，诸如副作用这类的操作属于 useEffect 的适用范畴，而不是 useMemo。
+
+如果没有提供依赖项数组，useMemo 在每次渲染时都会计算新的值。
+
+你可以把 useMemo 作为性能优化的手段，但不要把它当成语义上的保证。
+
+#### `useRef`
+
+```javascript
+const refContainer = useRef(initialValue);
+```
+
+useRef 返回一个可变的 ref 对象，其 .current 属性被初始化为传入的参数（initialValue）。返回的 ref 对象在组件的整个生命周期内保持不变。
+
+useRef() 比 ref 属性更有用。它可以很方便地保存任何可变值，其类似于在 class 中使用实例字段的方式。
+
+这是因为它创建的是一个普通 Javascript 对象。而 useRef() 和自建一个 {current: ...} 对象的唯一区别是，useRef 会在每次渲染时返回同一个 ref 对象。
+
+当 ref 对象内容发生变化时，useRef 并不会通知你。变更 .current 属性不会引发组件重新渲染。如果想要在 React 绑定或解绑 DOM 节点的 ref 时运行某些代码，则需要使用回调 ref 来实现。
+
+下面抽离出来一个自定义Hook，当ref绑定元素挂载或卸载的时候，将元素的信息同步并通知。
+
+```javascript
+function useClientRect() {
+  const [rect, setRect] = useState(null);
+  const ref = useCallback(node => {
+    if (node !== null) {
+      setRect(node.getBoundingClientRect());
+    }
+  }, []);
+  return [rect, ref];
+}
+```
+
+#### `useImperativeHandle`
+
+```javascript
+useImperativeHandle(ref, createHandle, [deps]);
+```
+
+useImperativeHandle 可以让你在使用 ref 时自定义暴露给父组件的实例值。在大多数情况下，应当避免使用 ref 这样的命令式代码。useImperativeHandle 应当与 forwardRef 一起使用
+
+```javascript
+function FancyInput(props, ref) {
+  const inputRef = useRef();
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current.focus();
+    }
+  }));
+  return <input ref={inputRef} ... />;
+}
+FancyInput = forwardRef(FancyInput);
+```
+
+#### `useLayoutEffect`
+
+其函数签名与 useEffect 相同，但它会在所有的 DOM 变更之后同步调用 effect。可以使用它来读取 DOM 布局并同步触发重渲染。在浏览器执行绘制之前，useLayoutEffect 内部的更新计划将被同步刷新。
+
+尽可能使用标准的 useEffect 以避免阻塞视觉更新。
+
+#### `useDebugValue`
+
+`useDebugValue(value)`
+
+useDebugValue 可用于在 React 开发者工具中显示自定义 hook 的标签。
+
+#### 自定义Hook
+
+自定义 Hook 是一种自然遵循 Hook 设计的约定，而并不是 React 的特性。
+
+* 自定义 Hook 必须以 “use” 开头，不遵循的话，由于无法判断某个函数是否包含对其内部 Hook 的调用，React 将无法自动检查你的 Hook 是否违反了 Hook 的规则（只能在函数最外层调用Hook，除了自定义Hook）。
+* 在两个组件中使用相同的 Hook 并不会共享 state ，每次使用自定义 Hook 时，其中的所有 state 和副作用都是完全隔离的。
+
+
