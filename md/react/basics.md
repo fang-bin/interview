@@ -1,5 +1,3 @@
-#### 组件封装原则
-
 #### 1. render内使用箭头函数或者bind函数，可能会造成子组件额外的重新渲染。
 
 ```javascript
@@ -244,76 +242,166 @@ Portal 提供了一种将子节点渲染到存在于父组件以外的 DOM 节�
 
 `ReactDOM.createPortal(child, container)`
 
-#### 10. React组件的生命周期
+## 10. React组件的生命周期
 
-* `ComponentWillMount`
-* `render`
-* `ComponentDidMount`
-* `ComponentWillReceiveProps`
-* `ShouldComponentUpdate`
-* `ComponentWillUpdate` 
-* `ComponentDidUpdate`
-* `ComponentWillUnmount`
+最新的react生命周期
 
-###### ComponentWillMount()
+![react生命周期](https://github.com/fang-bin/interview/blob/master/image/react-lifecycle.jpg)
 
-在渲染前调用
+### 挂载
 
-因为componentWillMount是在render之前执行，所以在这个方法中setState不会发生重新渲染(re-render);
+1. `constructor(props)`
+2. `static getDerivedStateFromProps(props, state)`
+3. `UNSAFE_componentWillMount()`
+4. `render()`
+5. `componentDidMount()`
 
-在componenetWillMount中 setState，新的state 不会引起新的更新行为，但是新的 state内容会被带到 render 中体现。
+#### `constructor(props)`
 
-这是服务端渲染(server render)中唯一调用的钩子(hook);
+如果不初始化 state 或不进行方法绑定，则不需要为 React 组件实现构造函数。
 
-###### render()
-严格来说，render也算是React生命周期中的一部分，一般只在两个时机调用:
+在 React 中，构造函数仅用于以下两种情况：
 
-1. 在componentWillMount()方法之后
-2. 在ComponentWillUpdate()方法之后
+* 通过给 this.state 赋值对象来初始化内部 state。
+* 为事件处理函数绑定实例
 
-###### ComponentDidMount()
-在第一次渲染（render）后调用，只在客户端。之后组件已经生成了对应的DOM结构，可以通过this.getDOMNode()来进行访问。 如果你想和其他JavaScript框架一起使用，可以在这个方法中调用setTimeout, setInterval或者发送AJAX请求等操作(防止异步操作阻塞UI)。
+#### `static getDerivedStateFromProps(props, state)`
 
-这里可以对DOM进行操作，这个函数之后ref变成实际的DOM，同时也**可以使用setState()方法触发重新渲染(re-render)**;
+getDerivedStateFromProps 会在调用 render 方法之前调用，并且在初始挂载及后续更新时都会被调用。
 
-**ref的current属性会在ComponentDidMount触发前传入DOM元素，并在ComponentDidUpdate触发前更新。在组件卸载时传入null值**
+它应返回一个对象来更新 state，如果返回 null 则不更新任何内容。
 
-###### componentWillReceiveProps(nextProps)
+此方法无权访问组件实例。
 
-在已挂载组件接收到一个新的 prop (更新后)时被调用。这个方法在初始化render时不会被调用。
+不管原因是什么，都会在每次渲染前触发此方法。
 
-如果需要在props发生变化(或者说新传入的props)来更新state，可能需要比较this.props和nextProps, 然后使用this.setState()方法来改变this.state;
+#### `UNSAFE_componentWillMount()`
 
-注意：如果只是调用this.setState()而不是从外部传入props, 那么不会触发componentWillReceiveProps(nextProps)函数；这就意味着: this.setState()方法不会触发componentWillReceiveProps(), props的改变或者props没有改变才会触发这个方法;
+在挂载之前被调用。它在 render() 之前调用，因此在此方法中同步调用 setState() 不会触发额外渲染。
 
-###### ShouldComponentUpdate(nextProps, nextState)
+此方法是服务端渲染唯一会调用的生命周期函数。
 
-在接收到新props或state后触发，用来确定是否发生重新渲染，默认情况返回true，表示会发生重新渲染，返回false，则会跳过render(后面的涉及更新重新渲染的生命周期都不会触发)，所以也就不会发生Virtual DOM diff。
+#### `render()`
 
-这个方法在首次渲染时或者forceUpdate()时不会触发;
+render() 方法是 class 组件中唯一必须实现的方法。
 
-现在一些情况，PureComponent已经替代了ShouldComponentUpdate的使用场景。
+当 render 被调用时，它会检查 this.props 和 this.state 的变化并返回以下类型之一：
 
-###### ComponentWillUpdate(nextProps, nextState)
+* React 元素 (DOM节点或自定义组件，均为React元素)
+* 数组或 fragments (返回多个元素)
+* Portals (渲染子节点到不同的 DOM 子树中)
+* 字符串或数值类型 (在 DOM 中会被渲染为文本节点)
+* 布尔类型或 null (什么都不渲染)
 
-在props或state发生改变或者shouldComponentUpdate(nextProps, nextState)触发后, 在render()之前（首次初始化并不会触发）。
+render() 函数应该为纯函数，这意味着在不修改组件 state 的情况下，每次调用时都返回相同的结果，并且它不会直接与浏览器交互。
 
-千万不要在这个函数中调用this.setState()方法;
+**如果 shouldComponentUpdate() 返回 false，则不会调用 render()**
 
-在componentWillUpdate中setState，它的下一步本来就是 render，新的 state 内容不会被带到 render 中。如果在componentWillUpdate确实设置了新的不同的 state，则会引起循环的更新行为(会造成React调用栈溢出，渲染表现不正常)，如果只是调用了 setState，但是 state 内容并无变化，则不会引起循环的渲染更新行为。
+#### `componentDidMount()`
 
-当然如果非要在componentWillUpdate中执行setState，有限制判断条件的情况下，可以通过setTimeout函数来执行，这样就不会造成React的栈溢出了。
+会在组件挂载后（插入 DOM 树中）立即调用。
 
-###### ComponentDidUpdate(prevProps, prevState)
+依赖于 DOM 节点的初始化应该放在这里。如需通过网络请求获取数据，此处是实例化请求的好地方。
 
- 在组件完成更新后(componentWillUpdate(nextProps, nextState)后
-)立即调用。在初始化时不会被调用。
+可以在 componentDidMount() 里直接调用 setState()。它将触发额外渲染，但此渲染会发生在浏览器更新屏幕之前。如此保证了即使在 render() 两次调用的情况下，用户也不会看到中间状态。**请谨慎使用该模式**，因为它会导致性能问题。通常，你应该在 constructor() 中初始化 state。如果你的渲染依赖于 DOM 节点的大小或位置，比如实现 modals 和 tooltips 等情况下，你可以使用此方式处理
 
-###### ComponentWillUnmount
+### 更新
 
-在组件从 DOM 中移除并销毁之前立刻被调用。
+1. `static getDerivedStateFromProps(props, state)`
+2. `UNSAFE_componentWillReceiveProps(nextProps)`
+3. `shouldComponentUpdate(nextProps, nextState)`
+4. `UNSAFE_componentWillUpdate(nextProps, nextState)`
+5. `render()`
+6. `getSnapshotBeforeUpdate(preProps, preState)`
+7. `componentDidUpdate(preProps, preState, snapshot)`
 
-这个方法可以让你处理一些必要的清理操作，比如无效的timers、interval，或者取消网络请求，或者清理任何在componentDidMount()中创建的DOM元素(elements);
+#### `UNSAFE_componentWillReceiveProps(nextProps)`
+
+UNSAFE_componentWillReceiveProps() 会在已挂载的组件接收新的 props 之前被调用。
+
+如果父组件导致组件重新渲染，即使 props 没有更改，也会调用此方法。如果只想处理更改，请确保进行当前值与变更值的比较。
+
+调用 this.setState() 通常不会触发 UNSAFE_componentWillReceiveProps()。
+
+#### `shouldComponentUpdate(nextProps, nextState)`
+
+当 props 或 state 发生变化时，shouldComponentUpdate() 会在渲染执行之前被调用。返回值默认为 true。首次渲染或使用 forceUpdate() 时不会调用该方法。
+
+此方法仅作为性能优化的方式而存在。可以考虑使用内置的 PureComponent 组件。PureComponent 会对 props 和 state 进行浅层比较，并减少了跳过必要更新的可能性。
+
+不建议在 shouldComponentUpdate() 中进行深层比较或使用 JSON.stringify()。这样非常影响效率，且会损害性能。
+
+目前，如果 shouldComponentUpdate() 返回 false，则不会调用 UNSAFE_componentWillUpdate()，render() 和 componentDidUpdate()。后续版本，React 可能会将 shouldComponentUpdate 视为提示而不是严格的指令，并且，当返回 false 时，仍可能导致组件重新渲染。
+
+#### `UNSAFE_componentWillUpdate(nextProps, nextState)`
+
+当组件收到新的 props 或 state 时，会在渲染之前调用 UNSAFE_componentWillUpdate()。使用此作为在更新发生之前执行准备更新的机会。初始渲染不会调用此方法。
+
+**不能此方法中调用 this.setState()**，在 UNSAFE_componentWillUpdate() 返回之前，你也不应该执行任何其他操作（例如，dispatch Redux 的 action）触发对 React 组件的更新。
+
+此方法可以替换为 componentDidUpdate()。如果你在此方法中读取 DOM 信息（例如，为了保存滚动位置），则可以将此逻辑移至 getSnapshotBeforeUpdate() 中。
+
+#### `getSnapshotBeforeUpdate(preProps, preState)`
+
+getSnapshotBeforeUpdate() 在最近一次渲染输出（提交到 DOM 节点）之前调用。它使得组件能在发生更改之前从 DOM 中捕获一些信息（例如，滚动位置）。此生命周期的任何返回值将作为参数传递给 componentDidUpdate()。
+
+#### `componentDidUpdate(preProps, preState, snapshot)`
+
+componentDidUpdate() 会在更新后会被立即调用。首次渲染不会执行此方法。
+
+可以在 componentDidUpdate() 中直接调用 setState()，但请注意它必须被包裹在一个条件语句里，正如上述的例子那样进行处理，否则会导致死循环。
+
+### 卸载
+
+`componentWillUnmount()`
+
+#### `componentWillUnmount()`
+
+componentWillUnmount() 会在组件卸载及销毁之前直接调用。在此方法中执行必要的清理操作，例如，清除 timer，取消网络请求或清除在 componentDidMount() 中创建的订阅等。
+
+componentWillUnmount() 中不应调用 setState()，因为该组件将永远不会重新渲染。组件实例卸载后，将永远不会再挂载它。
+
+### 错误处理
+
+1. `static getDerivedStateFromError(error)`
+2. `componentDidCatch(error, info)`
+
+#### `static getDerviedStateFromError(error)`
+
+此生命周期会在后代组件抛出错误后被调用。 它将抛出的错误作为参数，并返回一个值以更新 state，并执行渲染。（它是在渲染阶段调用的，所以不允许出现副作用。）
+
+#### `componentDidCatch(error, info)`
+
+此生命周期在后代组件抛出错误后被调用。 它接收两个参数：
+
+* error —— 抛出的错误。
+* info —— 带有 componentStack key 的对象，其中包含有关组件引发错误的栈信息。
+
+componentDidCatch() 会在“提交”阶段被调用，因此允许执行副作用。 它应该用于记录错误之类的情况
+
+### 触发更新
+
+* new props
+* `setState(updater[, callback])`
+* `forceUpdate(callback)`
+
+#### `setState(updater[, callback])`
+
+setState() 将对组件 state 的更改排入队列，并通知 React 需要使用更新后的 state 重新渲染此组件及其子组件。这是用于更新用户界面以响应事件处理器和处理服务器数据的主要方式。
+
+将 setState() 视为请求而不是立即更新组件的命令。为了更好的感知性能，React 会延迟调用它，然后通过一次传递更新多个组件。React 并不会保证 state 的变更会立即生效。
+
+setState() 并不总是立即更新组件。它会批量推迟更新。这使得在调用 setState() 后立即读取 this.state 成为了隐患。为了消除隐患，请使用 componentDidUpdate 或者 setState 的回调函数（setState(updater, callback)），这两种方式都可以保证在应用更新后触发。如需基于之前的 state 来设置当前的 state，请阅读下述关于参数 updater 的内容。
+
+除非 shouldComponentUpdate() 返回 false，否则 setState() 将始终执行重新渲染操作。如果可变对象被使用，且无法在 shouldComponentUpdate() 中实现条件渲染，那么仅在新旧状态不一时调用 setState()可以避免不必要的重新渲染。
+
+参数一为带有形式参数的 updater 函数： `(state, props) => stateChange`
+
+#### `forceUpdate(callback)`
+
+默认情况下，当组件的 state 或 props 发生变化时，组件将重新渲染。如果 render() 方法依赖于其他数据，则可以调用 forceUpdate() 强制让组件重新渲染。
+
+调用 forceUpdate() 将致使组件调用 render() 方法，此操作会跳过该组件的 shouldComponentUpdate()。但其子组件会触发正常的生命周期方法，包括 shouldComponentUpdate() 方法。如果标记发生变化，React 仍将只更新 DOM。
 
 
 #### 11. Ref
@@ -364,3 +452,5 @@ render prop 是一个用于告知组件需要渲染什么内容的函数 prop
 **注意**:
 
 如果你在 render 方法里创建函数，那么使用 render prop 会抵消使用 React.PureComponent 带来的优势。因为浅比较 props 的时候总会得到 false，并且在这种情况下每一个 render 对于 render prop 将会生成一个新的值。
+
+## React Hooks

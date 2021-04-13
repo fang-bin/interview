@@ -22,6 +22,7 @@
 15. 手写一个ajax实现
 16. 尾递归优化实现
 17. Object.is的实现
+18. React 中 PureComponent 的 ShallowEqual 实现
 
 
 
@@ -208,10 +209,17 @@ function run (gen){
       if(res.done) {
         return resolve(res.value);
       }
-      Promise.resolve(res.value).then(v => {
-        _next(v);
-      }, err => {
-        g.throw(err);
+      // Promise.resolve(res.value).then(v => {
+      //   _next(v);
+      // }, err => {
+      //   g.throw(err);
+      // });
+      queueMicrotask(() => {
+        try {
+          _next(res.value);
+        }catch (err) {
+          g.throw(err);
+        }
       });
     }
     _next();
@@ -521,5 +529,21 @@ function is (x, y){
   }else {
     return x !== x && y !== y;
   }
+}
+```
+
+##### 18. ShallowEqual实现
+
+```javascript
+function shallowEqual (a, b){
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) return false;
+  const aKeys = Object.keys(a);
+  const bkeys = Object.keys(b);
+  if (aKeys.length !== bkeys.length) return false;
+  for (let i = 0; i < aKeys.length; i++){
+    if (!Object.prototype.hasOwnProperty.call(b, aKeys[i]) || !Object.is(a[aKeys[i]], b[aKeys[i]])) return false;
+  }
+  return true;
 }
 ```
