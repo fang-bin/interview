@@ -8,27 +8,27 @@
 
 自适应两栏布局
 
-<section id="layout">
-  <style>
-      #layout {
-          background: red;
-      }
-      #layout .left {
-          float: left;
-          width: 100px;
-          height: 100px;
-          background: pink;
-      }
-      #layout .right {
-          height: 110px;
-          background: #ccc;
-          overflow: auto;
-      }
-  </style>
+<style>
+#layout {
+    background: red;
+}
+#layout .left {
+    float: left;
+    width: 100px;
+    height: 100px;
+    background: pink;
+}
+#layout .right {
+    height: 110px;
+    background: #ccc;
+    overflow: auto;
+}
+</style>
+<div id="layout">
   <!--左边宽度固定，右边自适应-->
   <div class="left">左</div>
   <div class="right">右</div>
-</section>
+</div>
 
 ```html
 <section id="layout">
