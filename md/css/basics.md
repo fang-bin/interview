@@ -7,26 +7,27 @@
 [块级格式化上下文详解](https://github.com/fang-bin/interview/blob/master/md/day/index-css.md#27-%E6%A0%BC%E5%BC%8F%E5%8C%96%E4%B8%8A%E4%B8%8B%E6%96%87)
 
 自适应两栏布局
+
 <section id="layout">
-    <style>
-        #layout {
-            background: red;
-        }
-        #layout .left {
-            float: left;
-            width: 100px;
-            height: 100px;
-            background: pink;
-        }
-        #layout .right {
-            height: 110px;
-            background: #ccc;
-            overflow: auto;
-        }
-    </style>
-    <!--左边宽度固定，右边自适应-->
-    <div class="left">左</div>
-    <div class="right">右</div>
+  <style>
+      #layout {
+          background: red;
+      }
+      #layout .left {
+          float: left;
+          width: 100px;
+          height: 100px;
+          background: pink;
+      }
+      #layout .right {
+          height: 110px;
+          background: #ccc;
+          overflow: auto;
+      }
+  </style>
+  <!--左边宽度固定，右边自适应-->
+  <div class="left">左</div>
+  <div class="right">右</div>
 </section>
 
 ```html
