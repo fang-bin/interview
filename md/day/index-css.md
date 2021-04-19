@@ -153,7 +153,7 @@ sticky: 可以设置 position:sticky 同时给一个 (top,bottom,right,left) 之
 注意：
 
 * 使用sticky时，必须指定top、bottom、left、right4个值之一，不然只会处于相对定位；
-* sticky只在其父元素内其效果，且保证父元素的高度要高于sticky的高度；
+* sticky只在其父元素内起效果，且保证父元素的高度要高于sticky的高度；
 * **父元素不能overflow:hidden或者overflow:auto等属性。**
 
 ## 10. css绘制三角形
