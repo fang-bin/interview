@@ -1,5 +1,5 @@
 1. 手写jsonp
-2. Promise 带中断实现
+2. Promise 带中断实现 和失败重发实现
 3. curry
   封装一个curry函数，在实现一个以下效果的函数
     ```javascript
@@ -23,6 +23,8 @@
 16. 尾递归优化实现
 17. Object.is的实现
 18. React 中 PureComponent 的 ShallowEqual 实现
+19. instanceOf实现
+20. indexOf、findIndex、find、map、forEach、reduce、splice、slice 实现
 
 
 
@@ -62,6 +64,20 @@ function abortPromise (promise){
   p.abort = _abort;
   return p;
 }
+
+Promise.retry = function (promiseFn, times = 3) {
+  return new Promise(async (resolve, reject) => {
+    while (times--) {
+      try {
+        var ret = await promiseFn();
+        resolve(ret);
+        break;
+      } catch (error) {
+        if (!times) reject(error);
+      }
+    }
+  });
+};
 ```
 
 ##### 3 curry
@@ -545,5 +561,206 @@ function shallowEqual (a, b){
     if (!Object.prototype.hasOwnProperty.call(b, aKeys[i]) || !Object.is(a[aKeys[i]], b[aKeys[i]])) return false;
   }
   return true;
+}
+```
+
+##### 19. instanceOf实现
+
+```javascript
+function myInstanceOf (obj, constructor){
+  const proto = constructor.prototype;
+  let obj_proto = Object.getPrototypeOf(obj);
+  while (obj_proto) {
+    if (proto === obj_proto) return true;
+    obj_proto = Object.getPrototypeOf(obj_proto);
+  }
+  return false;
+}
+```
+
+##### 20. indexOf 和 findIndex 实现
+
+```javascript
+Array.prototype.myIndexOf = function (search, index){
+  const len = this.length;
+  let fromIndex = index || 0;
+  if (len < fromIndex) return -1;
+  fromIndex < 0 && (fromIndex = len - Math.abs(fromIndex));
+  // 如果是String.prototype.indexOf 如果起始位置小于0，则算为0
+  while (fromIndex < len) {
+    if (Reflect.has(this, fromIndex) && this[fromIndex] === search) return fromIndex;
+    // indexOf内部使用 === 比对
+    fromIndex++;
+  }
+  return -1;
+}
+
+Array.prototype.myFindIndex = function (fn, thisArg){
+  if (typeof fn !== 'function') {
+    throw new TypeError('fn must be a function');
+  }
+  const len = this.length;
+  let index = 0;
+  while (index < len) {
+    if (fn.call(thisArg, this[index], index, this)) {
+      return index;
+    }
+    index++;
+  }
+  return -1;
+}
+
+Array.prototype.myFind = function (fn, thisArg){
+  if (typeof fn !== 'function') {
+    throw new TypeError('fn must be a function');
+  }
+  const len = this.length;
+  let index = 0;
+  while (index < len) {
+    if (fn.call(thisArg, this[index], index, this)) {
+      return this[index];
+    }
+    index++;
+  }
+  return undefined;
+}
+
+Array.prototype.myMap = function (fn, thisArg){
+  if (typeof fn !== 'function') {
+    throw new TypeError('fn must be a function');
+  }
+  const len = this.length;
+  let index = 0;
+  let arr = [];
+  while (index < len) {
+    if (Reflect.has(this, index)) {  //会过滤empty
+      arr[index] = fn.call(thisArg, this[index], index, this);
+    }
+    index++;
+  }
+  return arr;
+}
+
+Array.prototype.myForEach = function (fn, thisArg){
+  if (typeof fn !== 'function') {
+    throw new TypeError('fn must be a function');
+  }
+  const len = this.length;
+  let index = 0;
+  while (index < len) {
+    if (Reflect.has(this, index)) {  //会过滤empty
+      fn.call(thisArg, this[index], index, this);
+    }
+    index++;
+  }
+}
+
+Array.prototype.myReduce = function (fn, initialValue){
+  if (typeof fn !== 'function') {
+    throw new TypeError(fn + 'must be a function');
+  }
+  const len = this.length;
+  let index = 0;
+  let value = initialValue;
+  if (value === undefined) {
+    while (index < len && !Reflect.has(this, index)) {
+      index++;
+    }
+    if (index >= len) {
+      throw new TypeError('Reduce of empty array with no initial value');
+    }
+    value = this[index++];
+  }
+  while (index < len) {
+    if (Reflect.has(this, index)){
+      value = fn(value, this[index], index, this);
+    }
+    index++;
+  }
+  return value;
+}
+
+Array.prototype.mySplice = function (start, delNum, ...adds){
+  const len = this.length;
+  const addCount = adds.length;
+
+  let startIndex = undefined;
+  if (start >= len) {
+    startIndex = len;
+  }else if (start < 0) {
+    startIndex = Math.abs(start) > len ? 0 : len + start;
+  }else {
+    startIndex = start;
+  }
+
+  let delCount = undefined;
+  if (delNum > len - startIndex) {
+    delCount = len - startIndex;
+  }
+  if (delNum < 0) delCount = 0;
+
+  // 密封对象
+  if(Object.isSealed(array)) {
+    throw new TypeError('the array is sealed')
+  }
+  // 冻结对象
+  if(Object.isFrozen(array)) {
+    throw new TypeError('the array is frozen')
+  }
+
+  let delArr = new Array(delCount);
+
+  for (let i = 0; i < delCount; i++){
+    delArr[i] = this[startIndex + i];
+  }
+
+  const over = addCount - delCount;
+  if (over > 0) {
+    for (let i = len - 1; i >= startIndex + delCount; i--){
+      this[i+over] = this[i];
+    }
+  }else if (over < 0) {
+    for (let i = start + delCount; i < len; i++){
+      if (i + Math.abs(over) > len - 1) {
+        Reflect.deleteProperty(this, i);
+        continue;
+      }
+      this[i + over] = this[i];
+    }
+  }
+
+  let i = startIndex;
+  let argumentsIndex = 0
+  
+  // 插入新元素
+  while (argumentsIndex < addCount) {
+      this[i++] = adds[argumentsIndex++]
+  }
+  
+  this.length = len - delCount + addCount;
+
+  return delArr;
+}
+
+Array.prototype.mySlice = function (start, end){
+  const len = this.length;
+  let startIndex = start || 0;
+  if (startIndex >= len) return [];
+  else if (startIndex < 0) 
+    startIndex = len - Math.abs(startIndex) > 0 ? len - Math.abs(startIndex) : 0;
+  
+  let endIndex = end || len;
+  if (endIndex >= len) endIndex = len;
+  else if (endIndex < 0)
+    endIndex = len - Math.abs(endIndex) > 0 ? len - Math.abs(endIndex) : 0;
+
+  if (startIndex >= endIndex) return [];
+
+  const over = endIndex - startIndex;
+  let arr = new Array(over);
+  for (let i = 0; i < over; i++){
+    arr[i] = this[startIndex + i];
+  }
+  return arr;
 }
 ```
