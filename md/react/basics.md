@@ -495,24 +495,6 @@ const [state, setState] = useState(() => {
 
 调用 State Hook 的更新函数并传入当前的 state 时，React 将跳过子组件的渲染及 effect 的执行。（React 使用 Object.is 比较算法 来比较 state。）
 
-#### `useEffect(didUpdate)`
-
-useEffect 就是一个 Effect Hook，给函数组件增加了操作副作用的能力。它跟 class 组件中的 componentDidMount、componentDidUpdate 和 componentWillUnmount 具有相同的用途，只不过被合并成了一个 API。
-
-如果 effect 返回一个函数，React 将会在执行清除操作时调用它。
-
-如果某些特定值在两次重渲染之间没有发生变化，你可以通知 React 跳过对 effect 的调用，只要传递数组作为 useEffect 的第二个可选参数即可。
-
-#### `useContext(Context)`
-
-```javascript
-const value = useContext(MyContext);
-```
-
-接收一个 context 对象（React.createContext 的返回值）并返回该 context 的当前值。当前的 context 值由上层组件中距离当前组件最近的 \<MyContext.Provider\> 的 value prop 决定。
-
-当组件上层最近的 \<MyContext.Provider\> 更新时，该 Hook 会触发重渲染，并使用最新传递给 MyContext provider 的 context value 值。即使祖先使用 React.memo 或 shouldComponentUpdate，也会在组件本身使用 useContext 时重新渲染。
-
 #### `useReducer(reducer, initialArg, init)`
 
 ```javascript
@@ -550,6 +532,47 @@ function Counter() {
   );
 }
 ```
+
+useReducer 更适合拿来做简单场景下的数据流。useReducer 是阉割版的 redux，只缺了一个状态共享能力，用 hooks 的 useContext 刚刚好。
+
+#### `useReducer` 和 `useState` 的关系
+
+
+#### `useEffect(didUpdate)`
+
+useEffect 就是一个 Effect Hook，给函数组件增加了操作副作用的能力。它跟 class 组件中的 componentDidMount、componentDidUpdate 和 componentWillUnmount 具有相同的用途，只不过被合并成了一个 API。
+
+如果 effect 返回一个函数，React 将会在执行清除操作时调用它。
+
+如果某些特定值在两次重渲染之间没有发生变化，你可以通知 React 跳过对 effect 的调用，只要传递数组作为 useEffect 的第二个可选参数即可。
+
+#### `useLayoutEffect`
+
+其函数签名与 useEffect 相同，但它会在所有的 DOM 变更之后同步调用 effect。可以使用它来读取 DOM 布局并同步触发重渲染。在浏览器执行绘制之前，useLayoutEffect 内部的更新计划将被同步刷新。
+
+尽可能使用标准的 useEffect 以避免阻塞视觉更新。
+
+#### `useEffect和useLayoutEffect的区别`
+
+useEffect 是异步执行的，并不会阻塞当次 react 的 commit，执行时机是浏览器完成渲染之后（即 react 的 commit 阶段之后），如果在 useEffect 中进行 setState，当前渲染的出来的结果可能和 state 并不一致，之后会触发重新渲染，造成闪烁。
+
+useLayoutEffect 是同步执行的，会阻塞当次的 react 的 commit，DOM变更之后立即调用，执行时机是浏览器真正把内容渲染到界面之前，会等待其执行完成之后，再进行渲染。
+
+使用建议：
+
+* 优先使用 useEffect，因为它是异步的，不会阻塞渲染。
+* 会影响渲染的操作可以看情况放在 useLayoutEffect 中，避免出现闪烁。
+* useLayoutEffect 和 componentDidMount、componentDidUpdate、componentWillUnmount 等价(react源码)。
+
+#### `useContext(Context)`
+
+```javascript
+const value = useContext(MyContext);
+```
+
+接收一个 context 对象（React.createContext 的返回值）并返回该 context 的当前值。当前的 context 值由上层组件中距离当前组件最近的 \<MyContext.Provider\> 的 value prop 决定。
+
+当组件上层最近的 \<MyContext.Provider\> 更新时，该 Hook 会触发重渲染，并使用最新传递给 MyContext provider 的 context value 值。即使祖先使用 React.memo 或 shouldComponentUpdate，也会在组件本身使用 useContext 时重新渲染。
 
 #### `useCallback`
 
@@ -632,12 +655,6 @@ function FancyInput(props, ref) {
 }
 FancyInput = forwardRef(FancyInput);
 ```
-
-#### `useLayoutEffect`
-
-其函数签名与 useEffect 相同，但它会在所有的 DOM 变更之后同步调用 effect。可以使用它来读取 DOM 布局并同步触发重渲染。在浏览器执行绘制之前，useLayoutEffect 内部的更新计划将被同步刷新。
-
-尽可能使用标准的 useEffect 以避免阻塞视觉更新。
 
 #### `useDebugValue`
 

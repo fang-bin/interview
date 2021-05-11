@@ -3,9 +3,9 @@
 3. curry
   封装一个curry函数，在实现一个以下效果的函数
     ```javascript
-    add(1)(2)(3);   //6
-    add(1,2,3)(4);  // 10
-    add(1)(2)(3)(4)(5)
+    console.log(add(1)(2)(3)); //6
+    console.log(add(1,2,3)(4)); //10
+    console.log(add(1)(2)(3)(4)(5)); //15
     ```
 
 4. call apply bind new实现
@@ -585,7 +585,8 @@ Array.prototype.myIndexOf = function (search, index){
   const len = this.length;
   let fromIndex = index || 0;
   if (len < fromIndex) return -1;
-  fromIndex < 0 && (fromIndex = len - Math.abs(fromIndex));
+  // fromIndex < 0 && (fromIndex = len - Math.abs(fromIndex));
+  fromIndex < 0 && (fromIndex = Math.abs(fromIndex) > len ? 0 : len + fromIndex);
   // 如果是String.prototype.indexOf 如果起始位置小于0，则算为0
   while (fromIndex < len) {
     if (Reflect.has(this, fromIndex) && this[fromIndex] === search) return fromIndex;
@@ -694,72 +695,71 @@ Array.prototype.mySplice = function (start, delNum, ...adds){
   }
 
   let delCount = undefined;
-  if (delNum > len - startIndex) {
+  if (delNum < 0) {
+    delCount = 0;
+  }else if (delNum > len - startIndex) {
     delCount = len - startIndex;
+  }else {
+    delCount = delNum;
   }
-  if (delNum < 0) delCount = 0;
 
-  // 密封对象
-  if(Object.isSealed(array)) {
+  // 密封对象且删除元素个数和添加元素个数不一致
+  if(Object.isSealed(array) && delCount !== addCount) {
     throw new TypeError('the array is sealed')
   }
   // 冻结对象
   if(Object.isFrozen(array)) {
-    throw new TypeError('the array is frozen')
+    throw new TypeError('the array is frozen');
   }
 
   let delArr = new Array(delCount);
-
   for (let i = 0; i < delCount; i++){
-    delArr[i] = this[startIndex + i];
+    delArr[i] = this[i + startIndex];
   }
-
-  const over = addCount - delCount;
+  let over = addCount - delCount;
   if (over > 0) {
     for (let i = len - 1; i >= startIndex + delCount; i--){
-      this[i+over] = this[i];
+      this[i + over] = this[i];
     }
-  }else if (over < 0) {
-    for (let i = start + delCount; i < len; i++){
+  }else if(over < 0) {
+    for (let i = startIndex + addCount; i < len; i++){
       if (i + Math.abs(over) > len - 1) {
         Reflect.deleteProperty(this, i);
         continue;
       }
-      this[i + over] = this[i];
+      this[i] = this[i + Math.abs(over)];
     }
   }
 
-  let i = startIndex;
-  let argumentsIndex = 0
-  
-  // 插入新元素
-  while (argumentsIndex < addCount) {
-      this[i++] = adds[argumentsIndex++]
+  let i = 0;
+  while (i < addCount) {
+    this[startIndex++] = adds[i++];
   }
-  
-  this.length = len - delCount + addCount;
-
+  this.length = len + over;
   return delArr;
 }
 
 Array.prototype.mySlice = function (start, end){
   const len = this.length;
   let startIndex = start || 0;
-  if (startIndex >= len) return [];
-  else if (startIndex < 0) 
-    startIndex = len - Math.abs(startIndex) > 0 ? len - Math.abs(startIndex) : 0;
-  
+  if (startIndex > len) {
+    startIndex = len;
+  }else if (startIndex < 0) {
+    startIndex = Math.abs(startIndex) > len ? 0 : len + startIndex;
+  }
+
   let endIndex = end || len;
-  if (endIndex >= len) endIndex = len;
-  else if (endIndex < 0)
-    endIndex = len - Math.abs(endIndex) > 0 ? len - Math.abs(endIndex) : 0;
+  if (endIndex > len) {
+    endIndex = len;
+  }else if (endIndex < 0) {
+    endIndex = Math.abs(endIndex) > len ? 0 : len + endIndex;
+  }
 
   if (startIndex >= endIndex) return [];
-
   const over = endIndex - startIndex;
   let arr = new Array(over);
   for (let i = 0; i < over; i++){
-    arr[i] = this[startIndex + i];
+    arr[i] = this[i + startIndex];
   }
   return arr;
 }
