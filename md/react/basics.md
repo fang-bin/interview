@@ -275,6 +275,12 @@ getDerivedStateFromProps 会在调用 render 方法之前调用，并且在初�
 
 不管原因是什么，都会在每次渲染前触发此方法。
 
+**适用范围**
+
+* 半受控组件(例如:input 有传参以传参为主，没有传参以内部state为主)
+* 带有中间状态的组件（一些组件需要在用户输入时有一个中间状态，当触发某个操作时再把中间结果提交给上层）
+* 记忆
+
 #### `UNSAFE_componentWillMount()`
 
 在挂载之前被调用。它在 render() 之前调用，因此在此方法中同步调用 setState() 不会触发额外渲染。
@@ -319,7 +325,7 @@ render() 函数应该为纯函数，这意味着在不修改组件 state 的情�
 
 UNSAFE_componentWillReceiveProps() 会在已挂载的组件接收新的 props 之前被调用。
 
-如果父组件导致组件重新渲染，即使 props 没有更改，也会调用此方法。如果只想处理更改，请确保进行当前值与变更值的比较。
+**如果父组件导致组件重新渲染，即使 props 没有更改，也会调用此方法。如果只想处理更改，请确保进行当前值与变更值的比较。**
 
 调用 this.setState() 通常不会触发 UNSAFE_componentWillReceiveProps()。
 
@@ -535,8 +541,11 @@ function Counter() {
 
 useReducer 更适合拿来做简单场景下的数据流。useReducer 是阉割版的 redux，只缺了一个状态共享能力，用 hooks 的 useContext 刚刚好。
 
+useReducer 的好处之一便是， dispatch 不会随着 re-render 而重新分配没存中的位置，在作为 props 传入到 child component 中时也可以不用担心沒有 useMemo 而造成 re-render 的问题。
+
 #### `useReducer` 和 `useState` 的关系
 
+功能性上， `useState` 算是 `useReducer` 的一个子集，在 React 的源码中， `useState` 也是通过 `useReducer` 实现的。
 
 #### `useEffect(didUpdate)`
 
@@ -607,6 +616,35 @@ const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
 
 你可以把 useMemo 作为性能优化的手段，但不要把它当成语义上的保证。
 
+#### `React.memo`
+
+`React.memo` 为高阶组件
+
+如果你的组件在相同 props 的情况下渲染相同的结果，那么你可以通过将其包装在 React.memo 中调用，以此通过记忆组件渲染结果的方式来提高组件的性能表现。这意味着在这种情况下，React 将跳过渲染组件的操作并直接复用最近一次渲染的结果。
+
+React.memo 仅检查 props 变更。如果函数组件被 React.memo 包裹，且其实现中拥有 useState，useReducer 或 useContext 的 Hook，当 context 发生变化时，它仍会重新渲染。
+
+默认情况下其只会对复杂对象做浅层对比，如果你想要控制对比过程，那么请将自定义的比较函数通过第二个参数传入来实现。
+
+其相当于class Component中的 shouldComponentUpdate 和 PureComponent的组合，其中`React.memo`的第二参数相当于shouldComponentUpdate，不过返回值和shouldComponentUpdate正好相反。
+
+#### `useMemo` 和 `useCallback` 的区别
+
+* `useMemo` 缓存值，`useCallback` 缓存函数.
+* `useMemo`更多的用来优化函数自身，`useCallback`更多的用来优化子组件
+
+#### 什么时候使用 `useMemo` 和 `useCallback`
+
+* 引用相等
+* 昂贵的计算
+
+另插一句觉得要理解对react的性能优化要理解几个重要的概念：不可变数据、引用相等等
+
+#### `useMemo` 和 `React.memo` 的区别
+
+* 两者都用来优化函数组件
+* `useMemo`通过更细粒度的缓存值来减少组件自身更新，`useCallback`作用于整个函数组件，相当于class Component中的 `shouldComponentUpdate` 和 `PureComponent`的组合。
+
 #### `useRef`
 
 ```javascript
@@ -664,9 +702,189 @@ useDebugValue 可用于在 React 开发者工具中显示自定义 hook 的标�
 
 #### 自定义Hook
 
+自定义 Hook 是一个函数，其名称以 “use” 开头，函数内部可以调用其他的 Hook。 
+
 自定义 Hook 是一种自然遵循 Hook 设计的约定，而并不是 React 的特性。
 
 * 自定义 Hook 必须以 “use” 开头，不遵循的话，由于无法判断某个函数是否包含对其内部 Hook 的调用，React 将无法自动检查你的 Hook 是否违反了 Hook 的规则（只能在函数最外层调用Hook，除了自定义Hook）。
 * 在两个组件中使用相同的 Hook 并不会共享 state ，每次使用自定义 Hook 时，其中的所有 state 和副作用都是完全隔离的。
+
+**监听深度依赖的值变化**
+
+```javascript
+import { isEqual } from 'lodash';
+function useDeepCompareEffect(fn, deps){
+    const comparisons = useRef(0);
+    const prevDeps = useRef(deps);
+    if(!isEqual(prevDeps.current, deps)){
+    	comparisons.current++;
+    }
+    prevDeps.current = deps;
+    return useEffect(fn, [comparisons.current]);
+}
+```
+
+**setState回调**
+
+```javascript
+function useCallbackState<T>(init: T): [T, (value: T, cb?: (d: T) => void) => void] {
+  const [state, setState] = useState<T>(init);
+  const refState = useRef<undefined|((d: T) => void)>(undefined);
+  const setCallbackState = (value: T, cb?: (d: T) => void): void => {
+    setState(prev => {
+      refState.current = cb;
+      return typeof value === 'function' ? value(prev) : value;
+    });
+  }
+  useEffect(() => {
+    if (refState.current) refState.current(state);
+  }, [state]);
+  return [state, setCallbackState];
+}
+```
+
+**useDebounce**
+
+```javascript
+function useDebounce<T>(value: T, dealy: number): T {
+  const [debounceValue, setDebounceValue] = useState<T>(value);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebounceValue(value);
+    }, dealy);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, dealy]);
+  return debounceValue;
+}
+```
+
+**useThrottle**
+```javascript
+function useThrottle<T>(value: T, limit: number): T {
+  const [throttleValue, setThrottleValue] = useState<T>(value);
+  const lastTime = useRef(Date.now());
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setThrottleValue(value);
+      lastTime.current = Date.now();
+    }, limit - (Date.now() - lastTime.current));
+    return () => {
+      clearTimeout(timer);
+    }
+  }, [value, limit]);
+  return throttleValue;
+}
+```
+
+**useForceUpdate**
+```javascript
+// forceUpdate
+function useForceUpdate() {
+  const [, forceUpdate] = useReducer(c => c + 1, 0);
+  return forceUpdate;
+}
+```
+
+**useLegacyState**
+```javascript
+type Partial<T> = {
+  [P in keyof T]?: T[P];
+};
+function useLegacyState <T>(defaultState: T): [T, (nextState: Partial<T>) => void] {
+  let [state, setState] = useState<T>(defaultState);
+
+  const setLegacyState = (nextState: Partial<T>): void => {
+    let newState = { ...state, ...nextState };
+    setState(newState);
+  };
+
+  return [state, setLegacyState];
+};
+```
+
+**useReducer useContext createContext实现一个小型的redux**
+```javascript
+/ actionType.js
+const actionType = {
+  INSREMENT: 'INSREMENT',
+  DECREMENT: 'DECREMENT',
+  RESET: 'RESET'
+}
+export default actionType
+
+// actions.js
+import actionType from './actionType'
+const add = (num) => ({
+    type: actionType.INSREMENT,
+    payload: num
+})
+
+const dec = (num) => ({
+    type: actionType.DECREMENT,
+    payload: num
+})
+
+const getList = (data) => ({
+    type: actionType.GETLIST,
+    payload: data
+})
+export {
+    add,
+    dec,
+    getList
+}
+
+// reducer.js
+function init(initialCount) {
+  return {
+    count: initialCount,
+    total: 10,
+    user: {},
+    article: []
+  }
+}
+
+function reducer(state, action) {
+  switch (action.type) {
+    case actionType.INSREMENT:
+      return {count: state.count + action.payload};
+    case actionType.DECREMENT:
+      return {count: state.count - action.payload};
+    case actionType.RESET:
+      return init(action.payload);
+    default:
+      throw new Error();
+  }
+}
+
+export { init, reducer }
+
+// redux.js
+import React, { useReducer, useContext, createContext } from 'react'
+import { init, reducer } from './reducer'
+
+const Context = createContext()
+const Provider = (props) => {
+  const [state, dispatch] = useReducer(reducer, props.initialState || 0, init);
+    return (
+      <Context.Provider value={{state, dispatch}}>
+        { props.children }
+      </Context.Provider>
+    )
+}
+
+export { Context, Provider }
+```
+
+
+#### React中使用单链表的形式来实现Hooks，而不是数组
+
+数组： 内存中连续存放。访问快，删除添加慢。(访问O(1), 删除添加O(n)，能顺序存取或随机存取)
+
+链表： 内存中不是顺序存储。删除添加快，访问慢。（访问O(n)，删除添加O(1)，只能顺序存取）
+
+
 
 
