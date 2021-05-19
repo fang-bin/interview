@@ -72,3 +72,15 @@ function useRefCallback<T extends (...args: any[]) => any>(callback: T) {
   return useCallback((...args: any[]) => callbackRef.current(...args), []) as T;
 }
 ```
+
+## 3. HTML 和 React 的事件处理有什么不同？
+
+* 在 HTML 中，事件名应该是全小写的，然而在 React 中事件名遵循小驼峰 格式。
+  ```javascript
+  // html
+  <button onclick="activateLasers()"></button>
+  // react
+  <button onClick={activateLasers}>
+  ```
+* 在 HTML 中，你应该返回 false 来阻止默认行为，然后在 React 中你必须明确地调用 preventDefault()。
+* 在 HTML 中，你调用函数时需要加上 ()，然后在 React 中你不应该在函数名后带上 ()。（比如前面示例中的 activateLasers 函数）
