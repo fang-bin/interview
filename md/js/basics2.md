@@ -82,7 +82,7 @@ function deepFreeze (target){
   const propNames = Object.getOwnPropertyNames(target);
   propNames.forEach(name => {
     const prop = target[name];
-    if (typeof prop === 'object' || prop !== null) {
+    if (typeof prop === 'object' && prop !== null) {
       deepFreeze(prop);
     }
   });
