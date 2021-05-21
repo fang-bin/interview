@@ -161,7 +161,7 @@ class MyPromise {
     });
   }
   static try(fn) {
-    return new Promise(resolve => resolve(typeof fn === 'function' ? fn() : fn));
+    return new MyPromise(resolve => resolve(typeof fn === 'function' ? fn() : fn));
   }
   static abort(promise) {
     if (!(promise instanceof MyPromise)) {
@@ -175,12 +175,25 @@ class MyPromise {
     p.abort = _abort;
     return p;
   }
+  static retry(promiseFn, time) {
+    return new MyPromise(async (resolve, reject) => {
+      while (time--) {
+        try {
+          let res = await promiseFn();
+          resolve(res);
+          break;
+        }catch (err) {
+          if (!time) reject(err);
+        }
+      }
+    })
+  }
 }
 ```
 
 结合Promise的实现看上面的实现效果
 ```javascript
-Promise
+MyPromise
 .resolve(1)
 .then((res) => {
   console.log(res);  // 1
@@ -193,7 +206,7 @@ Promise
 ```
 
 ```javascript
-Promise
+MyPromise
 .reject(1)
 .then((res) => {
   console.log(res);

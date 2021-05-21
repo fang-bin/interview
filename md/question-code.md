@@ -225,18 +225,19 @@ function run (gen){
       if(res.done) {
         return resolve(res.value);
       }
-      // Promise.resolve(res.value).then(v => {
-      //   _next(v);
-      // }, err => {
-      //   g.throw(err);
-      // });
-      queueMicrotask(() => {
-        try {
-          _next(res.value);
-        }catch (err) {
-          g.throw(err);
-        }
+      Promise.resolve(res.value).then(v => {
+        _next(v);
+      }, err => {
+        g.throw(err);
       });
+      // 好像并不能这么写
+      // queueMicrotask(() => {
+      //   try {
+      //     _next(res.value);
+      //   }catch (err) {
+      //     g.throw(err);
+      //   }
+      // });
     }
     _next();
   });
@@ -444,6 +445,7 @@ function ajax (options){
     fail: function () {},
     success: function() {},
     timeout: 0,
+    withCredentials: false,  //默认为false
   }, options);
   opts.type = (options.type || 'GET').toUpperCase();
   const formatParams = obj => {
@@ -486,10 +488,12 @@ function ajax (options){
   if (opts.type === 'GET') {
     xhr.open('GET', `${opts.url}?${params}`, opts.async);
     opts.timeout && opts.timeout > 0 && (xhr.timeout = opts.timeout);
+    xhr.withCredentials = opts.withCredentials;
     xhr.send(null);
   }else if (opts.type === 'POST') {
     xhr.open('GET', opts.url, opts.async);
     opts.timeout && options.timeout > 0 && (xhr.timeout = opts.timeout);
+    xhr.withCredentials = opts.withCredentials;
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.send(params);
   }
