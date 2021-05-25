@@ -8,7 +8,7 @@
     console.log(add(1)(2)(3)(4)(5)); //15
     ```
 
-4. call apply bind new实现
+4. call apply bind new Object.create Object.assign实现
 5. 防抖 节流
 6. promisify实现
 7. co模块简易实现
@@ -114,7 +114,7 @@ function add (...args){
 }
 ```
 
-##### 4 call apply bind new
+##### 4 call apply bind new create assign
 
 ```javascript
 Function.prototype.myCall = function (thisArg, ...args) {
@@ -153,6 +153,33 @@ function mockNew (){
   let ret = Con.apply(obj, arguments);
   // 这里优先返回构造函数返回的对象
   return ret instanceof Object ? ret : obj;
+}
+
+function create (proto, descriptor){
+  if (descriptor === null) throw new TypeError();
+  function Obj() {}
+  Obj.prototype = proto;
+  let obj = new Obj();
+  if (descriptor !== undefined) Object.defineProperties(obj, descriptor);
+  if (proto === null) obj.__proto__ = null;
+  return obj;
+}
+
+function assign (target, ...source) {
+  if (target == null) {
+    throw new TypeError('Cannot convert undefined or null to object')
+  }
+  let ret = Object(target) 
+  source.forEach(function(obj) {
+    if (obj != null) {
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          ret[key] = obj[key];
+        }
+      }
+    }
+  });
+  return ret;
 }
 ```
 

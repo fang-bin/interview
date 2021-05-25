@@ -49,6 +49,24 @@ console.log(a.constructor);
 * 由于所有Child实例原型都指向同一个Parent实例, 因此对某个Child实例的父类引用类型变量修改会影响所有的Child实例
 * 在创建子类实例时无法向父类构造传参, 即没有实现super()的功能
 
+缺点1如下：
+
+```javascript
+function Animal(){
+  this.names = ["cat", "dog"];
+}
+function Cat(){}
+ 
+Cat.prototype = new Animal();
+ 
+var instance1 = new Cat();
+instance1.names.push("tiger");
+console.log(instance1.names); // ["cat", "dog", "tiger"]
+ 
+var instance2 = new Cat(); 
+console.log(instance2.names); // ["cat", "dog", "tiger"]
+```
+
 #### 构造函数继承
 
 ```javascript
