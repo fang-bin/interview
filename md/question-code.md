@@ -25,6 +25,8 @@
 18. React 中 PureComponent 的 ShallowEqual 实现
 19. instanceOf实现
 20. indexOf、findIndex、find、map、forEach、reduce、splice、slice 实现
+21. 手写发布-订阅模式，ES5、ES6方式
+
 
 
 

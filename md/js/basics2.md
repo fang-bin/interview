@@ -100,4 +100,113 @@ function deepFreeze (target){
 
 可以使用`Object.isExtensible()`来判断一个对象是否可以扩展。
 
+### 3. 跳转一个已经打开的页面
+
+```javascript
+window.open(url[, target]);
+```
+
+* 第一个参数（url）: 新页面的地址；
+* 第二个参数（target）: 页面的名称。如果当前打开的页面中没有该名称的页面。则打开新页面，并给该页面名称标注为target。否则跳转到该页面。
+
+**补充**页面的名称即是页面的`window.name`属性。
+
+### 4. IntersectionObserver
+
+IntersectionObserver接口提供了一种异步观察目标元素与其祖先元素或顶级文档视窗(viewport)交叉状态的方法。祖先元素与视窗(viewport)被称为根(root)。
+
+```javascript
+var observer = new IntersectionObserver(callback[, options]);
+```
+
+###### callback
+
+当元素可见比例超过指定阈值后，会调用一个回调函数，此回调函数接受两个参数：
+
+* entries
+  一个IntersectionObserverEntry对象的数组，每个被触发的阈值，都或多或少与指定阈值有偏差。
+  IntersectionObserverEntry对象有很多属性，常用的：
+  * target: 被观察的目标元素，是一个 DOM 节点对象
+  * isIntersecting: 是否进入可视区域
+  * intersectionRatio: 相交区域和目标元素的比例值，进入可视区域，值大于0，否则等于0
+* observer
+  被调用的IntersectionObserver实例。
+
+###### options
+一个可以用来配置observer实例的对象。如果options未指定，observer实例默认使用文档视口作为root，并且没有margin，阈值为0%（意味着即使一像素的改变都会触发回调函数）。有以下可配置项
+
+* root
+  监听元素的祖先元素Element对象，其边界盒将被视作视口。目标在根的可见区域的的任何不可见部分都会被视为不可见。
+* rootMargin
+  一个在计算交叉值时添加至根的边界盒(bounding_box (en-US))中的一组偏移量，类型为字符串(string) ，可以有效的缩小或扩大根的判定范围从而满足计算需要。语法大致和CSS 中的margin 属性等同; 
+* threshold
+  规定了一个监听目标与边界盒交叉区域的比例值，可以是一个具体的数值或是一组0.0到1.0之间的数组。若指定值为0.0，则意味着监听元素即使与根有1像素交叉，此元素也会被视为可见. 若指定值为1.0，则意味着整个元素都是可见的
+
+###### 返回值
+
+一个可以使用规定阈值监听目标元素可见部分与root交叉状况的新的IntersectionObserver 实例。调用自身的observe() 方法开始使用规定的阈值监听指定目标。
+
+##### 属性（都是只读）
+
+* IntersectionObserver.root
+* IntersectionObserver.rootMargin
+* IntersectionObserver.threshold
+
+##### 方法
+
+* `IntersectionObserver.disconnect()` 使IntersectionObserver对象停止监听工作
+
+* `IntersectionObserver.observe()` 使IntersectionObserver开始监听一个目标元素。
+
+* `IntersectionObserver.unobserve()` 使IntersectionObserver停止监听特定目标元素。
+
+* `IntersectionObserver.takeRecords()` 返回所有观察目标的IntersectionObserverEntry对象数组。
+
+例子:
+
+```javascript
+const box = document.querySelector('.box');
+const imgs = document.querySelectorAll('.img');
+
+const observer = new IntersectionObserver(entries => {
+    // 发生交叉目标元素集合
+    entries.forEach(item => {
+        // 判断是否发生交叉
+        if (item.isIntersecting) {
+            // 替换目标元素Url
+            item.target.src = item.target.dataset.src;
+            // 取消监听此目标元素
+            observer.unobserve(item.target);
+        }
+    });
+}, {
+    root: box, // 父级元素
+    rootMargin: '20px 0px 100px 0px' // 设置偏移 我们可以设置在目标元素距离底部100px的时候发送请求
+});
+
+imgs.forEach(item => {
+    // 监听目标元素
+    observer.observe(item);
+});
+```
+
+
+**IntersectionObserver API是异步的，不随着目标元素的滚动同步触发，性能消耗极低。**
+
+**IntersectionObserver的实现，应该采用requestIdleCallback()，即只有线程空闲下来，才会执行观察器。这意味着，这个观察器的优先级非常低，只在其他任务执行完，浏览器有了空闲才会执行。**
+
+### 5. Chrome 89 更新事件触发顺序
+
+在我之前了解到的事件触发按照触发阶段大致可以划分为 **捕获阶段->目标阶段->冒泡阶段**
+
+而在**冒泡阶段**，以addEventListener方式添加事件来说，先添加的先执行，后添加的后执行。
+
+不过在Chrome 89及之后版本更改为**目标元素的触发事件顺序不再按照注册顺序触发！而是按照先捕获再冒泡的形式依次执行！**
+
+之所以这么做，是因为在 webkit 中原先的事件模型，会导致含有 Shadow DOM 的情况下，子元素的捕获事件会优先于父元素的捕获事件触发。
+
+为了兼容这些变化，在项目开发过程中，所有目标元素代码的顺序都应按照先写捕获事件代码，再写冒泡事件代码。
+
+### 6. Shadow DOM
+
 

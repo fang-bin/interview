@@ -243,7 +243,8 @@ Favicon.ico 一般存放在网站根目录下，无论是否在页面中设置�
 
 
 
-#### 页面加载白屏的原因有哪些，以及如何监控白屏时间，如何优化？首屏时间？
+## 页面加载白屏的原因有哪些，以及如何监控白屏时间，如何优化？首屏时间？
+
 白屏时间是指浏览器从响应用户输入网址地址，到浏览器开始显示内容的时间。
 首屏时间是指浏览器从响应用户输入网络地址，到首屏内容渲染完成的时间。
 
@@ -256,6 +257,27 @@ Favicon.ico 一般存放在网站根目录下，无论是否在页面中设置�
 **白屏时间监控**
 
 通常认为浏览器开始渲染 \<body> 或者解析完 \<head> 的时间是白屏结束的时间点。
+
+即：
+
+```javascript
+performance.timing.responseStart - performance.timing.navigationStart;
+
+// 或高版本chrome
+(chrome.loadTimes().firstPaintTime - chrome.loadTimes().startLoadTime)*1000
+```
+
+**用户可操作时间（即document.ready）**
+
+```javascript
+performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart
+```
+
+**onload总下载时间**
+
+```javascript
+performance.timing.loadEventEnd - performance.timing.navigationStart
+```
 
 **首屏时间监控**
 
@@ -330,20 +352,70 @@ charset 属性与 src 属性一起使用，告诉浏览器用来编码这个 jav
 #### script 标签的 defer 和 async 标签的作用与区别
 [参考浏览器渲染流程中的讲解](../browser/basics.md)
 
-#### load 与 DOMContentLoaded
+##### load 与 DOMContentLoaded
 
-**load**
+###### load
 
 load 应该仅用于检测一个完全加载的页面 当一个资源及其依赖资源已完成加载时，将触发load事件。
 
 意思是页面的html、css、js、图片等资源都已经加载完之后才会触发 load 事件。
 
-**DOMContentLoaded**
+###### DOMContentLoaded
 
 当初始的 HTML 文档被完全加载和解析完成之后，DOMContentLoaded 事件被触发，而无需等待样式表、图像和子框架的完成加载。
 
 意思是HTML下载、解析完毕之后就触发。
 
+## Performance API
+
+Performance 接口可以获取到当前页面中与性能相关的信息。
+
+##### performance.now() 和 Date.now() 的区别
+
+performance.now()返回高精度的时间戳（返回小数点后的毫秒），并且绝对递增。
+
+而Date.now()返回的精度没有performance.now()高，而且取自Unix纪元（1970-01-01T00：00：00Z）以来经过的时间（以毫秒为单位），并取决于系统时钟。 这不仅意味着它不够精确，而且还不总是递增。
+
+而且 performance API 还有各种方法，用来进行性能计时。
+
+###### performance 属性
+| 属性 | 含义 |
+| --- | --- |
+| navigation | 提供了在指定的时间段里发生的操作相关信息，包括页面是加载还是刷新、发生了多少次重定向等等 |
+| timing | 包含延迟相关的性能信息(**目前已经废弃，使用`performance.getEntriesByType('navigation')[0]`替代**) |
+| memory | 其是 Chrome 添加的一个非标准扩展，这个属性提供了一个可以获取到基本内存使用情况的对象。不应该使用这个非标准的 API。|
+| timeOrigin | 返回性能测量开始时的时间的高精度时间戳。 |
+
+###### performance.navigation
+
+| 属性 | 含义 |
+| --- | --- |
+| type | 一个无符号短整型，表示是如何导航到这个页面的。可能的值: <br />通过点击链接，书签和表单提交，或者脚本操作，或者在url中直接输入地址，type值为0  <br /> 刷新页面按钮或者通过Location.reload()方法显示的页面，type值为1 <br/> 页面通过历史记录和前进后退访问时。type值为2 <br /> 任何其他方式，type值为255 |
+| redirectCount | 无符号短整型，表示在到达这个页面之前重定向了多少次。|
+
+###### PerformanceTiming
+
+PerformanceTiming 接口是为保持向后兼容性而保留的传统接口，并且提供了在加载和使用当前页面期间发生的各种事件的性能计时信息。
+
+`performance.timing` 和 `performance.getEntriesByType('navigation')[0]` 都返回 PerformanceTiming 接口（`performance.getEntriesByType('navigation')[0]`返回信息更全面，且 `performance.timing`已经废弃了）
+
+###### performance 方法
+
+* `Performance.clearMarks()` - 将给定的 mark 从浏览器的性能输入缓冲区中移除。
+* `Performance.clearMeasures()` - 将给定的 measure 从浏览器的性能输入缓冲区中移除。
+* `Performance.clearResourceTimings()` - 从浏览器的性能数据缓冲区中移除所有 entryType 是 "resource" 的 performance entries。
+* `Performance.getEntries()` - 基于给定的 filter 返回一个 PerformanceEntry 对象的列表。
+* `Performance.getEntriesByName()` - 基于给定的 name 和 entry type 返回一个 PerformanceEntry 对象的列表。
+* `Performance.getEntriesByType()` - 基于给定的 entry type 返回一个 PerformanceEntry 对象的列表
+* `Performance.mark()` - 根据给出 name 值，在浏览器的性能输入缓冲区中创建一个相关的timestamp
+* `Performance.measure()` - 在浏览器的指定 start mark 和 end mark 间的性能输入缓冲区中创建一个指定的 timestamp
+* `Performance.now()` - 返回一个表示从性能测量时刻开始经过的毫秒数 DOMHighResTimeStamp
+* `Performance.setResourceTimingBufferSize()` - 将浏览器的资源 timing 缓冲区的大小设置为 "resource" type performance entry 对象的指定数量
+* `Performance.toJSON()` - 其是一个 JSON 格式转化器，返回 Performance 对象的 JSON 对象
+
+[Performance API 详细参考](https://github.com/pfan123/Articles/issues/87)
+
+[Performance API 详细参考2](https://juejin.cn/post/6844904112450994189)
 
 ###### 参考
 [35条前端性能优化军规](https://learnku.com/docs/f2e-performance-rules/using-gzip-compression/6374)
