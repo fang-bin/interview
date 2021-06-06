@@ -520,7 +520,7 @@ function ajax (options){
     xhr.withCredentials = opts.withCredentials;
     xhr.send(null);
   }else if (opts.type === 'POST') {
-    xhr.open('GET', opts.url, opts.async);
+    xhr.open('POST', opts.url, opts.async);
     opts.timeout && options.timeout > 0 && (xhr.timeout = opts.timeout);
     xhr.withCredentials = opts.withCredentials;
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -737,11 +737,11 @@ Array.prototype.mySplice = function (start, delNum, ...adds){
   }
 
   // 密封对象且删除元素个数和添加元素个数不一致
-  if(Object.isSealed(array) && delCount !== addCount) {
+  if(Object.isSealed(this) && delCount !== addCount) {
     throw new TypeError('the array is sealed')
   }
   // 冻结对象
-  if(Object.isFrozen(array)) {
+  if(Object.isFrozen(this)) {
     throw new TypeError('the array is frozen');
   }
 
@@ -795,5 +795,35 @@ Array.prototype.mySlice = function (start, end){
     arr[i] = this[i + startIndex];
   }
   return arr;
+}
+```
+
+### 21. 手写一个简易EventEmitter实现
+
+```javascript
+class EventEmitter {
+  #events = Object.create(null);
+  on(type, listener) {
+    this.#events[type] = this.#events[type] || [];
+    this.#events[type].push(listener);
+    return this;
+  }
+  off(type, listener) {
+    if (!Reflect.has(this.#events, type)) return false;
+    this.#events[type] = this.#events[type].filter(handle => handle !== listener);
+    return true;
+  }
+  emit(type, ...args) {
+    if (!Reflect.has(this.#events, type)) return false;
+    this.#events[type].forEach(event => Reflect.apply(event, this, args));
+    return true;
+  }
+  once(type, listener) {
+    const callback = (...args) => {
+      Reflect.apply(listener, this, args);
+      this.off(type, callback);
+    }
+    this.on(type, callback);
+  }
 }
 ```

@@ -84,8 +84,8 @@ class MyPromise {
   }
   finally(callback) {
     return this.then(
-      val => Promise.resolve(callback()).then(() => val),
-      err => Promise.resolve(callback()).then(() => {throw err}),
+      val => MyPromise.resolve(callback()).then(() => val),
+      err => MyPromise.resolve(callback()).then(() => {throw err}),
     );
   }
   static resolve(val) {
@@ -200,7 +200,7 @@ MyPromise
   return 2;
 }).catch((err) => {
   return 3;
-})then((res) => {
+}).then((res) => {
   console.log(res); // 2
 });
 ```
@@ -219,6 +219,26 @@ MyPromise
   return 1000;
 }).then((res) => {
   console.log(res);  // 3
+});
+```
+
+```javascript
+// 测试MyPromise.retry
+MyPromise.retry(() => {
+  return new MyPromise((resolve, reject) => {
+    let num = Math.random();
+    if (num > 0.9) {
+      console.log('t:' + num);
+      resolve(num);
+    }else {
+      console.log('t:' + num);
+      reject(num);
+    }
+  });
+}, 10).then(val => {
+  console.log('result:' + val);
+}).catch(err => {
+  console.log('err:' + err);
 });
 ```
 
