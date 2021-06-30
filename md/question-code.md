@@ -804,18 +804,18 @@ Array.prototype.mySlice = function (start, end){
 class EventEmitter {
   #events = Object.create(null);
   on(type, listener) {
-    this.#events[type] = this.#events[type] || [];
-    this.#events[type].push(listener);
+    this.#events[type] = this.#events[type] || new Set();
+    this.#events[type].add(listener);
     return this;
   }
   off(type, listener) {
     if (!Reflect.has(this.#events, type)) return false;
-    this.#events[type] = this.#events[type].filter(handle => handle !== listener);
-    return true;
+    //this.#events[type] = this.#events[type].filter(handle => handle !== listener);
+    return this.#events[type].delete(listener);
   }
   emit(type, ...args) {
     if (!Reflect.has(this.#events, type)) return false;
-    this.#events[type].forEach(event => Reflect.apply(event, this, args));
+    this.#events[type].forEach(listener => Reflect.apply(listener, this, args));
     return true;
   }
   once(type, listener) {

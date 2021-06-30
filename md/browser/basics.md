@@ -5,7 +5,7 @@
 
 浏览器内核分为两个部分: 渲染引擎(render engin)、js引擎(js engin)
 
-* 渲染引擎：负责对网页语法的解释（HTML、javaScript、引入css等），并渲染（显示）网页
+* 渲染引擎：负责对网页语法的解释（HTML、引入css等），并渲染（显示）网页
 * js引擎：javaScript的解释、编译、执行
 
 主流内核:
@@ -26,7 +26,7 @@ webkit浏览器内核
 相关问题:
 1. 为什么说transform实现动画较直接设置几何属性性能较好？
 
-    * webkit渲染过程：style -> Layout(reflow发生在这) -> Paint（repaint发生在这） -> Composite，transform是位于’Composite（渲染层合并）‘，而width、left、margin等则是位于‘Layout（布局）’层，这必定导致reflow。
+    * webkit渲染过程：style -> Layout(reflow发生在这) -> Paint（repaint发生在这） -> Composite，transform是位于’Composite（渲染层合并）‘，而width、left、margin等则是位于‘Layout（布局）’层，这必定导致reflow。（**简单描述**）
     * 现代浏览器针对transform等开启GPU加速。
 
 2. Google Chromium 为什么要从 WebKit 中抽离，新建一个 Blink 分支？
