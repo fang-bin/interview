@@ -469,12 +469,12 @@ function ajax (options){
   let opts = Object.assign({
     url: '',
     data: {},
-    async: true,
+    async: true,  //true为异步请求，false为同步请求，不过很多很多浏览器已完全弃用主线程上的同步XHR支持。在 Worker中允许同步请求。默认为true
     dataType: 'json',
     fail: function () {},
     success: function() {},
     timeout: 0,
-    withCredentials: false,  //默认为false
+    withCredentials: false,  //是否该使用类似cookies,authorization headers(头部授权)或者TLS客户端证书这一类资格证书来创建一个跨站点访问控制（cross-site Access-Control）请求。在同一个站点下使用withCredentials属性是无效的。默认为false
   }, options);
   opts.type = (options.type || 'GET').toUpperCase();
   const formatParams = obj => {
