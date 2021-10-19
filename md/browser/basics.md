@@ -15,7 +15,6 @@
 | 内核 |  Trident | Gecko | Blink | Webkit | 基于Chromium开发 |
 
 webkit浏览器内核
-![avator](https://user-gold-cdn.xitu.io/2018/12/3/16771e08d735e0be?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
 
 * HTML解释器：解释HTML文本的解释器，主要作用是将HTML文本解释成DOM树，DOM是一种文档表示方法。
 * CSS解释器：级联样式表的解释器，它的作用是为DOM中的各个元素对象计算出样式信息，从而为计算最后网页的布局提供基础设施。
