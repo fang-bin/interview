@@ -128,7 +128,7 @@
 * 序列化：把变量从内存中变成可存储或传输的过程称之为序列化 
 * 反序列化：把变量内容从序列化的对象重新读到内存里称之为反序列化
 
-**序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会变成null，Map、Set、RegExp则会变成{}**
+**序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp, BigInt)不能识别，undefined、Symbol、function会被直接过滤掉，Map、Set、RegExp则会变成{}，BigInt数据则不能进行序列化（会直接报错）**
 
 #### 15. clearfix
 
@@ -186,7 +186,7 @@
 
 两者都能达到设置对象原型的功能，但是具体表现上有一些区别。
 
-`Object.create(Ctor1.prototype, Ctor2.prototype)` 中，Ctor1.protoype 会指向一个新的空对象，空对象的 __proto__ 指向 Ctor2.prototype，会覆盖掉原来Ctor1的prototype对象的属性，凸显了重新赋值。
+`Object.create(prototype[, propertiesObject])` 中，先创建一个 __proto__ 指向 prototype 的空对象，然后把这个空对象返回赋值，凸显了重新赋值。
 
 `Object.setPrototypeOf(Ctor1.prototype, Ctor2.prototype)` 中， Ctor1.prototype 仍会指向原先 Ctor1 的 prototype，然后这个 Ctor1.prototype 的 __proto__ 则会指向 Ctor2.prototype，保留了原先 Ctor1.prototype 上的属性。
 
