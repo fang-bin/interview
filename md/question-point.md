@@ -15,7 +15,7 @@
 条件:
 * 根元素
 * 浮动（float的值不为none）；
-* 绝对定位元素（position的值为absolute或fixed）；
+* 绝对\固定定位元素（position的值为absolute或fixed）；
 * 行内块（display为inline-block）
 * 表格单元（display为table、table-cell、table-caption等HTML表格相关属性）；
 * overflow不为visible；
@@ -28,7 +28,7 @@
 * 处于同一个BFC中的元素相互影响，可能会发生margin collapse；（BFC垂直方向边距重叠，FFC和GFC并不会）
 * BFC在页面上是一个独立的容器，容器里面的子元素不会影响到外面的元素，反之亦然；
 * 计算BFC的高度时，考虑BFC所包含的浮动元素，其也参与计算；
-* 浮动盒的区域不会叠加到BFC上；
+* 浮动盒的区域不会叠加到BFC、IFC上；
 
 #### 3. 形成堆叠上下文条件  堆叠上下文的顺序
 * 根元素（即HTML元素）
