@@ -76,16 +76,98 @@ margin padding的百分比都会根据父元素的宽度来计算
 
 ## 圣杯布局(左右宽度固定，中间自适应)、双飞翼布局(淘宝UED团队在圣杯布局上完成)
 
-圣杯布局:
-* flex布局
-* float布局 
-  1. 父元素左右padding值，left和right子元素设置margin-left**负值**，middle设置width:100% 实现。
-  2. 左右元素设置left\right浮动，利用浮动元素的环绕特性实现
-* 绝对定位 中间元素设置left和right值实现
+##### 圣杯布局:
+
+```html
+<style>
+.wrap{
+  padding: 0 300px 0 200px;
+  height: 300px;
+  background-color: #ccc;
+}
+.mid,.left,.right{
+  height: 200px;
+}
+.mid{
+  float: left;
+  width: 100%;
+  background-color: #f00;
+}
+.left{
+  float: left;
+  width: 200px;
+  margin-left: -100%;
+  background-color: #0f0;
+  position: relative;
+  left: -200px;
+}
+.right{
+  float: left;
+  width: 300px;
+  margin-left: -300px;
+  position: relative;
+  right: -300px;
+  background-color: #00f;
+}
+</style>
+<div class="wrap">
+  <div class="mid">mid</div>
+  <div class="left">left</div>
+  <div class="right">right</div>
+</div>
+```
+优点：不需要添加dom节点
+
+缺点：正常情况下是没有问题的，当middle部分的宽小于left部分时就会发生布局混乱。（middle < left即会变形）
+
+##### 双飞翼布局
+
+```html
+<style>
+#center{
+  float:left;
+  width:100%;/*左栏上去到第一行*/     
+  height:100px;
+  background:blue;
+}
+#left{
+  float:left;
+  width:180px;
+  height:100px;
+  margin-left:-100%;
+  background:#0c9;
+}
+#right{
+  float:left;
+  width:200px;
+  height:100px;
+  margin-left:-200px;
+  background:#0c9;
+}
+/*给内部div添加margin，把内容放到中间栏，其实整个背景还是100%*/ 
+#inside{
+  margin:0 200px 0 180px;
+  height:100px;
+}
+</style>
+<div id="center">
+    <div id="inside">middle</div>
+</div>
+<div id="left">left</div>
+<div id="right">right</div>
+```
+
+优点：不会像圣杯布局那样变形
+
+缺点是：多加了一层dom节点
+
+其他实现类似效果的方案：
+
 * grid布局
+* flex布局
 * table布局（年代久远，对seo也不好，不推荐）
 
-双飞翼布局: 也可使用上面的布局方式
+[圣杯布局和双飞翼布局](https://www.cnblogs.com/jiguiyan/p/11425276.html)
 
 ## 6. 标准盒模型和怪异盒模型
 
@@ -299,7 +381,7 @@ WebP 的优势体现在它具有更优的图像数据压缩算法，能带来更
 
 * border设置0.5px
 
-  解决：可以通过`transfrom: scale()`来实现
+  解决：可以通过`transform: scale()`来实现
 
 * 移动端点击300ms延迟
 
