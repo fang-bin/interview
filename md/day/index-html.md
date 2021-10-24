@@ -6,7 +6,7 @@
 
 **可枚举性和是否查找原型总结**
 
-* `for in` 会遍历对象包括其原型链上所有可枚举性的属性(不包含 Symbol 属性)
+* `for in` 会遍历对象包括其原型链上所有可枚举性的属性(不包含 Symbol 属性，即便 Symbol 属性是可遍历的，也不会遍历到)
 * `hasOwnProperty` 不会去查找原型，只会检查属性是否在当前对象中
 * `Object.keys() Object.values() Object.entries()` 不会去查找原型，只会遍历对象本身可枚举（不包含 Symbol）属性（属性对）
 * `Object.getOwnPropertyNames()` 不会去查找原型，会遍历对象本身所有的属性（无论是否具有可枚举性）不包含Symbol属性

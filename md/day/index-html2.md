@@ -566,6 +566,64 @@ datalist及其选项不会被显示出来，他仅仅是合法的输入列表值
 2. 在离线情况下
   浏览器直接使用离线缓存的资源；
 
+## 18. 页面可见性（Page Visibility）API 可以有哪些用途
+
+**document.hidden**
+
+它显示页面是否为用户当前观看的页面，值为ture或false
+
+**document.visibilityState**
+
+visibilityState的值要么是visible (表明页面为浏览器当前激活tab，而且窗口不是最小化状态)，要么是hidden (页面不是当前激活tab页面，或者窗口最小化了。)，或者prerender (页面在重新生成，对用户不可见。).
+
+```javascript
+// 各种浏览器兼容 var hidden, state, visibilityChange; 
+if (typeof document.hidden !== "undefined") { 
+    hidden = "hidden";
+    visibilityChange = "visibilitychange"; 
+    state = "visibilityState"; 
+} else if (typeof document.mozHidden !== "undefined") { 
+    hidden = "mozHidden"; 
+    visibilityChange = "mozvisibilitychange";
+    state = "mozVisibilityState"; 
+} else if (typeof document.msHidden !== "undefined") { 
+    hidden = "msHidden"; 
+    visibilityChange = "msvisibilitychange";
+    state = "msVisibilityState"; 
+} else if (typeof document.webkitHidden !== "undefined") { 
+    hidden = "webkitHidden"; 
+    visibilityChange = "webkitvisibilitychange";
+    state = "webkitVisibilityState";
+ } 
+// 添加监听器，在title里显示状态变化
+document.addEventListener(visibilityChange, function() { 
+  document.title = document[state]; 
+}, false);
+// 初始化 
+document.title = document[state];
+
+
+document.addEventListener("visibilitychange", function() {
+  console.log( document.visibilityState );
+});
+ 
+document.addEventListener("msvisibilitychange", function() {
+  console.log( document.msVisibilityState);
+});
+ 
+document.addEventListener("mozvisibilitychange", function() {
+  console.log( document.mozVisibilityState);
+});
+ 
+document.addEventListener("webkitvisibilitychange", function() {
+  console.log( document.webkitVisibilityState);
+});
+```
+
+## 19. HTML5的form如何关闭自动完成功能
+
+给不想要提示的input是设置autocomplete=off即可
+
 
 ## 补充
 [html基础篇](https://juejin.im/post/6844904180943945742)

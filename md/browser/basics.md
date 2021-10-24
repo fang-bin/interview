@@ -765,7 +765,7 @@ reflow 会从 这个 root frame 开始递归往下，依次计算所有的结点
 
 ##### load事件与DOMContentLoaded事件的先后
 * DOMContentLoaded 当初始的 HTML 文档被完全加载和解析完成之后，DOMContentLoaded 事件被触发，而无需等待样式表、图像和子框架的完全加载。(譬如如果有async加载的脚本就不一定完成，但是defer加载的脚本一定执行完成)。
-* 当 onload 事件触发时，页面上所有的DOM，样式表，脚本，图片都已经加载完成了。（渲染完毕了）(preload 是一个声明式 fetch，可以强制浏览器在不阻塞 window 的 onload 事件的情况下请求资源。)
+* 当 onload 事件触发时，页面上所有的DOM，样式表，脚本，图片都已经加载完成了。（渲染完毕了）(preload 是一个声明式 fetch，可以强制浏览器在不阻塞 window 的 onload 事件的情况下请求资源。但是iframe会阻塞页面的onload事件)
 
 所以，顺序是：DOMContentLoaded -> load
 
