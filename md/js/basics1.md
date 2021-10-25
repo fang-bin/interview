@@ -33,7 +33,7 @@ console.log(a);
 
 当然这种方式有一些let特性并不能完全实现，比如说不存在变量提升等
 
-**延伸一下**在es5环境下实现const的难点在于一旦声明，常亮的值就不能更改，可以通过Object.defineProperty来实现，不过这种方式实现的话，只能将声明的变量挂在对象下面，要么是全局对象挂在window下面，要么是自定义一个object来当容器
+**延伸一下**在es5环境下实现const的难点在于一旦声明，常量的值就不能更改，可以通过Object.defineProperty来实现，不过这种方式实现的话，只能将声明的变量挂在对象下面，要么是全局对象挂在window下面，要么是自定义一个object来当容器
 
 ```javascript
 function _const(key, value) {    
