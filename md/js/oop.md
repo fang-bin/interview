@@ -127,11 +127,11 @@ Child.prototype.constructor = Child;
 **ES6的继承机制完全不同，实质上是先创建父类的实例对象this（所以必须先调用父类的super()方法），然后再用子类的构造函数修改this。**
 
 (A父类，B子类)
-实现上，在不是继承原生构造函数的情况下，A.call(this) 与 super() 在功能上是没有区别的。通过Babel转译ES6的继承，也是通过A.call(this)这种方式实现super()，但是在继承原生构造函数的情况下，A.call(this) 与 super() 在功能上是有区别的，ES5 中 A.call(this) 中的 this 是构造函数 B 的实例，也就是在实现实例属性继承上，ES5 是先创造构造函数 B 的实例，然后在让这个实例通过 A.call(this) 实现实例属性继承，在 ES6 中，是先新建父类的实例对象this，然后再用子类的构造函数修饰 this，使得父类的所有行为都可以继承。
+实现上，在不是继承原生构造函数的情况下，A.call(this) 与 super() 在功能上是没有区别的。通过Babel转译ES6的继承，也是通过A.call(this)这种方式实现super()，但是在继承原生构造函数的情况下，A.call(this) 与 super() 在功能上是有区别的，ES5 中 A.call(this) 中的 this 是构造函数 B 的实例，也就是在实现实例属性继承上，ES5 是先创造构造函数 B 的实例，然后在让这个实例通过 A.call(this) 实现实例属性继承，在 ES6 中，是先新建父类的实例对象this，然后再用子类的构造函数修饰 this，使得父类的所有行为都可以继承（**子类自己的this对象，必须先通过父类的构造函数完成塑造，得到与父类同样的实例属性和方法，然后再对其进行加工，加上子类自己的实例属性和方法。**）。
 
 具体的：ES6通过class关键字定义类，里面有构造方法，类之间通过extends关键字实现继承。子类必须在constructor方法中调用super方法，否则新建实例报错。因为子类没有自己的this对象，而是继承了父类的this对象，然后对其进行加工。如果不调用super方法，子类得不到this对象。
 
-**ES5 是先新建子类的实例对象this，再将父类的属性添加到子类上，由于父类的内部属性无法获取，导致无法继承原生的构造函数。**
+**ES5 是先新建子类的实例对象this，再将父类的属性添加到子类上，由于原生构造函数（父类）的一些内部属性无法获取，导致无法继承原生的构造函数。**
 
 **ES6 允许继承原生构造函数定义子类，因为 ES6 是先新建父类的实例对象this，然后再用子类的构造函数修饰this，使得父类的所有行为都可以继承。**
 
@@ -173,7 +173,12 @@ ES5 没办法继承父类的静态方法，ES6 的子类可以继承父类的静
 
 #### 类原型对象上方法的枚举性
 
-**ES6 类的内部所有定义的方法，都是不可枚举的（non-enumerable）。这一点与 ES5 的行为不一致。**
+**ES6 规定，所有 Class 的原型的方法都是不可枚举的（non-enumerable）。这一点与 ES5 的行为不一致。**
+
+```javascript
+Object.getOwnPropertyDescriptor(class {foo() {}}.prototype, 'foo').enumerable
+// false
+```
 
 
 ### 封装、继承、多态
@@ -298,4 +303,4 @@ function New(func) {
 
 ###### 更改原型链的一些骚操作
 
-`Object.setPrototypeOf(obj, obj.\__proto__)`
+`Object.setPrototypeOf(obj, obj.__proto__)`
