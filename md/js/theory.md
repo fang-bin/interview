@@ -1,13 +1,17 @@
 [有现成的总结非常好的文章，非常值得一看，下面的问题都可以在这里得到充分解答](https://www.jianshu.com/p/996671d4dcc4)
 
+**JS异步的实现靠的就是浏览器的多线程，当他遇到异步API时，就将这个任务交给对应的线程，当这个异步API满足回调条件时，对应的线程又通过事件触发线程将这个事件放入任务队列，然后主线程从任务队列取出事件继续执行。这个流程我们多次提到了任务队列，这其实就是Event Loop**
+
+**process.nextTick()是一个特殊的异步API，他不属于任何的Event Loop阶段。事实上Node在遇到这个API时，Event Loop根本就不会继续进行，会马上停下来执行process.nextTick()，这个执行完后才会继续Event Loop。**
+
 **注意**： 上面文章中[前端基础进阶（十二）：深入核心，详解事件循环机制](https://www.jianshu.com/p/12b9f73c5a4f)对事件循环的解释中，对一次事件循环结束的节点不太正确，应该区分浏览器环境(chrome的webkit内核)和node(10版本,12版本)环境，v8早期版本和v8新版本
 
 主要可以分为浏览器环境，node10环境和node12环境：
 
-* 在低版本v8环境中，**同源的task**会在一轮事件循环中执行，然后才会去执行jobs，其优先级 process.nextTick >then>await
-* 在高版本v8环境中，一轮事件循环中只执行**一个task(没有同源不同源，两个setTimeout也是分成两个task)**，之后会执行所有的jobs，jobs的优先级 process.nextTick>then=await。
+* 在低版本v8环境中，**同源的task**会在一轮事件循环中执行，然后才会去执行jobs，其优先级 process.nextTick（它是个特殊api） >then>await
+* 在高版本v8环境中，一轮事件循环中只执行**一个task(没有同源不同源，两个setTimeout也是分成两个task)**，之后会执行所有的jobs，jobs的优先级 process.nextTick（它是个特殊的api）>then=await。
 * 在node环境中,setImmediate的执行时机，还要根据node事件循环流程来考虑
-* node和浏览器的主要区别是：在node环境中, setTimeout和setInterval是同源的，setImmediate是单独的，而在浏览器环境中setTimeout和setInterval是非同源的(**在浏览器中高版本的v8环境中，是否是同源任务也不重要了，都是一个macro任务源为一次事件循环**)
+* node和浏览器的主要区别是：~~在node环境中, setTimeout和setInterval是同源的，setImmediate是单独的，而在浏览器环境中setTimeout和setInterval是非同源的~~(**在浏览器中高版本的v8环境中，是否是同源任务也不重要了，都是一个macro任务源为一次事件循环**)(**这一点有待商榷，node的事件循环和浏览器有很大的不同，需要单独考虑**)
 
 [setTimeout和setImmediate到底谁先执行](https://juejin.im/post/6844904100195205133)
 
@@ -15,7 +19,7 @@ Node.js的EventLoop是分阶段的
 
 ![node事件循环](https://github.com/fang-bin/interview/blob/master/image/node-event-loop.jpg)
 
-1. timers: 执行setTimeout和setInterval的回调
+1. timers: 执行setTimeout和setInterval的回调(~~到期的setTimeout和setTimeout都会在这个阶段执行掉，但有可能某些setTimeout之类的还没到期~~这句话我也有点矛盾)
 2. pending callbacks: 执行延迟到下一个循环迭代的 I/O 回调
 3. idle, prepare: 仅系统内部使用
 4. poll: 检索新的 I/O 事件;执行与 I/O 相关的回调。事实上除了其他几个阶段处理的事情，其他几乎所有的异步都在这个阶段处理。

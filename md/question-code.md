@@ -301,7 +301,7 @@ function clone (target, map = new WeakMap()){
 
   switch (targetType) {
     case 'map':
-      target.forEach((value, key) => {
+      target.forEach((key, value) => {
         cloneTarget.set(key, clone(value, map));
       });
       return cloneTarget;
