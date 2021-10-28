@@ -145,7 +145,7 @@ let cloneObj = JSON.parse(JSON.stringify(obj));
 
 **反序列化**：把变量内容从序列化的对象重新读到内存里称之为反序列化
 
-**序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会变成null，Map、Set、RegExp则会变成{}**
+**序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会被过滤掉，Map、Set、RegExp则会变成{}**
 
 **同时，`JSON.stringify` 只串行化自身的可枚举属性**
 
@@ -413,13 +413,16 @@ javascript有自动的垃圾回收机制，当一个值在内存中失去引用�
 * 字面量创建的对象，作用域是window，如果里面有箭头函数属性的话，this指向的是window
 * 构造函数创建的对象，作用域是可以理解为是这个构造函数，且这个构造函数的this是指向新建的对象的，因此this指向这个对象。
 * 箭头函数的this是无法通过bind、call、apply来直接修改，但是可以通过改变作用域中this的指向来间接修改。
+* 不可以当作构造函数，也就是说，不可以对箭头函数使用new命令，否则会抛出一个错误。
+* 不可以使用arguments对象，该对象在函数体内不存在。如果要用，可以用 rest 参数代替。
+* 不可以使用yield命令，因此箭头函数不能用作 Generator 函数。
 
 箭头函数的优点：
 
 * 箭头函数写代码拥有更加简洁的语法(当然也有人认为这是缺点)
 * this由外层作用域决定，所以在某些场合我们不需要写类似const that = this这样的代码
 
-**箭头函数还有一个特性，其没有arguments对象，同时箭头函数不能用来当构造函数**
+**箭头函数一个重要特性，其没有arguments对象，同时箭头函数不能用来当构造函数（因为箭头函数没有prototype对象）**
 
 ##### 避免使用箭头的场景
 
