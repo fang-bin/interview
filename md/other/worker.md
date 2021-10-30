@@ -100,8 +100,11 @@ self.name // myWorker
 
 * SharedWorker.onerror
 * SharedWorker.port
+
     SharedWorker.port.start();
+
     SharedWorker.port.postMessage();
+    
     SharedWorker.port.onmessage
 
 **注意**: Shared Worker如果用来共享数据，则生成SharedWorker实例时引用地址要完全一致（包括hash）,并且不能设置name，或者name要一致，否则，并不会生成同一个worker。
