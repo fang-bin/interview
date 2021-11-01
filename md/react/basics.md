@@ -1,4 +1,4 @@
-#### 1. render内使用箭头函数或者bind函数，可能会造成子组件额外的重新渲染。
+#### 1. render内使用箭头函数或者bind函数，可能会造成子组件额外的重新渲染。(这里可以统一概括为内联函数)
 
 ```javascript
 class LoggingButton extends React.Component {
@@ -598,6 +598,8 @@ const memoizedCallback = useCallback(
 
 把内联回调函数及依赖项数组作为参数传入 useCallback，它将返回该回调函数的 memoized 版本，该回调函数仅在某个依赖项改变时才会更新。当你把回调函数传递给经过优化的并使用引用相等性去避免非必要渲染（例如 shouldComponentUpdate）的子组件时，它将非常有用。
 
+useCallback，这是对事件句柄进行缓存，useState的第二个返回值是dispatch，但是每次都是返回新的，使用useCallback，可以让它使用上次的函数。在虚拟DOM更新过程中，如果事件句柄相同，那么就不用每次都进行removeEventListner与addEventListner。
+
 `useCallback(fn, deps)` 相当于 `useMemo(() => fn, deps)`。
 
 #### `useMemo`
@@ -615,6 +617,8 @@ const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
 如果没有提供依赖项数组，useMemo 在每次渲染时都会计算新的值。
 
 你可以把 useMemo 作为性能优化的手段，但不要把它当成语义上的保证。
+
+useMemo 取得上次缓存的数据，它可以说是useCallback的另一种形式。
 
 #### `React.memo`
 
@@ -699,6 +703,18 @@ FancyInput = forwardRef(FancyInput);
 `useDebugValue(value)`
 
 useDebugValue 可用于在 React 开发者工具中显示自定义 hook 的标签。
+
+总结:
+
+* useState： setState
+* useReducer： setState
+* useRef: ref
+* useImperativeHandle: ref
+* useContext: context
+* useCallback: 可以对setState的优化
+* useMemo: useCallback的变形
+* useLayoutEffect: 类似componentDidMount/Update, componentWillUnmount
+* useEffect: 类似于setState(state, cb)中的cb，总是在整个更新周期的最后才执行
 
 #### 自定义Hook
 

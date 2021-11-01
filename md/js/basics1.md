@@ -669,7 +669,7 @@ requestAnimationFrame接受一个动画执行函数作为参数，这个函数�
 
 动画在浏览器下次重绘之前调用指定的回调函数更新动画。（由于多数屏幕都是60Hz刷新率，浏览器也采用了16ms进行绘制节流，16ms毫秒内多次commit的DOM改动会合并为一次渲染）
 
-requestAnimationFrame的兼容性问题主要是\<ie9，其他大多数都没有问题。
+requestAnimationFrame的兼容性问题主要是\< ie9，其他大多数都没有问题。
 
 
 #### forEach for...in for...of的终止和跳过
