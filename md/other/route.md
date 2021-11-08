@@ -61,6 +61,6 @@ window.addEventListener('popstate', matchAndUpdate);
 
 **注意** `pushState` 和 `replaceState` 更改的url与原有页面跨源的情况下，会报错。这样设计的目的是，防止恶意代码让用户以为他们是在另一个网站上。
 
-当用户在浏览器点击进行后退、前进，或者在js中调用histroy.back()，history.go()，history.forward()等，会触发popstate事件；但pushState、replaceState不会触发这个事件。(可以通过直接更改原生window上的pushState、replaceState方法来监听并触发相应函数。)
+当用户在浏览器点击进行后退、前进，或者在js中调用histroy.back()，history.go()，history.forward()等，会触发popstate事件；但pushState、replaceState不会触发这个事件。(可以通过直接更改原生history上的pushState、replaceState方法来监听并触发相应函数。)
 
 #### 实现一个前端路由
