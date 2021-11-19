@@ -223,4 +223,87 @@ module，chunk 和 bundle 其实就是同一份逻辑代码在不同转换场景
 
 我们直接写出来的是 module，webpack 处理时是 chunk，最后生成浏览器可以直接运行的 bundle。
 
-### 12. 单例模式 发布-订阅模式 观察者模式
+### 12. 发布-订阅模式 VS 观察者模式
+
+发布-订阅模式是面向调度中心编程的，而观察者模式则是面向目标和观察者编程的。前者用于解耦发布者和订阅者，后者用于耦合目标和观察者。相对来说，发布-订阅模式能够根据不同主题来添加订阅者，从而实现更为颗粒度的控制。
+
+```javascript
+/*
+* 发布-订阅
+*/
+class EventEmitter {
+  #events = Object.create(null);
+  on(type, listener) {
+    this.#events[type] = this.#events[type] || [];
+    this.#events[type].push(listener);
+    return this;
+  }
+  off(type, listener) {
+    if (!Reflect.has(this.#events, type)) return false;
+    this.#events[type] = this.#events[type].filter(handle => handle !== listener);
+    return true;
+  }
+  emit(type, ...args) {
+    if (!Reflect.has(this.#events, type)) return false;
+    this.#events[type].forEach(event => Reflect.apply(event, this, args));
+    return true;
+  }
+  once(type, listener) {
+    const callback = (...args) => {
+      Reflect.apply(listener, this, args);
+      this.off(type, callback);
+    }
+    this.on(type, callback);
+  }
+}
+
+// 创建事件调度中心，为订阅者和发布者提供调度服务
+let event = new EventEmitter();
+
+// A订阅了SMS事件（A只关注SMS本身，而不关心谁发布这个事件）
+event.on('SMS', console.log);
+
+// B订阅了SMS事件
+event.on('SMS', console.log);
+
+// C发布了SMS事件（C只关注SMS本身，不关心谁订阅了这个事件）
+event.emit('SMS','I published `SMS` event');
+
+/*
+* 观察者
+*/
+class Subject {
+  #observers = [];
+  add(observer) {
+    this.#observers.push(observer);
+  }
+  notify(...args) {
+    this.#observers.forEach(observer => observer.update(...args));
+  }
+}
+class Observer {
+  update(...args) {
+    console.log(...args);
+  }
+}
+
+// 创建观察者ob1
+let ob1 =new Observer();
+// 创建观察者ob2
+let ob2 =new Observer();
+// 创建目标sub
+let sub =new Subject();
+// 目标sub添加观察者ob1 （目标和观察者建立了依赖关系）
+sub.add(ob1);
+// 目标sub添加观察者ob2
+sub.add(ob2);
+// 目标sub触发SMS事件（目标主动通知观察者）
+sub.notify('I fired `SMS` event');
+```
+
+### 13. webpack 相关问题总结
+
+[webpack相关问题](https://mp.weixin.qq.com/s/2-zNlGrKUngWdQNvlcgESw)
+
+### 14. AST
+
