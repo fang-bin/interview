@@ -170,11 +170,11 @@ Chrome的默认策略是，每个标签对应一个渲染进程。但是如果�
     所以，如果有非常耗时的工作，请单独开一个Worker线程，这样里面不管如何翻天覆地都不会影响JS引擎主线程，
   只待计算出结果后，将结果通信给主线程即可
   JS引擎是单线程的，这一点的本质仍然未改变，Worker可以理解是浏览器给JS引擎开的外挂，专门用来解决那些大量计算问题。
-4. WebWorker与SharedWorker
-  WebWorker只属于某个页面，不会和其他页面的Render进程（浏览器内核进程）共享（所以Chrome在Render进程中
+4. Dedicated Worker 与 Shared Worker
+  Dedicated Worker只属于某个页面，不会和其他页面的Render进程（浏览器内核进程）共享（所以Chrome在Render进程中
   （每一个Tab页就是一个render进程）创建一个新的线程来运行Worker中的JavaScript程序。）
-  SharedWorker是浏览器所有页面共享的，不能采用与Worker同样的方式实现，因为它不隶属于某个Render进程，可以为多个Render进程共享使用
-  （所以Chrome浏览器为SharedWorker单独创建一个进程来运行JavaScript程序，在浏览器中每个相同的JavaScript只存在一个SharedWorker进程，不管它被创建多少次。）
+  Shared Worker 是浏览器所有同源页面共享的，不能采用与Worker同样的方式实现，因为它不隶属于某个Render进程，可以为多个Render进程共享使用
+  （所以Chrome浏览器为Shared Worker单独创建一个进程来运行JavaScript程序，在浏览器中每个相同的JavaScript只存在一个SharedWorker进程，不管它被创建多少次。）
 
 ##### 简单梳理下浏览器渲染流程
 1. 浏览器输入url，浏览器主进程接管，开一个下载线程，
