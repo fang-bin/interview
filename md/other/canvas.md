@@ -46,6 +46,7 @@ cacheContext.fillRect(0,0,100,100);
 /*
 * 在缓冲区完成绘制之后，我们将缓冲区的内容一次性绘制到页面上
 */
+realContext.drawImage(cacheCanvas, 0, 0);
 ```
 
 ###### HTML5-canvas绘图白屏

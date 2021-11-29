@@ -411,6 +411,33 @@ WebP 的优势体现在它具有更优的图像数据压缩算法，能带来更
     默认为auto，设置为none，元素永远不会成为鼠标事件的target。
     5. 用fastclick这类第三方库
 
+###### fastclick实现原理
+
+```javascript
+// 业务代码
+var $test = document.getElementById('test')
+$test.addEventListener('click', function () {
+  console.log('1 click')
+})
+
+// FastClick简单实现
+var targetElement = null
+document.body.addEventListener('touchstart', function () {
+  // 记录点击的元素
+  targetElement = event.target
+})
+document.body.addEventListener('touchend', function (event) {
+  // 阻止默认事件（屏蔽之后的click事件）
+  event.preventDefault()
+  var touch = event.changedTouches[0]
+  // 合成click事件，并添加可跟踪属性forwardedTouchEvent
+  var clickEvent = document.createEvent('MouseEvents')
+  clickEvent.initMouseEvent('click', true, true, window, 1, touch.screenX, touch.screenY, touch.clientX, touch.clientY, false, false, false, false, 0, null)
+  clickEvent.forwardedTouchEvent = true // 自定义的
+  targetElement.dispatchEvent(clickEvent)
+})
+```
+
 * 块级行内元素垂直对齐。
 
 ## 23. 伪元素和伪类的区别和作用？
