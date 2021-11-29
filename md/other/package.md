@@ -62,5 +62,60 @@ cnpm 安装的 包，淘宝镜像，和npm安装一样的。
 | * | 匹配最新发布的版本 |
 
 
+### npm包本地调试 `npm link`
+
+###### 相同目录下的链接
+
+项目和模块在同一个目录下，可以直接使用相对路径链接
+
+```javascript
+// 进入项目目录
+$ cd path/to/my-project
+// 链接模块目录
+$ npm link path/to/my-module
+```
+
+npm link 操作会在项目的 node_modules 目录下创建一个 module-name 的超链接（类似 Windows 的快捷方式）或称 “symlink”，链接到 path/to/my-module。
+
+path/to/my-project 和 path/to/my-module 都是二者 package.json 文件所在的目录。
+
+module-name 依据 npm 模块的 package.json 指定。
+
+###### 不同目录下的链接
+
+项目和模块不在同一个目录下，需要先把模块链接到全局，然后再在项目中链接模块
+
+```javascript
+// 先去到模块目录，把它链接到全局
+$ cd path/to/my-module
+$ npm link
+
+// 再去项目目录
+$ cd path/to/my-project
+// 通过包名建立链接
+$ npm link module-name
+```
+
+npm link 操作会在全局 node_modules 目录（如 MacOS 默认的是 /usr/local/lib/node_modules）下创建一个 module-name 的超链接。
+
+此时只需要指定 module-name，在项目的 node_modules 目录下创建一个 module-name 的超链接，链接到 /usr/local/lib/node_modules/module-name，然后再由全局目录下的超链接，链接到具体的代码目录下。
+
+###### 解除链接
+
+解除项目和模块的链接
+
+```javascript
+// 进入项目目录，解除链接
+$ cd path/to/my-project
+$ npm unlink module-name
+```
+
+解除模块的全局链接
+```javascript
+// 进入模块目录，解除链接
+$ cd path/to/my-module
+$ npm unlink module-name
+```
+
 
 
