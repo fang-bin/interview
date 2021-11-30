@@ -372,7 +372,7 @@ componentWillUnmount() 中不应调用 setState()，因为该组件将永远不�
 1. `static getDerivedStateFromError(error)`
 2. `componentDidCatch(error, info)`
 
-#### `static getDerviedStateFromError(error)`
+#### `static getDerivedStateFromError(error)`
 
 此生命周期会在后代组件抛出错误后被调用。 它将抛出的错误作为参数，并返回一个值以更新 state，并执行渲染。（它是在渲染阶段调用的，所以不允许出现副作用。）
 

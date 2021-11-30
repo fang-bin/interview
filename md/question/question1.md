@@ -332,3 +332,7 @@ sub.notify('I fired `SMS` event');
 
 [JSBridge实现原理](jianshu.com/p/43b45b687593)
 
+### 16. React 相关问题总结
+
+[react相关问题](https://mp.weixin.qq.com/s/Os4U_AZGJiflkVe1WRBt0Q)
+
