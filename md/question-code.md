@@ -310,40 +310,45 @@ function clone (target, map = new WeakMap()){
       target.forEach((key, value) => {
         cloneTarget.set(key, clone(value, map));
       });
-      return cloneTarget;
+      break;
     case 'set':
       target.forEach(e => {
         cloneTarget.add(clone(e, map));
       })
-      return cloneTarget;
-    case 'object':
-      Reflect.ownKeys(target).forEach(key => {
-        cloneTarget[key] = clone(target[key], map);
-      })
-      return cloneTarget;
+      break;
+    // case 'object':
+    //   Reflect.ownKeys(target).forEach(key => {
+    //     cloneTarget[key] = clone(target[key], map);
+    //   })
+    //   break;
     case 'array':
     case 'arguments':
       target.forEach((e, i) => {
         cloneTarget[i] = clone(e, map);
       })
-      return cloneTarget;
+      break;
     case 'string':
     case 'number':
     case 'boolean':
     case 'date':
     case 'error':
-      return new Ctor(target);
+      cloneTarget = new Ctor(target);
+      break;
     case 'regexp':
       const reFlags = /\w*$/;
-      const res = new Ctor(target.source, reFlags.exec(target));
-      res.lastIndex = target.lastIndex;
-      return res;
+      cloneTarget = new Ctor(target.source, reFlags.exec(target));
+      cloneTarget.lastIndex = target.lastIndex;
+      break;
     case 'symbol':
     case 'bigint':
-      return Object(Object.prototype.valueOf.call(target));
+      cloneTarget = Object(target);
     default:
       return null;
   }
+  Reflect.ownKeys(target).forEach(key => {
+    cloneTarget[key] = clone(target[key], map);
+  });
+  return cloneTarget;
 }
 ```
 
@@ -898,3 +903,88 @@ limitLoad(urls, loadImg, 3)
     console.error(err);
   });
 ```
+
+### 23. ES5 ES6 面向对象
+
+### 24. 同页面 Dedicated Worker
+
+```javascript
+function createWork (fn, options){
+  const blob = new Blob(['(' + fn.toString() + ')()']);
+  const url = URL.createObjectURL(blob);
+  const worker = new Worker(url, options);
+  return worker;
+}
+
+const worker = createWork(function (){
+  // self代表子线程自身，即子线程的全局对象。 等同于this
+  self.addEventListener('message', function ({data}){
+    setTimeout(() => {
+      self.postMessage(data + 100);
+      self.close();
+    }, 3000);
+  });
+});
+worker.postMessage(1);
+worker.addEventListener('message', function ({data}){
+  console.log('回复的消息: ' + data);
+});
+```
+
+### 25. Shared Worker 多tab通信
+
+```javascript
+// 页面A
+const sharedWorker = new SharedWorker('http://abc.com:8080/shared-worker-test.js?hash=3');
+sharedWorker.port.onmessage = function ({data}){
+  console.log('接收到的信息' + data);
+}
+sharedWorker.port.start();
+
+window.onbeforeunload = function (){
+  sharedWorker.port.postMessage('CLOSED');
+}
+
+function sharedSendB (){
+  sharedWorker.port.postMessage('A真帅');
+}
+
+// 页面B
+const sharedWorker = new SharedWorker('http://abc.com:8080/shared-worker-test.js?hash=3');
+sharedWorker.port.onmessage = function ({data}){
+  console.log('接收到的信息' + data);
+}
+sharedWorker.port.start();
+
+window.onbeforeunload = function (){
+  sharedWorker.port.postMessage('CLOSED');
+}
+
+function sharedSendA (){
+  sharedWorker.port.postMessage('B真帅');
+}
+
+// shared-worker-test.js
+let portList = [];
+self.onconnect = function (e){
+  let port = e.ports[0];
+  portList.push(port);
+  port.onmessage = function (e){
+    const data = e.data;
+    const index = portList.findIndex(p => p === port);
+    if (data === 'CLOSED') {
+      portList.splice(index, 1);
+      return;
+    }
+    console.log(e)
+    portList.forEach((p, i) => {
+      if (i === index) {
+        console.log('过滤过了');
+        return;
+      };
+      p.postMessage(data);
+    });
+  };
+}
+```
+### 26. connect 组件实现
