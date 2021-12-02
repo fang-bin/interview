@@ -25,8 +25,13 @@
 18. React 中 PureComponent 的 ShallowEqual 实现
 19. instanceOf实现
 20. indexOf、findIndex、find、map、forEach、reduce、splice、slice 实现
-21. 手写发布-订阅模式，ES5、ES6方式
+21. 手写发布-订阅模式(ES5、ES6方式)、观察者模式
 22. 限制异步操作的并发个数并尽可能快的完成全部
+23. ES5 ES6 面向对象
+24. 同页面 Dedicated Worker
+25. Shared Worker 多tab通信
+26. connect 组件实现
+
 
 
 
