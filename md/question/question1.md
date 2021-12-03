@@ -505,5 +505,52 @@ class B extends A {
 }
 ```
 
+### 20. postMessage
+
+`otherWindow.postMessage(message, targetOrigin, [transfer])`
+
+* otherWindow 其他窗口的一个引用
+* message 发送的数据 它会被序列化(JSON.stringify，自动被序列化)
+* targetOrigin 通过窗口的origin属性来指定哪些窗口能接收到消息事件，其值可以是字符串"*"（表示无限制）或者一个URI。
+* transfer 可选，是一串和message 同时传递的 Transferable 对象. 这些对象的所有权将被转移给消息的接收方，而发送一方将不再保有所有权。
+
+`window.addEventListener('message', receiveMessage, false)`
+
+接收到的message对象的属性有：
+* data 从其他 window 中传递过来的对象
+* origin 调用 postMessage  时消息发送方窗口的 origin . 这个字符串由 协议、“://“、域名、“ : 端口号”拼接而成。
+* source 对发送消息的窗口对象的引用; 您可以使用此来在具有不同origin的两个窗口之间建立双向通信。
+
+##### 安全问题
+
+如果不希望从其他网站接收message，不要为message事件添加任何事件侦听器。 这是一个完全万无一失的方式来避免安全问题。
+
+如果确实希望从其他网站接收message，请始终使用origin和source属性验证发件人的身份。
+
+当使用postMessage将数据发送到其他窗口时，始终指定精确的目标origin，而不是*。
+
+### 21. 通信
+
+##### 跨域iframe通信
+
+* `postMessage`
+* 片段标识符
+* `document.domain` (一级域名相同情况下，设置)
+* `window.name`
+
+补充同域iframe通信，还有`sessionStorage` `localStorage`
+
+##### 同域跨窗口通信
+
+* `postMessage`
+* 片段标识符
+* Shared Worker
+* Service Worker
+* `localStorage`
+
+##### 跨域跨窗口
+
+* `postMessage`
+* 片段标识符
 
 
