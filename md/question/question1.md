@@ -338,6 +338,21 @@ sub.notify('I fired `SMS` event');
 
 ### 17. git 操作
 
+![git图片](https://github.com/fang-bin/interview/blob/master/image/git.jpg)
+
+* `git reflog` 查看本地 git 命令历史
+
+###### `git log` 查看提交历史
+
+* `--oneline`
+* `--grep="关键字"`
+
+###### `git checkout` 撤销工作区的修改
+
+###### `git reset` 可以撤销工作区/暂存区的修改
+
+##### `git rebase` 和 `git merge` 的区别
+
 ### 18. typescript 中面向对象的 public private protected
 
 ### 19. super的作用
