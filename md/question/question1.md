@@ -349,10 +349,31 @@ sub.notify('I fired `SMS` event');
 
 ###### `git checkout` 撤销工作区的修改
 
-###### `git reset` 可以撤销工作区/暂存区的修改
+##### `git reset` 可以撤销工作区/暂存区的修改
+
+![git-reset图片](https://github.com/fang-bin/interview/blob/master/image/git-reset.jpg)
+
+![git-reset-head图片](https://github.com/fang-bin/interview/blob/master/image/git-reset-head.jpg)
+
+##### `git reset` 和 `git revert` 的区别
+
+* `git revert` 后会多出一条commit，这里可进行回撤操作
+* `git reset` 直接把之前 commit 删掉，非 `git reset --hard` 的操作是不会删掉修改代码，如果远程已经有之前代码，需要强推 `git push -f`
 
 ##### `git rebase` 和 `git merge` 的区别
 
+###### git reabse
+
+* 合并多次提交记录
+* 分支合并
+
+[git rebase 和 git merge 的区别](http://jartto.wang/2018/12/11/git-rebase/)
+
+`git rebase` 合并 commit 记录，保持分支整洁.
+
+`git rebase` 相比 `git merge` 来说会减少分支合并的记录，但多人开发的时候，也会有丢失提交纪录的风险，因为它改变了历史，应该谨慎使用。
+
+只要你的分支上需要 `rebase` 的所有 commits 历史还没有被 push 过，就可以安全地使用 `git-rebase` 来操作。
 ### 18. typescript 中面向对象的 public private protected
 
 ### 19. super的作用
