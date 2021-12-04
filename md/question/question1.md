@@ -328,6 +328,24 @@ sub.notify('I fired `SMS` event');
 
 ### 14. AST
 
+抽象语法树（Abstract Syntax Tree，AST），或简称语法树（Syntax tree），**是源代码语法结构的一种抽象表示**。它以树状的形式表现编程语言的语法结构，树上的每个节点都表示源代码中的一种结构。
+
+就是按照某种约定好的规范，以树形的数据结构把我们的代码描述出来，让js引擎和转译器能够理解。
+
+举个例子：就好比现在框架会利用虚拟dom这种方式把真实dom结构描述出来再进行操作一样，而对于更底层的代码来说，AST就是用来描述代码的好工具。
+
+当然AST不是JS特有的，每个语言的代码都能转换成对应的AST, 并且AST结构的规范也有很多， js里所使用的规范大部分是 estree。
+
+[在线生成AST网站](https://astexplorer.net/)
+
+其中Babel就是利用AST对代码进行编译，过程大概是 **code转换为AST -> 处理AST -> AST转换为code**  也就是 **解析 -> 转换 -> 生成**
+
+##### 解析过程
+
+通过 parser 把源码转成抽象语法树（AST），分为两个阶段：词法分析(分词)、语法分析。
+
+语法分析阶段的任务就是根据 tokens 生成 AST。它会对 tokens 进行遍历，最终按照特定的结构生成一个 tree 这个 tree 就是 AST。
+
 ### 15. JSBridge实现原理
 
 [JSBridge实现原理](jianshu.com/p/43b45b687593)
@@ -375,6 +393,18 @@ sub.notify('I fired `SMS` event');
 
 只要你的分支上需要 `rebase` 的所有 commits 历史还没有被 push 过，就可以安全地使用 `git-rebase` 来操作。
 ### 18. typescript 中面向对象的 public private protected
+
+TypeScript里，成员都默认为 public。
+
+* public 没有限制
+* private 不能在声明它的类的外部访问，不能在派生类中访问(本可被继承)
+* protected 不能在声明它的类的外部访问，但是在派生类中仍然可以访问(可以被继承)
+
+注意: 
+
+TypeScript使用的是结构性类型系统。 当我们比较两种不同的类型时，并不在乎它们从何处而来，如果所有成员的类型都是兼容的，我们就认为它们的类型是兼容的。
+
+然而，当我们比较带有 private或 protected成员的类型的时候，情况就不同了。 如果其中一个类型里包含一个 private成员，那么只有当另外一个类型中也存在这样一个 private成员， 并且**它们都是来自同一处声明时**，我们才认为这两个类型是兼容的。 对于 protected成员也使用这个规则。
 
 ### 19. super的作用
 
