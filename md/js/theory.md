@@ -145,7 +145,7 @@ let cloneObj = JSON.parse(JSON.stringify(obj));
 
 **反序列化**：把变量内容从序列化的对象重新读到内存里称之为反序列化
 
-**序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp)不能识别，undefined、Symbol、function会被过滤掉，Map、Set、RegExp则会变成{}**
+**序列化过程中，不安全的值(undefined, Symbol, function, Map, Set, RegExp, NaN, Infinity, -Infinity)不能识别，单独处理的时候，undefined、Symbol、function 都是undefined，作为对象的值时，undefined、Symbol、function会被过滤掉，作为数组项时，undefined、Symbol、function则会被转化成null；任何情况下，Map、Set、RegExp都会被转化为{}，任何情况下，NaN、Infinity、-Infinity都会转化为null**
 
 **同时，`JSON.stringify` 只串行化自身的可枚举属性**
 

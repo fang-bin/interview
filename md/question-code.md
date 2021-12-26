@@ -31,6 +31,7 @@
 24. 同页面 Dedicated Worker
 25. Shared Worker 多tab通信
 26. connect 组件实现
+27. 扁平化数据转树
 
 
 
@@ -988,3 +989,80 @@ self.onconnect = function (e){
 }
 ```
 ### 26. connect 组件实现
+
+### 27. 扁平化数据转树
+
+```javascript
+let arr = [
+    {id: 6, name: '部门6', pid: 100},
+    {id: 5, name: '部门5', pid: 4},
+    {id: 2, name: '部门2', pid: 1},
+    {id: 3, name: '部门3', pid: 1},
+    {id: 1, name: '部门1', pid: 0},
+    {id: 4, name: '部门4', pid: 3},
+];
+
+/*
+function makeTree (data){
+  let result = [];
+  const getChildren = (arr, children, pid) => {
+    for (let item of arr) {
+      if (item.pid === pid) {
+        const newItem = {...item, children: []};
+        children.push(newItem);
+        getChildren(arr, newItem.children, newItem.id);
+      }
+    }
+  }
+  getChildren(data, result, 0);
+  return result;
+}
+
+function makeTree (data){
+  let result = [], map = {};
+  for (let item of data) {
+    map[item.id] = {
+      ...item,
+      children: [],
+    };
+  }
+  for (let item of data) {
+    const { id, pid, } = item;
+    if (!map[pid]) {
+      result.push(map[id]);
+    }else {
+      map[pid].children.push(map[id]);
+    }
+  }
+  return result;
+}
+*/
+
+function makeTree (data){
+  let result = [];
+  let map = {};
+  for (let item of data) {
+    const id = item.id;
+    const pid = item.pid;
+    map[id] = {
+      ...item,
+      children: map?.[id]?.['children'] ?? [],
+    };
+
+    const node = map[id];
+    if (pid === 0) {
+      result.push(node);
+    }else {
+      if (!map[pid]) {
+        map[pid] = {
+          children: [],
+        };
+      }
+      map[pid].children.push(node);
+    }
+  }
+  return result;
+}
+
+console.log(JSON.stringify(makeTree(arr), undefined, '  '));
+```
