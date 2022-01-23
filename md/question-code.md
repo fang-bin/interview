@@ -813,6 +813,9 @@ Array.prototype.mySlice = function (start, end){
 ### 21. 手写一个简易EventEmitter实现
 
 ```javascript
+/*
+订阅发布模式
+*/
 class EventEmitter {
   #events = Object.create(null);
   on(type, listener) {
@@ -838,6 +841,49 @@ class EventEmitter {
     this.on(type, callback);
   }
 }
+
+/*
+观察者模式
+*/
+class Subject {
+  /**
+   * 私有属性不能在声明它类的外部访问，在派生类中也不能访问基类的私有属性
+  */
+  observers = new Set();  //不能使用私有属性
+  add(observer) {
+    this.observers.add(observer);
+  }
+  remove(observer) {
+    this.observers.delete(observer);
+  }
+}
+
+class ConcreteSubject extends Subject {
+  notify(text) {
+    this.observers.forEach(observer => {
+      observer.update(text);
+    })
+  }
+}
+
+class Observer1 {
+  update(text) {
+    console.log(`observer1 反应 ${text}`);
+  }
+}
+
+class Observer2 {
+  update(text) {
+    console.log(`observer2 反应 ${text}`)
+  }
+}
+
+let ob1 = new Observer1();
+let ob2 = new Observer2();
+let subject = new ConcreteSubject();
+subject.add(ob1);
+subject.add(ob2);
+subject.notify('你好');
 ```
 
 ### 22. 限制异步操作的并发个数并尽可能快的完成全部
