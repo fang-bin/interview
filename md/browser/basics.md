@@ -135,7 +135,7 @@ Chrome的默认策略是，每个标签对应一个渲染进程。但是如果�
     * setInterval与setTimeout所在线程
     * 浏览器定时计数器并不是由JavaScript引擎计数的,（因为JavaScript引擎是单线程的, 如果处于阻塞线程状态就会影响记计时的准确）
     * 因此通过单独线程来计时并触发定时（计时完毕后，添加到事件队列中，等待JS引擎空闲后执行）
-    * 注意，W3C在HTML标准中规定，规定要求setTimeout中低于4ms的时间间隔算为4ms。
+    * 不同浏览器的最低时延会不一致，比如 chrome 的最低时延是 1ms。而如果 timer 嵌套层级很多，那么最低时延是 4ms。具体嵌套层级的阈值不同浏览器也不一致，HTML Standard 当中是 >5，chrome 当中是 >=5。
 5. 异步http请求线程
     * 在XMLHttpRequest在连接后是通过浏览器新开一个线程请求
     * 将检测到状态变更时，如果设置有回调函数，异步线程就产生状态变更事件，将这个回调再放入事件队列中。再由JavaScript引擎执行。
@@ -696,12 +696,15 @@ crossorigin 的属性值可以是 anonymous、use-credentials，如果没有属�
 
 crossorigin的作用有三个：
 
-* crossorigin 会让浏览器启用CORS访问检查，检查http相应头的 Access-Control-Allow-Origin
-* 对于传统 script 需要跨域获取的js资源，控制暴露出其报错的详细信息
+* crossorigin 会让浏览器启用CORS访问检查，检查http相应头的 Access-Control-Allow-Origin(img、script、video、audio等标签本身不受同源策略影响，增加了crossorigin之后，会改为CORS请求)
+* 对于传统 script 需要跨域获取的js资源，控制暴露出其报错的详细信息(**这也是使用该配置的主要原因**)
 * 对于 module script ，控制用于跨域请求的凭据模式
 
 通过使用 crossorigin 属性可以使跨域js暴露出跟同域js同样的报错信息。但是，资源服务器必须返回一个 Access-Control-Allow-Origin 的header，否则资源无法访问。
 
+**crossorigin 设置为 "" 或 "anonymous" ，浏览器都不会携带 cookie 。**
+
+**crossorigin 如果设置为 "use-credentials"，Access-Control-Allow-Origin 不能为 "\*"，必须是具体的域名，该设置下浏览器会携带 cookie。**
 #### js动态添加 script 标签
 
 可以用js将script动态的append到文档当中，其会异步执行（可以理解为默认拥有async属性），如果需要加载的js按顺序执行，需要设置async为false。

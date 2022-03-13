@@ -45,7 +45,7 @@
 
 ![avator](https://camo.githubusercontent.com/b6d00d5b77984171393368b4b6988ed9b946abc6/68747470733a2f2f696d6167652e7a68616e6778696e78752e636f6d2f696d6167652f626c6f672f3230313630312f323031362d30312d30395f3231313131362e706e67)
 
-不依赖z-index的层叠上下文，类似于transform不为none,地位与postion: absoulte; z-index:auto;)相当。
+不依赖z-index的层叠上下文，类似于transform不为none,地位与position: absoulte; z-index:auto;)相当。
 
 #### 4. 伪类选择器顺序
 `a:link a:visited a:hover a:active`

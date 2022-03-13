@@ -640,9 +640,9 @@ BFC的使用场景
 
 [transform对N多元素渲染影响](https://www.zhangxinxu.com/wordpress/2015/05/css3-transform-affect/)
 
-1. 提升元素的垂直地位(就是上面说的生成不依赖z-index的层叠上下文，地位与`postion: absoulte; z-index:auto;`)相当
+1. 提升元素的垂直地位(就是上面说的生成不依赖z-index的层叠上下文，地位与`position: absoulte; z-index:auto;`)相当
 
-2. 在Chrome、Firefox中，祖先元素设置了transform会限制子孙元素position:fixed的效果，降级为postion:absolute的表现。
+2. 在Chrome、Firefox中，祖先元素设置了transform会限制子孙元素position:fixed的效果，降级为position:absolute的表现。
 
 3. transform改变overflow对absolute元素的限制
   absolute绝对定位元素，如果含有overflow不为visible的父级元素，同时，该父级元素以及到该绝对定位元素之间任何嵌套元素都没有position为非static属性的声明，则overflow对该absolute元素不起作用。(这玩意我原先都不知道)
