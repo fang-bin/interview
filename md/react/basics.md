@@ -147,24 +147,6 @@ Mixins 的问题在于他太过于灵活，太依赖使用者，mixin这种引�
 
 其次，ES6 本身是不包含任何 mixin 支持。因此，当你在 React 中使用 ES6 class 时，将不支持 mixins 。
 
-高阶组件的约定:
-
-* 将不相关的 props 传递给被包裹的组件
-* 最大化可组合性
-* 包装显示名称以便轻松调试
-  比如高阶组件名为 withSubscription，并且被包装组件的显示名称为 CommentList，显示名称应该为 WithSubscription(CommentList)
-
-注意:
-* 不要在 render 方法中使用 HOC
-  不应在组件的 render 方法中对一个组件应用 HOC
-  React 的 diff 算法（称为协调）使用组件标识来确定它是应该更新现有子树还是将其丢弃并挂载新子树。 如果从 render 返回的组件与前一个渲染中的组件相同（===），则 React 通过将子树与新子树进行区分来递归更新子树。 如果它们不相等，则完全卸载前一个子树。
-  这将导致子树每次渲染都会进行卸载，和重新挂载的操作！
-  这不仅仅是性能问题 - 重新挂载组件会导致该组件及其所有子组件的状态丢失。
-* 务必复制静态方法
-* Refs 不会被传递
-  虽然高阶组件的约定是将所有 props 传递给被包装组件，但这对于 refs 并不适用。那是因为 ref 实际上并不是一个 prop - 就像 key 一样，它是由 React 专门处理的。如果将 ref 添加到 HOC 的返回组件中，则 ref 引用指向容器组件，而不是被包装组件。
-  可通过使用 React.forwardRef API来解决
-
 #### 7. 深入理解JSX
 
 JSX 仅仅只是 React.createElement(component, props, ...children) 函数的语法糖。
