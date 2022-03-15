@@ -84,3 +84,21 @@ function useRefCallback<T extends (...args: any[]) => any>(callback: T) {
   ```
 * 在 HTML 中，你应该返回 false 来阻止默认行为，然后在 React 中你必须明确地调用 preventDefault()。
 * 在 HTML 中，你调用函数时需要加上 ()，然后在 React 中你不应该在函数名后带上 ()。（比如前面示例中的 activateLasers 函数）
+
+## 4. PureComponent 可能造成的问题
+
+React.PureComponent 只进行浅比较，所以当 props 或者 state 某种程度是可变的话，浅比较会有遗漏，那你就不能使用它了。（例如数组）
+
+应对数组这种情况，可以使用concat 或 扩展运算符等手段，来避免可变对象的产生。
+
+应对深层次嵌套对象的话，可以使用Object.assign({}, target, ...source) 这种方式产生一个新对象，而不是修改老对象。
+
+（参考React文档中，不可变数据的力量一章）
+
+使用 render prop(箭头函数) 会抵消使用 React.PureComponent 带来的优势。因为浅比较 props 的时候总会得到 false，并且在这种情况下每一个 render 对于 render prop 将会生成一个新的值。
+
+## 5.  Portal 事件冒泡
+
+尽管 portal 可以被放置在 DOM 树中的任何地方，但在任何其他方面，其行为和普通的 React 子节点行为一致。由于 portal 仍存在于 React 树， 且与 DOM 树 中的位置无关，那么无论其子节点是否是 portal，像 context 这样的功能特性都是不变的。
+
+这包含事件冒泡。一个从 portal 内部触发的事件会一直冒泡至包含 React 树的祖先，即便这些元素并不是 DOM 树 中的祖先。
