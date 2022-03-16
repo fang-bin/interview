@@ -603,9 +603,9 @@ const memoizedCallback = useCallback(
 );
 ```
 
-返回一个 memoized 回调函数。
+返回一个 memorized 回调函数。
 
-把内联回调函数及依赖项数组作为参数传入 useCallback，它将返回该回调函数的 memoized 版本，该回调函数仅在某个依赖项改变时才会更新。当你把回调函数传递给经过优化的并使用引用相等性去避免非必要渲染（例如 shouldComponentUpdate）的子组件时，它将非常有用。
+把内联回调函数及依赖项数组作为参数传入 useCallback，它将返回该回调函数的 memorized 版本，该回调函数仅在某个依赖项改变时才会更新。当你把回调函数传递给经过优化的并使用引用相等性去避免非必要渲染（例如 shouldComponentUpdate）的子组件时，它将非常有用。
 
 useCallback，这是对事件句柄进行缓存，useState的第二个返回值是dispatch，但是每次都是返回新的，使用useCallback，可以让它使用上次的函数。在虚拟DOM更新过程中，如果事件句柄相同，那么就不用每次都进行removeEventListner与addEventListner。
 
@@ -617,9 +617,9 @@ useCallback，这是对事件句柄进行缓存，useState的第二个返回值�
 const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
 ```
 
-返回一个 memoized 值。
+返回一个 memorized 值。
 
-把“创建”函数和依赖项数组作为参数传入 useMemo，它仅会在某个依赖项改变时才重新计算 memoized 值。这种优化有助于避免在每次渲染时都进行高开销的计算。
+把“创建”函数和依赖项数组作为参数传入 useMemo，它仅会在某个依赖项改变时才重新计算 memorized 值。这种优化有助于避免在每次渲染时都进行高开销的计算。
 
 记住，传入 useMemo 的函数会在渲染期间执行。请不要在这个函数内部执行与渲染无关的操作，诸如副作用这类的操作属于 useEffect 的适用范畴，而不是 useMemo。
 
@@ -656,7 +656,7 @@ React.memo 仅检查 props 变更。如果函数组件被 React.memo 包裹，�
 #### `useMemo` 和 `React.memo` 的区别
 
 * 两者都用来优化函数组件
-* `useMemo`通过更细粒度的缓存值来减少组件自身更新，`useCallback`作用于整个函数组件，相当于class Component中的 `shouldComponentUpdate` 和 `PureComponent`的组合。
+* `useMemo`通过更细粒度的缓存值来减少组件自身更新，`React.memo`作用于整个函数组件，相当于class Component中的 `shouldComponentUpdate` 和 `PureComponent`的组合。
 
 #### `useRef`
 

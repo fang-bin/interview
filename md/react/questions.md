@@ -31,7 +31,7 @@ function useState<T>(initialState: T | (() => T)) {
 // 即
 
 function useState(initialState) {
-  const reducer = (action, state) => {
+  const reducer = (state, action) => {
     if (typeof action === 'function') {
       return action(state);
     }
