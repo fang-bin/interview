@@ -20,10 +20,10 @@ const Singleton = function() {};
 Singleton.getInstance = (function() {
   // 由于es6没有静态类型,故闭包: 函数外部无法访问 instance
   let instance = null;
-  return function() {
+  return function(...args) {
     // 检查是否存在实例
     if (!instance) {
-      instance = new Singleton();
+      instance = new Singleton(...args);
     }
     return instance;
   };
