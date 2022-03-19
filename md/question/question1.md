@@ -102,6 +102,8 @@ DOMString 是一个UTF-16字符串。由于JavaScript已经使用了这样的字
 
 ###### Blob
 
+[更多Blob参考](https://www.jianshu.com/p/b322c2d5d778)
+
 一个Blob对象就是一个包含有只读原始数据的类文件对象。Blob对象中的数据并不一定得是JavaScript中的原生形式。File接口基于Blob, 继承了Blob的功能，并且扩展支持了用户计算机上的本地文件。
 
 创建Blob对象的方法有几种，可以调用Blob构造函数，还可以使用一个已有Blob对象上的slice()方法切出另一个Blob对象，还可以调用canvas对象上的toBlob方法。
@@ -112,12 +114,16 @@ DOMString 是一个UTF-16字符串。由于JavaScript已经使用了这样的字
 
 构造函数 `Blob( [[Array parts], BlobPropertyBag properties] );`
 
+```javascript
+File.prototype instanceof Blob   //true   File也是继承自Blob
+```
+
 **parts** 一个数组，包含了将要添加到Blob对象中的数据。数组元素可以是任意多个的ArrayBuffer, ArrayBufferView(typed array), Blob, 或者DOMString对象。
 
 **properties** 一个对象，设置Blob对象的一些属性。目前仅支持一个type属性，表示Blob的类型。
 
 
-#### 6. application/x-www-form-urlencoded multipart/form-data application/json text/xml 的区别
+#### 6. `application/x-www-form-urlencoded` `multipart/form-data` `application/json` `text/xml` 的区别
 
 ###### `application/x-www-form-urlencoded`
 
