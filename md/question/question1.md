@@ -45,7 +45,7 @@ request.open("POST", "http://foo.com/submitform.php");
 request.send(formData);
 ```
 
-#### 5. 如何做一个上传图片展示效果
+#### 5. 如何做一个上传图片预览效果
 
 ```html
 <style>
@@ -210,6 +210,8 @@ React 自己实现了这么一套事件机制，它在 DOM 事件体系基础上
 * React 有一套自己的合成事件 SyntheticEvent，不是原生的，这个可以自己去看官网
 * React 通过对象池的形式管理合成事件对象的创建和销毁，减少了垃圾的生成和新对象内存的分配，提高了性能
 * SyntheticEvent 是合并而来。这意味着 SyntheticEvent 对象可能会被重用，而且在事件回调函数被调用后，所有的属性都会无效。出于性能考虑，你不能通过异步访问事件。(不能setTimeout去获取event属性)
+
+[关于在异步操作中访问React事件对象的问题](https://www.cnblogs.com/geek1116/p/13657822.html)
 
 ### 9. setState真的是异步的么
 
