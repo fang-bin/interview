@@ -168,7 +168,7 @@
 
 #### 17. 跳出循环
 * forEach 遍历数组的每一项，并对每一项执行一个 callback 函数。没有返回值(不论什么情况返回值都可以视为undefined)。forEach 方法没办法使用 break 语句跳出循环，或者使用 continue 跳过这次循环进入下次循环，但是可以通过 return 来实现跳过这次循环进入下次循环。
-* for...of ES6提出的语句，在可迭代对象（Array，Map，Set，String，TypedArray，arguments）上创建一个迭代循环。（所有遍历器对象都可以遍历，即 [Symbol.iterator]=collection 都可以），不同于 forEach 可以使用 break, continue，但是不可以使用return;
+* for...of ES6提出的语句，在可迭代对象（Array，Map，Set，String，TypedArray，arguments）上创建一个迭代循环。（所有遍历器对象都可以遍历，即 [Symbol.iterator]=collection 都可以），不同于 forEach 可以使用 break, continue，**非函数作用域中不可在for...of中使用return，但在函数中可以使用return作为函数的返回值**;
 * for...in for...in 语句以任意顺序遍历一个对象的可枚举属性的属性名。但是 for...in 会遍历对象本身的所有可枚举属性和从它原型继承而来的可枚举属性，因此如果想要仅迭代对象本身的属性，要结合hasOwnProperty() 来使用。 for...in遍历数组的情况下，可能会随机顺序遍历。(不可使用 continue break return)
 
 #### 18. 有关原型内容
