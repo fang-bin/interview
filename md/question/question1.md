@@ -406,8 +406,8 @@ sub.notify('I fired `SMS` event');
 TypeScript里，成员都默认为 public。
 
 * public 没有限制
-* private 不能在声明它的类的外部访问，不能在派生类中访问(本可被继承)
 * protected 不能在声明它的类的外部访问，但是在派生类中仍然可以访问(可以被继承)
+* private 不能在声明它的类的外部访问，不能在派生类中访问(不可被继承)
 
 注意: 
 
